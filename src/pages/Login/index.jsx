@@ -46,7 +46,7 @@ export default function Login() {
     return nextErrors
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     const nextErrors = validate()
@@ -54,7 +54,7 @@ export default function Login() {
     if (Object.keys(nextErrors).length > 0) return
 
     setSubmitting(true)
-    login({ email: values.email })
+    await login({ email: values.email })
     // No imperative navigate here — becoming authenticated flips the
     // `isAuthenticated` check above on the next render, which redirects.
   }

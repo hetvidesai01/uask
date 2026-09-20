@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
@@ -22,7 +22,6 @@ function rolesFromSelection(selection) {
 
 export default function Signup() {
   const { isAuthenticated, signup } = useAuth()
-  const navigate = useNavigate()
 
   const [values, setValues] = useState({
     name: '',
@@ -75,7 +74,7 @@ export default function Signup() {
     return nextErrors
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     const nextErrors = validate()
@@ -83,13 +82,13 @@ export default function Signup() {
     if (Object.keys(nextErrors).length > 0) return
 
     setSubmitting(true)
-    signup({
+    await signup({
       name: values.name.trim(),
       email: values.email,
       roles: rolesFromSelection(values.role),
     })
-
-    navigate('/app/dashboard', { replace: true })
+    // No imperative navigate here — becoming authenticated flips the
+    // `isAuthenticated` check above on the next render, which redirects.
   }
 
   return (
