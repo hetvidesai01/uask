@@ -1,0 +1,96 @@
+# UASK — Frontend
+
+Full spec lives in `UASK_FRONTEND_BLUEPRINT.md`. Read that first for anything not covered here — this file is the quick-context summary, that file is the source of truth for detailed specs (route map, component prop tables, exact token values, build order).
+
+## What UASK is
+
+A **reverse marketplace**: users post what they need (an "ASK") and relevant providers respond with offers, instead of searching a catalog of listings.
+
+**Core flow:** `ASK → MATCH → RESPOND → COMPARE → CONNECT`
+
+## Scope
+
+**Frontend only, for now.** No backend, no database, no real API. All data is mock (`src/mocks/`) served through a service layer (`src/services/`) with artificial delays, designed to be swapped for real HTTP calls later without touching any page code.
+
+## Tech stack
+
+- React + Vite
+- React Router (client-side routing, `BrowserRouter`)
+- Plain CSS with **CSS Modules** (`Component.module.css`)
+
+**Explicitly not used** unless the user asks for it later: Tailwind, TypeScript, Redux, a backend, a database.
+
+## Design system — source of truth
+
+`src/styles/tokens.css` defines every brand color, font, spacing, radius, and shadow as a CSS custom property (`--c-*`, `--font-*`, `--fs-*`, `--sp-*`, `--r-*`, `--sh-*`). **Never hard-code a hex value or px number in a component — always reference a token.**
+
+- Brand red (`--c-red` / `--c-red-deep` / `--c-red-dark`) is used *strategically* (primary actions, accents, dark bands) — not as a wash over everything.
+- `--c-pink` / `--c-pink-tagline` are decoration/background only, never body text on a light background (fails contrast) — see how the landing hero kicker uses pink as a pill *background* with dark text instead.
+- `--font-display` (EB Garamond) is reserved for the landing H1, section H2s, and hero-style titles. Everything else — body copy, nav, buttons, form labels, auth page headings — uses `--font-body`.
+- Breakpoints are mobile-first, `min-width` only: `640px`, `900px`, `1200px`.
+- Global utility classes live in `src/styles/utilities.css`: `.container`, `.stack`, `.row`, `.section` (consistent vertical rhythm), `.reveal`/`.isVisible` (scroll-reveal transition), `.sr-only`.
+
+**Design tools are inspiration only.** UI/UX Pro Max, frontend-design, 21st.dev, etc. may be used to improve layout, hierarchy, spacing, accessibility, interaction, and motion — but must never replace UASK's brand colors, typography direction, tokens, or the product structure defined in the blueprint. If a tool suggests a different palette/font/design system, ignore that part and keep only the layout/interaction/technique idea, reskinned with existing tokens.
+
+**Motion:** subtle and purposeful only — a short mount reveal on the hero, a one-time scroll reveal per section (via `src/hooks/useInView.js` + the `.reveal` utility), restrained hover states. Nothing gratuitous. Respects `prefers-reduced-motion` globally (`src/styles/base.css`).
+
+**Mobile-first, accessible by default:**
+- Every input has a real `<label>`; every icon-only control has an `aria-label`.
+- Visible `:focus-visible` ring everywhere (don't remove without replacing).
+- Touch targets sized comfortably (buttons have per-size `min-height`).
+- Modal has a real focus trap + focus restore; Tabs support arrow-key navigation.
+
+## Architecture rules
+
+- **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way.
+- **Components don't import from `pages/`.** Data flows one direction: `pages/` → `services/` → `mocks/` (mock era) or `services/` → `http.js` → API (post-Phase-9).
+- Reusable UI atoms live in `components/ui/` (13 built in Phase 3: Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard). Shared chrome lives in `components/layout/` (Navbar, Footer so far; AppTopBar/Sidebar/MobileTabBar/PageHeader still to come). Domain components (AskCard, OfferCard, etc.) go in `components/ask/`, `components/offer/`, etc. as they're built.
+- Page folder convention: `PageName/index.jsx` + `PageName.module.css`, plus any page-local sub-components in the same folder (see `pages/Landing/` for the pattern with multiple section files).
+
+## Folder structure (current)
+
+```
+src/
+├─ main.jsx, App.jsx (route tree only), index.css
+├─ styles/            tokens.css, reset.css, base.css, utilities.css
+├─ layouts/            PublicLayout, AppLayout, ProtectedRoute
+├─ pages/              one folder per route (see App.jsx for the route map)
+├─ components/
+│  ├─ ui/              generic, reusable, no business logic
+│  ├─ layout/           Navbar, Footer (more layout components pending)
+│  └─ ask/ offer/ messages/ notifications/   (empty — Phase 7+)
+├─ context/            AuthContext.jsx
+├─ hooks/              useAuth, useLocalStorage, useInView
+├─ services/           authService, askService, offerService, messageService, notificationService
+├─ mocks/              users, asks, offers, messages, notifications, categories
+└─ utils/              validators.js
+```
+
+## Auth (mock, no backend)
+
+`AuthContext` persists the logged-in user to `localStorage` (`uask.auth.user`) via `useLocalStorage`. `authService.login`/`.signup` simulate a network call (~400ms) and either match a seeded mock user by email or fabricate a minimal profile. `ProtectedRoute` redirects unauthenticated visits to `/app/*` → `/login` (remembering the original destination via router state so login returns you there); an authenticated visit to `/login` or `/signup` redirects to `/app/dashboard`.
+
+## Progress
+
+- [x] Phase 1 — Setup (Vite, tokens/reset/base/utilities, fonts)
+- [x] Phase 2 — Routing + layouts (route tree, ProtectedRoute, placeholder pages)
+- [x] Phase 3 — UI kit (13 components + `/styleguide`)
+- [x] Phase 4 — Landing page (all sections, Navbar/Footer, scroll-reveal motion)
+- [x] Phase 5 — Auth screens (Login/Signup forms, AuthContext, localStorage persistence)
+- [x] Phase 6 — Mocks + services (6 mock files, 5 service files)
+- [ ] **Next: Phase 7 — core product loop.** Build order (per blueprint §8):
+  1. Discover ASKs (read-only list)
+  2. ASK Details (read-only)
+  3. Create ASK (first write)
+  4. Respond to ASK (second write)
+  5. Compare responses (depends on both writes)
+  6. Dashboard (aggregates everything)
+- [ ] Phase 8 — Secondary screens (Messages, Notifications, Profile)
+- [ ] Phase 9 — API swap (`services/http.js`, real backend)
+
+## Workflow rules
+
+- Work **one phase (or sub-phase) at a time** — don't jump ahead or bundle multiple phases into one change.
+- **Run and test before continuing** (`npm run build`, then exercise the feature in a real browser — don't just eyeball the code).
+- **Don't redo completed phases** unless explicitly asked to.
+- **Stop after the requested phase/sub-phase** and report what changed — don't keep going into the next one unprompted.
