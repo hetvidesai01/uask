@@ -1,0 +1,48 @@
+.page {
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.header {
+  margin-bottom: var(--sp-5);
+}
+
+.title {
+  font-size: var(--fs-2xl);
+  margin-bottom: var(--sp-1);
+}
+
+.subtitle {
+  color: var(--c-text-mute);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.formError {
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background-color: var(--c-pink);
+  color: var(--c-red-dark);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.footer {
+  margin-top: var(--sp-5);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.footer a {
+  font-weight: 600;
+}
