@@ -1,0 +1,51 @@
+.navbar {
+  border-bottom: 1px solid var(--c-border);
+  background-color: var(--c-bg);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-height: var(--topbar-h);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--c-text);
+  letter-spacing: 0.02em;
+}
+
+.links {
+  display: none;
+  align-items: center;
+  gap: var(--sp-5);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-mute);
+}
+
+.links a:hover {
+  color: var(--c-text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.loginLink {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+@media (min-width: 640px) {
+  .links {
+    display: flex;
+  }
+}

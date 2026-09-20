@@ -8,6 +8,7 @@ export default function Button({
   loading = false,
   fullWidth = false,
   disabled = false,
+  inverted = false,
   className = '',
   children,
   ...rest
@@ -17,6 +18,7 @@ export default function Button({
     styles[variant],
     styles[size],
     fullWidth ? styles.fullWidth : '',
+    inverted ? styles.inverted : '',
     className,
   ]
     .filter(Boolean)

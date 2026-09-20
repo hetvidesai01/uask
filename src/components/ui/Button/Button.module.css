@@ -76,3 +76,23 @@
   background-color: var(--c-red-dark);
   color: white;
 }
+
+/* Inverted: for use on a dark (e.g. --c-red-dark) background */
+.inverted.primary {
+  background-color: white;
+  color: var(--c-red-dark);
+}
+
+.inverted.primary:hover:not(:disabled) {
+  background-color: var(--c-pink);
+}
+
+.inverted.secondary {
+  background-color: transparent;
+  color: white;
+  border-color: white;
+}
+
+.inverted.secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.15);
+}

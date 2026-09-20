@@ -1,19 +1,15 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
+import Navbar from '../components/layout/Navbar'
+import Footer from '../components/layout/Footer'
 
 export default function PublicLayout() {
   return (
-    <div className="stack">
-      <header className="row container" style={{ paddingBlock: 'var(--sp-4)' }}>
-        <strong style={{ fontFamily: 'var(--font-display)' }}>UASK</strong>
-        <nav className="row">
-          <Link to="/">Home</Link>
-          <Link to="/login">Log in</Link>
-          <Link to="/signup">Sign up</Link>
-        </nav>
-      </header>
+    <div>
+      <Navbar />
       <main>
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }

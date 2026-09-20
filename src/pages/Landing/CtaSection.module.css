@@ -1,0 +1,40 @@
+.cta {
+  background-color: var(--c-red-dark);
+  color: white;
+  text-align: center;
+}
+
+.inner {
+  max-width: 40rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+}
+
+.subtitle {
+  color: var(--c-pink);
+  font-size: var(--fs-lg);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.loginLink {
+  color: white;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

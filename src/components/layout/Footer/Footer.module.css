@@ -1,0 +1,45 @@
+.footer {
+  background-color: var(--c-red-dark);
+  color: white;
+  padding-block: var(--sp-6);
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.tagline {
+  color: var(--c-pink);
+  max-width: 40ch;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-bottom: var(--sp-5);
+}
+
+.links a {
+  color: white;
+}
+
+.links a:hover {
+  color: var(--c-pink);
+}
+
+.copyright {
+  font-size: var(--fs-xs);
+  color: var(--c-pink);
+}
