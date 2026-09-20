@@ -1,0 +1,41 @@
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+  background-color: var(--c-bg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--lh-tight);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--fs-4xl);
+}
+
+h2 {
+  font-size: var(--fs-3xl);
+}
+
+h3 {
+  font-size: var(--fs-2xl);
+}
+
+p {
+  color: var(--c-text);
+}
+
+a {
+  color: var(--c-red);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-red-deep);
+  outline-offset: 2px;
+}
