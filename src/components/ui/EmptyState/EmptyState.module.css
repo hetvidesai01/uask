@@ -1,0 +1,29 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding: var(--sp-7) var(--sp-4);
+  color: var(--c-text-mute);
+}
+
+.icon {
+  font-size: var(--fs-4xl);
+  line-height: 1;
+  margin-bottom: var(--sp-2);
+}
+
+.title {
+  color: var(--c-text);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.message {
+  max-width: 40ch;
+}
+
+.action {
+  margin-top: var(--sp-3);
+}

@@ -1,0 +1,46 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(26, 26, 26, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  z-index: 100;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: var(--c-surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-lg);
+  padding: var(--sp-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.title {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.closeButton {
+  font-size: var(--fs-lg);
+  line-height: 1;
+  color: var(--c-text-mute);
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+}
+
+.closeButton:hover {
+  background-color: var(--c-surface-2);
+}

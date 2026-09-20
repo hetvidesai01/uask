@@ -1,0 +1,22 @@
+.tabs {
+  display: flex;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.tab {
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-mute);
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--c-text);
+}
+
+.active {
+  color: var(--c-red-deep);
+  border-bottom-color: var(--c-red-deep);
+}

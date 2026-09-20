@@ -18,6 +18,7 @@ import Thread from './pages/Messages/Thread'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
+import Styleguide from './pages/Styleguide'
 
 function App() {
   return (
@@ -45,6 +46,9 @@ function App() {
           <Route path="profile/:userId" element={<Profile />} />
         </Route>
       </Route>
+
+      {/* Temporary, removed in Phase 9 */}
+      <Route path="/styleguide" element={<Styleguide />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
