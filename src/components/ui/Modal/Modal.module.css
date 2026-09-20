@@ -20,6 +20,12 @@
   padding: var(--sp-5);
 }
 
+/* The dialog itself is only a focus landing point, not a control —
+   its own focusable children keep the global focus-visible ring. */
+.modal:focus {
+  outline: none;
+}
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -34,11 +40,16 @@
 }
 
 .closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
   font-size: var(--fs-lg);
   line-height: 1;
   color: var(--c-text-mute);
-  padding: var(--sp-1);
   border-radius: var(--r-sm);
+  flex-shrink: 0;
 }
 
 .closeButton:hover {

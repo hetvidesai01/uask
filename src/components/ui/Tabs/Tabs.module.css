@@ -2,14 +2,18 @@
   display: flex;
   gap: var(--sp-2);
   border-bottom: 1px solid var(--c-border);
+  overflow-x: auto;
 }
 
 .tab {
   padding: var(--sp-2) var(--sp-4);
+  min-height: 40px;
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--c-text-mute);
   border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab:hover {

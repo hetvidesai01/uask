@@ -24,8 +24,19 @@ export default function Button({
     .filter(Boolean)
     .join(' ')
 
+  const isDisabled = disabled || loading
+  // Native `disabled` only applies to real form controls — a non-button
+  // element (e.g. `as="a"`) needs the ARIA equivalent instead.
+  const disabledProps =
+    Component === 'button' ? { disabled: isDisabled } : { 'aria-disabled': isDisabled }
+
   return (
-    <Component className={classes} disabled={disabled || loading} {...rest}>
+    <Component
+      className={classes}
+      aria-busy={loading || undefined}
+      {...disabledProps}
+      {...rest}
+    >
       {loading && <Spinner size="sm" />}
       {children}
     </Component>

@@ -15,7 +15,7 @@ export default function Avatar({ src, name = '', size = 'md', className = '' }) 
   return (
     <span className={classes} title={name}>
       {src ? (
-        <img className={styles.image} src={src} alt={name} />
+        <img className={styles.image} src={src} alt={name} loading="lazy" />
       ) : (
         <span aria-hidden="true">{getInitials(name)}</span>
       )}
