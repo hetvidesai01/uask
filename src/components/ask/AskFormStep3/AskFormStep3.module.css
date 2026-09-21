@@ -1,0 +1,55 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.uploadField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  margin: 0;
+}
+
+.fileInput {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+}
+
+.fileInput::file-selector-button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--c-red-deep);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-red-deep);
+  border-radius: var(--r-md);
+  padding: var(--sp-1) var(--sp-3);
+  margin-right: var(--sp-3);
+  cursor: pointer;
+}
+
+.fileInput::file-selector-button:hover {
+  background-color: var(--c-pink);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

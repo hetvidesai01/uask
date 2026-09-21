@@ -19,39 +19,43 @@ import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
 import Styleguide from './pages/Styleguide'
+import Toast from './components/ui/Toast'
 
 function App() {
   return (
-    <Routes>
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Route>
-
-      <Route element={<ProtectedRoute />}>
-        <Route path="/app" element={<AppLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="asks/new" element={<CreateAsk />} />
-          <Route path="discover" element={<DiscoverAsks />} />
-          <Route path="asks/:askId" element={<AskDetails />} />
-          <Route path="asks/:askId/respond" element={<RespondToAsk />} />
-          <Route path="asks/:askId/compare" element={<CompareResponses />} />
-          <Route path="messages" element={<Messages />}>
-            <Route path=":threadId" element={<Thread />} />
-          </Route>
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="profile/:userId" element={<Profile />} />
+    <>
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
         </Route>
-      </Route>
 
-      {/* Temporary, removed in Phase 9 */}
-      <Route path="/styleguide" element={<Styleguide />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="asks/new" element={<CreateAsk />} />
+            <Route path="discover" element={<DiscoverAsks />} />
+            <Route path="asks/:askId" element={<AskDetails />} />
+            <Route path="asks/:askId/respond" element={<RespondToAsk />} />
+            <Route path="asks/:askId/compare" element={<CompareResponses />} />
+            <Route path="messages" element={<Messages />}>
+              <Route path=":threadId" element={<Thread />} />
+            </Route>
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="profile/:userId" element={<Profile />} />
+          </Route>
+        </Route>
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Temporary, removed in Phase 9 */}
+        <Route path="/styleguide" element={<Styleguide />} />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toast />
+    </>
   )
 }
 

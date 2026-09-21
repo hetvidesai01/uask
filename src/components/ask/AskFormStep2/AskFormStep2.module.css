@@ -1,0 +1,22 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.budgetRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .budgetRow {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: start;
+  }
+
+  .budgetRow > :last-child {
+    min-width: 140px;
+  }
+}

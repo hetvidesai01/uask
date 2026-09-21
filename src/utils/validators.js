@@ -9,3 +9,8 @@ export function isValidEmail(value) {
 export function minLength(value, length) {
   return typeof value === 'string' && value.trim().length >= length
 }
+
+export function isPositiveNumber(value) {
+  const num = Number(value)
+  return value !== '' && !Number.isNaN(num) && num > 0
+}
