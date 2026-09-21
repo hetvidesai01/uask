@@ -74,6 +74,16 @@ export async function createAsk(data) {
   return newAsk
 }
 
+export async function updateAskStatus(id, status) {
+  await delay(150)
+
+  const ask = asks.find((item) => item.id === id)
+  if (!ask) return null
+
+  ask.status = status
+  return ask
+}
+
 export async function incrementResponseCount(id) {
   await delay(150)
 

@@ -5,7 +5,7 @@ import { formatCurrency } from '../../../utils/formatCurrency'
 import { formatRelativeDate } from '../../../utils/formatDate'
 import styles from './OfferCard.module.css'
 
-export default function OfferCard({ offer, provider }) {
+export default function OfferCard({ offer, provider, actions }) {
   return (
     <Card className={styles.card}>
       <div className={styles.top}>
@@ -34,6 +34,8 @@ export default function OfferCard({ offer, provider }) {
       <div className={styles.footer}>
         <span>Submitted {formatRelativeDate(offer.createdAt)}</span>
       </div>
+
+      {actions && <div className={styles.actions}>{actions}</div>}
     </Card>
   )
 }

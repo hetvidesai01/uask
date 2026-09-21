@@ -49,3 +49,9 @@
   font-size: var(--fs-xs);
   color: var(--c-text-mute);
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
