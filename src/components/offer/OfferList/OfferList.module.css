@@ -1,0 +1,11 @@
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 900px) {
+  .list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

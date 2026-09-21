@@ -18,3 +18,9 @@ export function formatRelativeDate(isoDate) {
 
   return rtf.format(-Math.round(seconds / unit.divisor), unit.unit)
 }
+
+const dtf = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+
+export function formatAbsoluteDate(isoDate) {
+  return dtf.format(new Date(isoDate))
+}

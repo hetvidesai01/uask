@@ -11,6 +11,11 @@ function findByEmail(email) {
   return users.find((user) => user.email.toLowerCase() === email.toLowerCase())
 }
 
+export async function getUserById(id) {
+  await delay(150)
+  return users.find((user) => user.id === id) ?? null
+}
+
 // Mock login: no backend, so any password is accepted. If the email
 // matches one of the seeded mock users, that profile is returned;
 // otherwise a minimal profile is fabricated from the email.
