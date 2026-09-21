@@ -1,0 +1,61 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.priceRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .priceRow {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+  }
+
+  .priceRow > :nth-child(2) {
+    min-width: 140px;
+  }
+}
+
+.deliverablesField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  margin: 0;
+}
+
+.addRow {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
+}
+
+.addRow > :first-child {
+  flex: 1;
+}
+
+.error {
+  font-size: var(--fs-xs);
+  color: var(--c-red-dark);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

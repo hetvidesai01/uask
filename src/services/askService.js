@@ -73,3 +73,13 @@ export async function createAsk(data) {
   asks.push(newAsk)
   return newAsk
 }
+
+export async function incrementResponseCount(id) {
+  await delay(150)
+
+  const ask = asks.find((item) => item.id === id)
+  if (!ask) return null
+
+  ask.responseCount += 1
+  return ask
+}
