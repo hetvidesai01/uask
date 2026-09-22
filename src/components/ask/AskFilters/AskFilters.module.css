@@ -1,6 +1,7 @@
 .panel {
   background-color: var(--c-surface);
   border: 1px solid var(--c-border);
+  border-top: 2px solid var(--c-red);
   border-radius: var(--r-lg);
   padding: var(--sp-5);
   display: flex;
@@ -15,7 +16,11 @@
 }
 
 .heading {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-mute);
 }
 
 .fields {

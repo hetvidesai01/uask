@@ -247,6 +247,11 @@ export default function CompareResponses() {
 
   const selectedOffers = offers.filter((offer) => selectedIds.includes(offer.id))
 
+  const bestPrice =
+    selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.price)) : null
+  const bestDelivery =
+    selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.deliveryDays)) : null
+
   const rows = [
     {
       label: 'Rating',
@@ -255,8 +260,30 @@ export default function CompareResponses() {
         return provider?.rating != null ? `★ ${provider.rating.toFixed(1)} (${provider.reviewCount})` : '—'
       },
     },
-    { label: 'Price', render: (offer) => formatCurrency(offer.price, offer.currency) },
-    { label: 'Delivery', render: (offer) => `${offer.deliveryDays}-day delivery` },
+    {
+      label: 'Price',
+      render: (offer) => (
+        <>
+          <span className={offer.price === bestPrice ? styles.bestValue : undefined}>
+            {formatCurrency(offer.price, offer.currency)}
+          </span>
+          {offer.price === bestPrice && <span className={styles.bestValueTag}>Lowest price</span>}
+        </>
+      ),
+    },
+    {
+      label: 'Delivery',
+      render: (offer) => (
+        <>
+          <span className={offer.deliveryDays === bestDelivery ? styles.bestValue : undefined}>
+            {offer.deliveryDays}-day delivery
+          </span>
+          {offer.deliveryDays === bestDelivery && (
+            <span className={styles.bestValueTag}>Fastest</span>
+          )}
+        </>
+      ),
+    },
     {
       label: 'Pitch',
       render: (offer) => <p className={styles.cellText}>{splitPitch(offer.pitch).mainPitch}</p>,
@@ -337,7 +364,12 @@ export default function CompareResponses() {
                   {row.label}
                 </th>
                 {selectedOffers.map((offer) => (
-                  <td key={offer.id}>{row.render(offer)}</td>
+                  <td
+                    key={offer.id}
+                    className={offer.status === 'accepted' ? styles.acceptedCell : undefined}
+                  >
+                    {row.render(offer)}
+                  </td>
                 ))}
               </tr>
             ))}
@@ -346,7 +378,10 @@ export default function CompareResponses() {
                 Actions
               </th>
               {selectedOffers.map((offer) => (
-                <td key={offer.id}>
+                <td
+                  key={offer.id}
+                  className={offer.status === 'accepted' ? styles.acceptedCell : undefined}
+                >
                   <div className={styles.actionButtons}>{renderActions(offer)}</div>
                 </td>
               ))}

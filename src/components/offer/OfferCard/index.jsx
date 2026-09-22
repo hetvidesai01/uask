@@ -6,8 +6,10 @@ import { formatRelativeDate } from '../../../utils/formatDate'
 import styles from './OfferCard.module.css'
 
 export default function OfferCard({ offer, provider, actions }) {
+  const isAccepted = offer.status === 'accepted'
+
   return (
-    <Card className={styles.card}>
+    <Card className={[styles.card, isAccepted ? styles.accepted : ''].filter(Boolean).join(' ')}>
       <div className={styles.top}>
         <UserMiniCard user={provider} />
         <OfferStatusBadge status={offer.status} />

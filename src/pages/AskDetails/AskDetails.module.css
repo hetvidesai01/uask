@@ -24,10 +24,11 @@
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--c-red-deep);
+  color: var(--c-red-accent);
 }
 
 .title {
+  font-family: var(--font-display);
   font-size: var(--fs-3xl);
 }
 
@@ -87,6 +88,13 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sp-4);
+}
+
+/* Doubled selector deliberately raises specificity above Card's own
+   `border`/`box-shadow` shorthands, so this wins regardless of which
+   CSS module happens to load first. */
+.responseCta.responseCta {
+  border-left: 2px solid var(--c-red);
 }
 
 .ctaText {

@@ -38,7 +38,7 @@
 }
 
 .link {
-  color: var(--c-red-deep);
+  color: var(--c-red-accent);
   font-weight: 600;
   margin-left: var(--sp-1);
 }

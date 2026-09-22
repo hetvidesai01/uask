@@ -9,6 +9,7 @@ import Tabs from '../../components/ui/Tabs'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
 import ActivityFeed from './ActivityFeed'
+import { useCountUp } from './useCountUp'
 import { useAuth } from '../../hooks/useAuth'
 import { getAskById, getAsks } from '../../services/askService'
 import { getOffersByProviderId, getOffersForAsk } from '../../services/offerService'
@@ -151,6 +152,13 @@ export default function Dashboard() {
     [myAsks, myOffers, receivedOffers, askTitlesById]
   )
 
+  // Hooks must run unconditionally on every render, so these are called
+  // here rather than after the loading/error early returns below.
+  const activeAsksCount = useCountUp(stats.activeAsks)
+  const responsesReceivedCount = useCountUp(stats.responsesReceived)
+  const activeOffersCount = useCountUp(stats.activeOffers)
+  const wonOffersCount = useCountUp(stats.wonOffers)
+
   if (status === 'loading') {
     return (
       <div className={styles.centered}>
@@ -183,6 +191,7 @@ export default function Dashboard() {
       <div className={styles.welcome}>
         <div>
           <p className={styles.greeting}>
+            <span className={styles.greetingRule} aria-hidden="true" />
             {greetingForNow()}, {firstName}
           </p>
           <h1 className={styles.title}>Here's what's happening with your ASKs and offers.</h1>
@@ -193,10 +202,10 @@ export default function Dashboard() {
       </div>
 
       <div className={styles.stats}>
-        <StatCard label="Active ASKs" value={stats.activeAsks} />
-        <StatCard label="Responses received" value={stats.responsesReceived} />
-        <StatCard label="Active offers" value={stats.activeOffers} />
-        <StatCard label="Shortlisted / accepted" value={stats.wonOffers} />
+        <StatCard label="Active ASKs" value={activeAsksCount} />
+        <StatCard label="Responses received" value={responsesReceivedCount} />
+        <StatCard label="Active offers" value={activeOffersCount} />
+        <StatCard label="Shortlisted / accepted" value={wonOffersCount} />
       </div>
 
       <div className={styles.tabsSection}>

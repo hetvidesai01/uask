@@ -10,6 +10,7 @@ import Tag from '../../components/ui/Tag'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
+import StatusRail from './StatusRail'
 import { useAuth } from '../../hooks/useAuth'
 import { getAskById } from '../../services/askService'
 import { getOffersForAsk } from '../../services/offerService'
@@ -116,6 +117,8 @@ export default function AskDetails() {
         <h1 className={styles.title}>{ask.title}</h1>
         <p className={styles.posted}>Posted {formatRelativeDate(ask.createdAt)}</p>
       </div>
+
+      <StatusRail status={ask.status} />
 
       <UserMiniCard user={requester} label="Posted by" />
 

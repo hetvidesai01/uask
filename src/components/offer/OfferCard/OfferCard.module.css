@@ -4,6 +4,13 @@
   gap: var(--sp-3);
 }
 
+/* Doubled selector raises specificity above Card's own `border` shorthand
+   so the accent shows regardless of CSS module load order. */
+.card.accepted.accepted {
+  border-left: 2px solid var(--c-red);
+  background-color: var(--c-red-wash);
+}
+
 .top {
   display: flex;
   align-items: flex-start;

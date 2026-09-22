@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
 import Select from '../../components/ui/Select'
@@ -143,13 +144,22 @@ export default function DiscoverAsks() {
             </div>
           )}
 
-          {status === 'done' && asks.length > 0 && (
-            <div className={styles.grid}>
-              {asks.map((ask) => (
-                <AskCard key={ask.id} ask={ask} />
-              ))}
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {status === 'done' && asks.length > 0 && (
+              <motion.div
+                key={searchParams.toString()}
+                className={styles.grid}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                {asks.map((ask) => (
+                  <AskCard key={ask.id} ask={ask} />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

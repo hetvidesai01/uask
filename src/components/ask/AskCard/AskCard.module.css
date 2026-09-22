@@ -10,6 +10,13 @@
   flex-direction: column;
   gap: var(--sp-3);
   height: 100%;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.2s ease;
+}
+
+.card:hover {
+  outline-color: rgba(208, 39, 39, 0.3);
 }
 
 .top {
@@ -24,7 +31,7 @@
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--c-red-deep);
+  color: var(--c-red-accent);
 }
 
 .title {

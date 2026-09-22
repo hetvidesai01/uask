@@ -61,7 +61,7 @@
 }
 
 .pickerChip:hover:not(:disabled) {
-  border-color: var(--c-red-deep);
+  border-color: var(--c-red);
 }
 
 .pickerChip:disabled {
@@ -147,6 +147,25 @@
   flex-direction: column;
   gap: var(--sp-2);
   min-width: 140px;
+}
+
+.bestValue {
+  color: var(--c-success);
+  font-weight: 700;
+}
+
+.bestValueTag {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-success);
+}
+
+.acceptedCell {
+  background-color: var(--c-red-wash);
 }
 
 /* Mobile stacked cards */
