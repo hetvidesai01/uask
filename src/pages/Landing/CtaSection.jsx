@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Button from '../../components/ui/Button'
+import GradientMesh from '../../components/ui/GradientMesh'
 import { useInView } from '../../hooks/useInView'
 import styles from './CtaSection.module.css'
 
@@ -8,12 +10,19 @@ export default function CtaSection() {
 
   return (
     <section className={`section ${styles.cta}`}>
-      <div className="container">
-        <div ref={ref} className={`reveal ${isInView ? 'isVisible' : ''} ${styles.inner}`}>
-          <h2 className={styles.heading}>Ready to post your first ASK?</h2>
-          <p className={styles.subtitle}>
-            It takes a couple of minutes, and providers come to you.
-          </p>
+      <GradientMesh />
+      <div className={`container ${styles.container}`}>
+        <motion.div
+          ref={ref}
+          className={styles.inner}
+          initial={{ opacity: 0, y: 16 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className={styles.heading}>
+            Ready to post your <em>first</em> ASK?
+          </h2>
+          <p className={styles.subtitle}>It takes a couple of minutes, and providers come to you.</p>
           <div className={styles.actions}>
             <Button as={Link} to="/signup" size="lg" inverted>
               Get started — it's free
@@ -22,7 +31,7 @@ export default function CtaSection() {
               Already have an account? Log in
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

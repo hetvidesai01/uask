@@ -1,24 +1,35 @@
 .footer {
-  background-color: var(--c-red-dark);
-  color: white;
-  padding-block: var(--sp-6);
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  border-top: 1px solid var(--c-border);
+  padding-block: var(--sp-7);
 }
 
 .top {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-6);
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-family: var(--font-display);
   font-size: var(--fs-xl);
   font-weight: 600;
 }
 
+.logoDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+}
+
 .tagline {
-  color: var(--c-pink);
+  color: var(--c-text-mute);
   max-width: 40ch;
 }
 
@@ -28,18 +39,20 @@
   gap: var(--sp-4);
   font-size: var(--fs-sm);
   font-weight: 600;
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-6);
 }
 
 .links a {
-  color: white;
+  color: var(--c-text-mute);
 }
 
 .links a:hover {
-  color: var(--c-pink);
+  color: var(--c-red-accent);
 }
 
 .copyright {
   font-size: var(--fs-xs);
-  color: var(--c-pink);
+  color: var(--c-text-faint);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--c-border);
 }

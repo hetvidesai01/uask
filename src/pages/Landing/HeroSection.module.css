@@ -1,33 +1,73 @@
 .hero {
-  padding-block: var(--sp-8) var(--sp-7);
-  text-align: center;
+  position: relative;
+  overflow: hidden;
+  padding-top: calc(var(--topbar-h) + var(--sp-7));
+  padding-bottom: var(--sp-8);
 }
 
 @media (min-width: 900px) {
   .hero {
-    padding-block: var(--sp-9);
+    padding-top: calc(var(--topbar-h) + var(--sp-9));
+    padding-bottom: var(--sp-9);
   }
 }
 
+.mesh {
+  opacity: 0.7;
+}
+
 .inner {
-  max-width: 46rem;
-  margin-inline: auto;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: var(--sp-7);
+}
+
+@media (min-width: 900px) {
+  .inner {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-8);
+  }
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-5);
+  align-items: center;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .copy {
+    flex: 1;
+    align-items: flex-start;
+    text-align: left;
+  }
 }
 
 .kicker {
   display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
-  background-color: var(--c-pink);
-  color: var(--c-red-deep);
+  background-color: var(--c-red-wash);
+  color: var(--c-pink);
   font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.kickerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
 }
 
 .title {
@@ -36,9 +76,37 @@
   line-height: var(--lh-tight);
 }
 
+.title em {
+  font-style: italic;
+  color: var(--c-red-accent);
+}
+
 @media (min-width: 640px) {
   .title {
     font-size: var(--fs-5xl);
+  }
+}
+
+.lineMask {
+  display: block;
+  overflow: hidden;
+}
+
+.lineInner {
+  display: block;
+}
+
+.stagger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  align-items: center;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .stagger {
+    align-items: flex-start;
   }
 }
 
@@ -62,16 +130,12 @@
   }
 }
 
-/* Content reveal on mount — the H1 itself is excluded so the largest
-   element on the page paints immediately (no LCP delay). */
-@keyframes heroRise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+.graphic {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .graphic {
+    flex: 1;
   }
 }
-
-.enter {
-  animation: heroRise 0.5s ease backwards;
-}
-

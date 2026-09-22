@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
 import { useInView } from '../../hooks/useInView'
+import { staggerContainer, staggerItem } from '../../utils/motion'
 import styles from './ValuePropsSection.module.css'
 
 const COLUMNS = [
   {
     title: 'For seekers',
+    accent: 'red',
     points: [
       'Post one ASK instead of messaging providers one by one.',
       'Offers arrive with price and timeline already attached.',
@@ -16,6 +18,7 @@ const COLUMNS = [
   },
   {
     title: 'For providers',
+    accent: 'pink',
     points: [
       'See ASKs that match what you actually do.',
       'Send a focused offer instead of chasing cold leads.',
@@ -33,31 +36,39 @@ export default function ValuePropsSection() {
       <div className="container">
         <h2 className={styles.heading}>Built for both sides of the ask</h2>
 
-        <div ref={ref} className={styles.columns}>
-          {COLUMNS.map((column, index) => (
-            <Card
+        <motion.div
+          ref={ref}
+          className={styles.split}
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          transition={{ staggerChildren: 0.15 }}
+        >
+          {COLUMNS.map((column) => (
+            <motion.div
               key={column.title}
-              padding="lg"
-              className={`reveal ${isInView ? 'isVisible' : ''} ${styles.column}`}
-              style={{ transitionDelay: `${index * 100}ms` }}
+              className={[styles.column, styles[column.accent]].join(' ')}
+              variants={staggerItem}
             >
-              <p className={styles.columnTitle}>{column.title}</p>
+              <p className={styles.eyebrow}>{column.title}</p>
+
               <ul className={styles.list}>
-                {column.points.map((point) => (
+                {column.points.map((point, index) => (
                   <li key={point} className={styles.listItem}>
-                    <span className={styles.bullet} aria-hidden="true">
-                      —
+                    <span className={styles.itemNumber} aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
                     </span>
                     <span>{point}</span>
                   </li>
                 ))}
               </ul>
+
               <Button as={Link} to="/signup" variant="secondary">
                 {column.cta}
               </Button>
-            </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

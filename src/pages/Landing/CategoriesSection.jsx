@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import Card from '../../components/ui/Card'
+import { motion } from 'framer-motion'
 import { useInView } from '../../hooks/useInView'
+import { staggerContainer, staggerItem } from '../../utils/motion'
 import styles from './CategoriesSection.module.css'
 
 const CATEGORIES = [
@@ -22,27 +23,31 @@ export default function CategoriesSection() {
       <div className="container">
         <h2 className={styles.heading}>Browse by category</h2>
 
-        <div ref={ref} className={styles.grid}>
-          {CATEGORIES.map((category, index) => (
-            <Link
-              key={category.label}
-              to={`/app/discover?category=${encodeURIComponent(category.label)}`}
-              className={styles.link}
-            >
-              <Card
-                hoverable
-                padding="sm"
-                className={`reveal ${isInView ? 'isVisible' : ''} ${styles.category}`}
-                style={{ transitionDelay: `${index * 60}ms` }}
+        <motion.div
+          ref={ref}
+          className={styles.grid}
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          transition={{ staggerChildren: 0.05 }}
+        >
+          {CATEGORIES.map((category) => (
+            <motion.div key={category.label} variants={staggerItem}>
+              <Link
+                to={`/app/discover?category=${encodeURIComponent(category.label)}`}
+                className={styles.item}
               >
                 <span className={styles.icon} aria-hidden="true">
                   {category.icon}
                 </span>
                 <span className={styles.label}>{category.label}</span>
-              </Card>
-            </Link>
+                <span className={styles.arrow} aria-hidden="true">
+                  →
+                </span>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

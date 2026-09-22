@@ -6,7 +6,10 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className="container">
         <div className={styles.top}>
-          <span className={styles.logo}>UASK</span>
+          <span className={styles.logo}>
+            UASK
+            <span className={styles.logoDot} aria-hidden="true" />
+          </span>
           <p className={styles.tagline}>Post what you need. Let the offers come to you.</p>
         </div>
 

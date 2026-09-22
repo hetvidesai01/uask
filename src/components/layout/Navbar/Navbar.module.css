@@ -1,6 +1,29 @@
 .navbar {
+  width: 100%;
+  z-index: 50;
+}
+
+.solid {
+  position: relative;
+  background-color: var(--c-surface);
   border-bottom: 1px solid var(--c-border);
-  background-color: var(--c-bg);
+}
+
+.overHero {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.overHero.scrolled {
+  background-color: rgba(11, 10, 10, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom-color: var(--c-border);
 }
 
 .inner {
@@ -12,24 +35,56 @@
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-family: var(--font-display);
-  font-size: var(--fs-xl);
+  font-size: var(--fs-2xl);
   font-weight: 600;
   color: var(--c-text);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+}
+
+.logoDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
 }
 
 .links {
   display: none;
   align-items: center;
-  gap: var(--sp-5);
+  gap: var(--sp-6);
   font-size: var(--fs-sm);
   font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--c-text-mute);
+}
+
+.links a {
+  position: relative;
+  padding-block: var(--sp-1);
+}
+
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--c-red);
+  transition: right 0.2s ease;
 }
 
 .links a:hover {
   color: var(--c-text);
+}
+
+.links a:hover::after {
+  right: 0;
 }
 
 .actions {
