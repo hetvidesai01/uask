@@ -25,7 +25,7 @@ export async function login({ email }) {
   const existing = findByEmail(email)
   if (existing) return existing
 
-  return {
+  const newUser = {
     id: crypto.randomUUID(),
     name: nameFromEmail(email),
     email,
@@ -38,12 +38,24 @@ export async function login({ email }) {
     reviewCount: 0,
     joinedAt: new Date().toISOString(),
   }
+  users.push(newUser)
+  return newUser
+}
+
+export async function updateUser(id, data) {
+  await delay()
+
+  const user = users.find((item) => item.id === id)
+  if (!user) return null
+
+  Object.assign(user, data)
+  return user
 }
 
 export async function signup({ name, email, roles }) {
   await delay()
 
-  return {
+  const newUser = {
     id: crypto.randomUUID(),
     name,
     email,
@@ -56,4 +68,6 @@ export async function signup({ name, email, roles }) {
     reviewCount: 0,
     joinedAt: new Date().toISOString(),
   }
+  users.push(newUser)
+  return newUser
 }

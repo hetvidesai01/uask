@@ -85,11 +85,11 @@ src/
   - [x] 7D. Respond to ASK (second write)
   - [x] 7E. Compare responses (depends on both writes)
   - [x] 7F. Dashboard (aggregates everything)
-- [ ] Phase 8 — Secondary screens (Messages, Notifications, Profile)
+- [x] Phase 8 — Secondary screens (Messages, Notifications, Profile)
   - [x] 8A. Messages (thread list + conversation view)
   - [x] 8B. Notifications (grouped list, mark read/mark all read)
-  - [ ] **Next: 8C. Profile**
-- [ ] Phase 9 — API swap (`services/http.js`, real backend)
+  - [x] 8C. Profile (own-profile edit, public read-only view)
+- [ ] **Next: Phase 9 — API swap (`services/http.js`, real backend)**
 
 ## Workflow rules
 

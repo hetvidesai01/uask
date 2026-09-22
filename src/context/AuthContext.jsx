@@ -23,8 +23,16 @@ export function AuthProvider({ children }) {
 
   const logout = () => setUser(null)
 
+  const updateProfile = async (data) => {
+    const updated = await authService.updateUser(user.id, data)
+    setUser(updated)
+    return updated
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), login, signup, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: Boolean(user), login, signup, logout, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
   )
