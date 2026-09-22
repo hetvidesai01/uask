@@ -80,8 +80,8 @@ export default function Thread() {
           title="Conversation not found"
           message="This conversation may have been removed, or the link is incorrect."
           action={
-            <Button as={Link} to="/app/messages" variant="secondary">
-              Back to messages
+            <Button as={Link} to="/app/inbox" variant="secondary">
+              Back to inbox
             </Button>
           }
         />
@@ -121,7 +121,7 @@ export default function Thread() {
   return (
     <div className={styles.thread}>
       <div className={styles.header}>
-        <Link to="/app/messages" className={styles.back} aria-label="Back to conversations">
+        <Link to="/app/inbox" className={styles.back} aria-label="Back to conversations">
           ←
         </Link>
 

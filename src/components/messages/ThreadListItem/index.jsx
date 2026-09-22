@@ -11,7 +11,7 @@ export default function ThreadListItem({ thread, participant, ask, isActive }) {
     .join(' ')
 
   return (
-    <Link to={`/app/messages/${thread.id}`} className={classes} aria-current={isActive ? 'true' : undefined}>
+    <Link to={`/app/inbox/messages/${thread.id}`} className={classes} aria-current={isActive ? 'true' : undefined}>
       <Avatar src={participant?.avatarUrl} name={participant?.name ?? '?'} size="md" />
 
       <div className={styles.body}>

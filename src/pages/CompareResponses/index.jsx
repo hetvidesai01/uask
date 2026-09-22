@@ -131,7 +131,7 @@ export default function CompareResponses() {
   }
 
   function handleMessage() {
-    navigate('/app/messages')
+    navigate('/app/inbox')
   }
 
   function renderActions(offer) {

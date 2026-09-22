@@ -296,7 +296,7 @@ export default function Profile() {
                 )
               ) : (
                 messageThreadId && (
-                  <Button as={Link} to={`/app/messages/${messageThreadId}`} size="sm">
+                  <Button as={Link} to={`/app/inbox/messages/${messageThreadId}`} size="sm">
                     Message
                   </Button>
                 )

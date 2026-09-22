@@ -1,21 +1,13 @@
-.page {
-  padding-block: var(--sp-6) var(--sp-9);
+.panel {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
   max-width: 680px;
-  margin-inline: auto;
 }
 
-.header {
+.panelHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-
-.title {
-  font-size: var(--fs-3xl);
+  justify-content: flex-end;
 }
 
 .centered {

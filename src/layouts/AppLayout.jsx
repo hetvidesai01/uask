@@ -4,13 +4,13 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
 import { getNotifications } from '../services/notificationService'
+import { getThreads } from '../services/messageService'
 import styles from './AppLayout.module.css'
 
 const NAV_ITEMS = [
   { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
   { to: '/app/discover', label: 'Discover', icon: '🔍' },
-  { to: '/app/messages', label: 'Messages', icon: '💬' },
-  { to: '/app/notifications', label: 'Notifications', icon: '🔔' },
+  { to: '/app/inbox', label: 'Inbox', icon: '📥' },
   { to: '/app/profile', label: 'Profile', icon: '👤' },
 ]
 
@@ -32,11 +32,15 @@ export default function AppLayout() {
   const [search, setSearch] = useState('')
   const menuRef = useRef(null)
 
+  // Inbox badge = unread notifications + unread messages across all
+  // threads, derived from the existing service data (not hardcoded).
   useEffect(() => {
     let cancelled = false
-    getNotifications(user.id).then((list) => {
+    Promise.all([getNotifications(user.id), getThreads(user.id)]).then(([notifications, threads]) => {
       if (cancelled) return
-      setUnreadCount(list.filter((item) => !item.read).length)
+      const unreadNotifications = notifications.filter((item) => !item.read).length
+      const unreadMessages = threads.reduce((sum, thread) => sum + thread.unreadCount, 0)
+      setUnreadCount(unreadNotifications + unreadMessages)
     })
     return () => {
       cancelled = true
@@ -87,7 +91,7 @@ export default function AppLayout() {
                 {item.icon}
               </span>
               {item.label}
-              {item.to === '/app/notifications' && unreadCount > 0 && (
+              {item.to === '/app/inbox' && unreadCount > 0 && (
                 <span className={styles.navBadge} aria-hidden="true">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
@@ -141,7 +145,7 @@ export default function AppLayout() {
             ))}
           </div>
 
-          <Link to="/app/notifications" className={styles.bellButton} aria-label="Notifications">
+          <Link to="/app/inbox?tab=notifications" className={styles.bellButton} aria-label="Notifications">
             <span aria-hidden="true">🔔</span>
             {unreadCount > 0 && (
               <span className={styles.bellBadge} aria-hidden="true">
@@ -203,7 +207,7 @@ export default function AppLayout() {
           <NavLink key={item.to} to={item.to} className={tabLinkClass}>
             <span className={styles.tabIconWrap}>
               <span aria-hidden="true">{item.icon}</span>
-              {item.to === '/app/notifications' && unreadCount > 0 && (
+              {item.to === '/app/inbox' && unreadCount > 0 && (
                 <span className={styles.tabBadge} aria-hidden="true" />
               )}
             </span>

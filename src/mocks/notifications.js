@@ -25,7 +25,7 @@ export const notifications = [
     type: 'message',
     title: 'New message from Amara Chen',
     body: "Sounds good — I'll have the first concepts over by Thursday.",
-    link: '/app/messages/thread-1',
+    link: '/app/inbox/messages/thread-1',
     read: false,
     createdAt: '2026-09-15T17:05:00.000Z',
   },
