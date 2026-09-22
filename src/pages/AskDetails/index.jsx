@@ -106,6 +106,7 @@ export default function AskDetails() {
 
   const isOwner = user && ask.requesterId === user.id
   const myOffer = offers.find((offer) => offer.providerId === user?.id)
+  const isAcceptedParty = ask.status === 'accepted' && (isOwner || myOffer?.status === 'accepted')
 
   return (
     <div className={styles.page}>
@@ -139,7 +140,19 @@ export default function AskDetails() {
 
       <hr className={styles.divider} />
 
-      {isOwner ? (
+      {isAcceptedParty ? (
+        <Card className={styles.contractCta}>
+          <div>
+            <h2 className={styles.sectionTitle}>This project is underway</h2>
+            <p className={styles.ctaText}>
+              An offer has been accepted — track the contract, milestones, and payments.
+            </p>
+          </div>
+          <Button as={Link} to={`/app/asks/${askId}/contract`}>
+            View Contract
+          </Button>
+        </Card>
+      ) : isOwner ? (
         <div className={styles.responsesSection}>
           <div className={styles.responsesHeader}>
             <h2 className={styles.sectionTitle}>Responses ({offers.length})</h2>

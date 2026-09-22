@@ -228,3 +228,14 @@
   font-weight: 700;
   color: var(--c-warning);
 }
+
+.viewContractLink {
+  align-self: flex-start;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-red-accent);
+}
+
+.viewContractLink:hover {
+  color: var(--c-red);
+}

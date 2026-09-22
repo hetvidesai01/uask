@@ -15,6 +15,7 @@ import DiscoverAsks from './pages/DiscoverAsks'
 import AskDetails from './pages/AskDetails'
 import RespondToAsk from './pages/RespondToAsk'
 import CompareResponses from './pages/CompareResponses'
+import Contract from './pages/Contract'
 import Inbox from './pages/Inbox'
 import Thread from './pages/Inbox/Thread'
 import Profile from './pages/Profile'
@@ -58,6 +59,7 @@ function App() {
             <Route path="asks/:askId" element={<AskDetails />} />
             <Route path="asks/:askId/respond" element={<RespondToAsk />} />
             <Route path="asks/:askId/compare" element={<CompareResponses />} />
+            <Route path="asks/:askId/contract" element={<Contract />} />
             <Route path="inbox" element={<Inbox />}>
               <Route path="messages/:threadId" element={<Thread />} />
             </Route>

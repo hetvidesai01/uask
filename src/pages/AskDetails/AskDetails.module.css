@@ -109,6 +109,25 @@
   }
 }
 
+.contractCta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-4);
+}
+
+.contractCta.contractCta {
+  border-left: 2px solid var(--c-red);
+}
+
+@media (min-width: 640px) {
+  .contractCta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 .centered {
   display: flex;
   justify-content: center;

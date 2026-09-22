@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import StatCard from '../../components/ui/StatCard'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
+import ContractStatusBadge from '../../components/contract/ContractStatusBadge'
 import { useAuth } from '../../hooks/useAuth'
 import { getContractsForUser } from '../../services/contractService'
 import { getAskById } from '../../services/askService'
@@ -14,23 +14,10 @@ import { formatCurrency } from '../../utils/formatCurrency'
 import { formatAbsoluteDate } from '../../utils/formatDate'
 import styles from './DashboardPayments.module.css'
 
-// Shared across a contract's own status and each milestone's status —
-// 'completed' means the same thing (done, paid, closed out) in both.
-const STATUS_BADGE = {
-  active: { variant: 'matched', label: 'Active' },
-  upcoming: { variant: 'closed', label: 'Upcoming' },
-  due: { variant: 'in_review', label: 'Due' },
-  paid: { variant: 'open', label: 'Paid' },
-  completed: { variant: 'accepted', label: 'Completed' },
-}
-
-function StatusPill({ status }) {
-  const entry = STATUS_BADGE[status] ?? { variant: 'closed', label: status }
-  return <Badge variant={entry.variant}>{entry.label}</Badge>
-}
-
+// 'paid' is the only terminal milestone status — see mocks/contracts.js
+// for the full upcoming -> in_progress -> submitted -> approved -> paid flow.
 function isSettled(milestoneStatus) {
-  return milestoneStatus === 'paid' || milestoneStatus === 'completed'
+  return milestoneStatus === 'paid'
 }
 
 export default function DashboardPayments() {
@@ -119,7 +106,7 @@ export default function DashboardPayments() {
     : null
 
   const completedMilestoneCount = providerContracts.reduce(
-    (count, contract) => count + contract.milestones.filter((m) => m.status === 'completed').length,
+    (count, contract) => count + contract.milestones.filter((m) => m.status === 'paid').length,
     0
   )
   const totalMilestoneCount = providerContracts.reduce(
@@ -215,7 +202,7 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
             {ask?.title ?? 'View ASK'}
           </Link>
         </div>
-        <StatusPill status={contract.status} />
+        <ContractStatusBadge status={contract.status} />
       </div>
 
       <p className={styles.withParty}>
@@ -246,7 +233,7 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
             <span className={styles.nextMilestoneAmount}>
               {formatCurrency(nextMilestone.amount, contract.currency)}
             </span>
-            <StatusPill status={nextMilestone.status} />
+            <ContractStatusBadge status={nextMilestone.status} />
           </div>
         </div>
       ) : (
@@ -259,6 +246,10 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
           <span className={styles.ratingValue}>★ {contract.rating.toFixed(1)} / 5</span>
         </div>
       )}
+
+      <Link to={`/app/asks/${contract.askId}/contract`} className={styles.viewContractLink}>
+        View Contract →
+      </Link>
     </Card>
   )
 }
