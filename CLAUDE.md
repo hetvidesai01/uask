@@ -87,8 +87,8 @@ src/
   - [x] 7F. Dashboard (aggregates everything)
 - [ ] Phase 8 — Secondary screens (Messages, Notifications, Profile)
   - [x] 8A. Messages (thread list + conversation view)
-  - [ ] **Next: 8B. Notifications**
-  - [ ] 8C. Profile
+  - [x] 8B. Notifications (grouped list, mark read/mark all read)
+  - [ ] **Next: 8C. Profile**
 - [ ] Phase 9 — API swap (`services/http.js`, real backend)
 
 ## Workflow rules
