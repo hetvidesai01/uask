@@ -151,45 +151,45 @@ export default function DashboardPayments() {
         <p className={styles.subtitle}>Track accepted projects and where each one stands on payment.</p>
       </div>
 
+      {/* Always visible, even with zero contracts — derived from filtered
+          (possibly empty) data, never hidden behind the empty state. */}
+      <div className={styles.stats}>
+        <StatCard label="Revenue" value={formatCurrency(revenue, 'USD')} />
+        <StatCard
+          label="Average rating"
+          value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : '— / 5'}
+        />
+
+        <div className={styles.milestonesCard}>
+          <span className={styles.milestonesLabel}>Milestones</span>
+          <span className={styles.milestonesValue}>
+            {completedMilestoneCount} / {totalMilestoneCount} completed
+          </span>
+          <div className={styles.progressTrack}>
+            <div className={styles.progressFill} style={{ width: `${milestoneCompletionPct}%` }} />
+          </div>
+          <span className={styles.boosterLabel}>Profile Booster +{profileBoosterPct}%</span>
+        </div>
+      </div>
+
       {contracts.length === 0 ? (
         <EmptyState icon="💳" title="No active projects yet" message={emptyMessage} />
       ) : (
-        <>
-          <div className={styles.stats}>
-            <StatCard label="Revenue" value={formatCurrency(revenue, 'USD')} />
-            <StatCard
-              label="Average rating"
-              value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : 'No ratings yet'}
-            />
-
-            <div className={styles.milestonesCard}>
-              <span className={styles.milestonesLabel}>Milestones</span>
-              <span className={styles.milestonesValue}>
-                {completedMilestoneCount} / {totalMilestoneCount} completed
-              </span>
-              <div className={styles.progressTrack}>
-                <div className={styles.progressFill} style={{ width: `${milestoneCompletionPct}%` }} />
-              </div>
-              <span className={styles.boosterLabel}>Profile Booster +{profileBoosterPct}%</span>
-            </div>
-          </div>
-
-          <div className={styles.grid}>
-            {contracts.map((contract) => {
-              const ask = asksById[contract.askId]
-              const otherUserId = contract.seekerId === user.id ? contract.providerId : contract.seekerId
-              return (
-                <ContractCard
-                  key={contract.id}
-                  contract={contract}
-                  ask={ask}
-                  currentUserId={user.id}
-                  otherUser={usersById[otherUserId]}
-                />
-              )
-            })}
-          </div>
-        </>
+        <div className={styles.grid}>
+          {contracts.map((contract) => {
+            const ask = asksById[contract.askId]
+            const otherUserId = contract.seekerId === user.id ? contract.providerId : contract.seekerId
+            return (
+              <ContractCard
+                key={contract.id}
+                contract={contract}
+                ask={ask}
+                currentUserId={user.id}
+                otherUser={usersById[otherUserId]}
+              />
+            )
+          })}
+        </div>
       )}
     </div>
   )
