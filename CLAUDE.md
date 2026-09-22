@@ -44,7 +44,7 @@ A **reverse marketplace**: users post what they need (an "ASK") and relevant pro
 
 - **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way.
 - **Components don't import from `pages/`.** Data flows one direction: `pages/` → `services/` → `mocks/` (mock era) or `services/` → `http.js` → API (post-Phase-9).
-- Reusable UI atoms live in `components/ui/` (13 built in Phase 3: Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard). Shared chrome lives in `components/layout/` (Navbar, Footer so far; AppTopBar/Sidebar/MobileTabBar/PageHeader still to come). Domain components (AskCard, OfferCard, etc.) go in `components/ask/`, `components/offer/`, etc. as they're built.
+- Reusable UI atoms live in `components/ui/` (13 built in Phase 3: Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard). Public-site chrome lives in `components/layout/` (Navbar, Footer). App-shell chrome (sidebar nav on desktop, top bar + bottom tab bar + floating "+ New ASK" on mobile) was built directly into `layouts/AppLayout.jsx` in Phase 9 — a standalone `PageHeader` component is the one piece of the original blueprint shell still not built. Domain components (AskCard, OfferCard, ThreadList, NotificationItem, etc.) live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`.
 - Page folder convention: `PageName/index.jsx` + `PageName.module.css`, plus any page-local sub-components in the same folder (see `pages/Landing/` for the pattern with multiple section files).
 
 ## Folder structure (current)
@@ -53,17 +53,20 @@ A **reverse marketplace**: users post what they need (an "ASK") and relevant pro
 src/
 ├─ main.jsx, App.jsx (route tree only), index.css
 ├─ styles/            tokens.css, reset.css, base.css, utilities.css
-├─ layouts/            PublicLayout, AppLayout, ProtectedRoute
+├─ layouts/            PublicLayout, AppLayout (full app-shell nav chrome), ProtectedRoute
 ├─ pages/              one folder per route (see App.jsx for the route map)
 ├─ components/
 │  ├─ ui/              generic, reusable, no business logic
-│  ├─ layout/           Navbar, Footer (more layout components pending)
-│  └─ ask/ offer/ messages/ notifications/   (empty — Phase 7+)
-├─ context/            AuthContext.jsx
-├─ hooks/              useAuth, useLocalStorage, useInView
+│  ├─ layout/           Navbar, Footer (public site only)
+│  ├─ ask/              AskCard, AskFilters, AskFormStep1-4, AskMetaGrid, AskStatusBadge, UserMiniCard
+│  ├─ offer/            OfferCard, OfferFormStep1-3, OfferList, OfferStatusBadge
+│  ├─ messages/         ThreadList, ThreadListItem, MessageBubble, MessageComposer
+│  └─ notifications/    NotificationItem
+├─ context/            AuthContext.jsx, ToastContext.jsx
+├─ hooks/              useAuth, useToast, useLocalStorage, useInView
 ├─ services/           authService, askService, offerService, messageService, notificationService
 ├─ mocks/              users, asks, offers, messages, notifications, categories
-└─ utils/              validators.js
+└─ utils/              validators.js, formatCurrency.js, formatDate.js
 ```
 
 ## Auth (mock, no backend)
@@ -98,3 +101,5 @@ src/
 - **Run and test before continuing** (`npm run build`, then exercise the feature in a real browser — don't just eyeball the code).
 - **Don't redo completed phases** unless explicitly asked to.
 - **Stop after the requested phase/sub-phase** and report what changed — don't keep going into the next one unprompted.
+- **Backend/API integration has not started.** The frontend is still 100% mock-driven — Phase 10 (`services/http.js`, real API) is next but not yet requested. Don't begin it unprompted.
+- **Don't begin redesign work** on completed phases/screens, and don't modify app code, unless a specific task explicitly calls for it — preserve the current UASK brand system and existing functionality as-is.
