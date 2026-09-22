@@ -1,0 +1,200 @@
+.shell {
+  min-height: 100vh;
+}
+
+/* Mobile top bar (logo + avatar, scrolls with the page) */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--topbar-h);
+  padding-inline: var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  background-color: var(--c-bg);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--c-text);
+  letter-spacing: 0.02em;
+}
+
+.topbarAvatar {
+  display: inline-flex;
+}
+
+.main {
+  padding-bottom: calc(var(--topbar-h) + var(--sp-6));
+}
+
+/* Mobile bottom tab bar */
+.tabBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  height: var(--topbar-h);
+  background-color: var(--c-surface);
+  border-top: 1px solid var(--c-border);
+}
+
+.tabLink {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text-mute);
+}
+
+.tabLink.active {
+  color: var(--c-red-deep);
+}
+
+.tabLabel {
+  font-size: 10px;
+}
+
+/* Floating "+ New ASK" action (mobile only) */
+.fab {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: calc(var(--topbar-h) + var(--sp-4));
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  color: white;
+  font-size: var(--fs-2xl);
+  line-height: 1;
+  box-shadow: var(--sh-lg);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.fab:hover {
+  background-color: var(--c-red-deep);
+  transform: scale(1.05);
+}
+
+/* Desktop sidebar */
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .topbar,
+  .tabBar,
+  .fab {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    width: var(--sidebar-w);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+    padding: var(--sp-5) var(--sp-4);
+    border-right: 1px solid var(--c-border);
+    background-color: var(--c-surface);
+    overflow-y: auto;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  .navLink {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text-mute);
+  }
+
+  .navLink:hover {
+    background-color: var(--c-surface-2);
+    color: var(--c-text);
+  }
+
+  .navLink.active {
+    background-color: var(--c-pink);
+    color: var(--c-red-deep);
+  }
+
+  .icon {
+    font-size: var(--fs-base);
+  }
+
+  .account {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .accountLink {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1);
+    border-radius: var(--r-md);
+  }
+
+  .accountLink:hover {
+    background-color: var(--c-surface-2);
+  }
+
+  .accountName {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .logoutButton {
+    align-self: flex-start;
+    padding: var(--sp-1) var(--sp-2);
+    margin-left: calc(var(--sp-1) * -1);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text-mute);
+    border-radius: var(--r-sm);
+  }
+
+  .logoutButton:hover {
+    color: var(--c-red-dark);
+    background-color: var(--c-surface-2);
+  }
+
+  .main {
+    margin-left: var(--sidebar-w);
+    padding-bottom: 0;
+  }
+}

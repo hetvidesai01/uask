@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
 import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../hooks/useToast'
 import { isRequired, isValidEmail, minLength } from '../../utils/validators'
 import styles from './Signup.module.css'
 
@@ -22,6 +23,7 @@ function rolesFromSelection(selection) {
 
 export default function Signup() {
   const { isAuthenticated, signup } = useAuth()
+  const { showToast } = useToast()
 
   const [values, setValues] = useState({
     name: '',
@@ -82,13 +84,18 @@ export default function Signup() {
     if (Object.keys(nextErrors).length > 0) return
 
     setSubmitting(true)
-    await signup({
-      name: values.name.trim(),
-      email: values.email,
-      roles: rolesFromSelection(values.role),
-    })
-    // No imperative navigate here — becoming authenticated flips the
-    // `isAuthenticated` check above on the next render, which redirects.
+    try {
+      await signup({
+        name: values.name.trim(),
+        email: values.email,
+        roles: rolesFromSelection(values.role),
+      })
+      // No imperative navigate here — becoming authenticated flips the
+      // `isAuthenticated` check above on the next render, which redirects.
+    } catch {
+      showToast('Something went wrong creating your account. Please try again.', 'error')
+      setSubmitting(false)
+    }
   }
 
   return (

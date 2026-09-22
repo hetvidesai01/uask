@@ -26,6 +26,12 @@
   outline-offset: 1px;
 }
 
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--c-surface-2);
+}
+
 .errorInput {
   border-color: var(--c-red-dark);
 }

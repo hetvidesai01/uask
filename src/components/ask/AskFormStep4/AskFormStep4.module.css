@@ -32,9 +32,16 @@
 
 .row {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: var(--sp-3);
+  grid-template-columns: 1fr;
+  gap: var(--sp-1);
   font-size: var(--fs-sm);
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 120px 1fr;
+    gap: var(--sp-3);
+  }
 }
 
 .row dt {
@@ -55,11 +62,4 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
-}
-
-@media (max-width: 480px) {
-  .row {
-    grid-template-columns: 1fr;
-    gap: var(--sp-1);
-  }
 }

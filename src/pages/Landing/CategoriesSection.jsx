@@ -24,7 +24,11 @@ export default function CategoriesSection() {
 
         <div ref={ref} className={styles.grid}>
           {CATEGORIES.map((category, index) => (
-            <Link key={category.label} to="/app/discover" className={styles.link}>
+            <Link
+              key={category.label}
+              to={`/app/discover?category=${encodeURIComponent(category.label)}`}
+              className={styles.link}
+            >
               <Card
                 hoverable
                 padding="sm"

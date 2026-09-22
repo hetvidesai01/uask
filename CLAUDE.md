@@ -89,7 +89,8 @@ src/
   - [x] 8A. Messages (thread list + conversation view)
   - [x] 8B. Notifications (grouped list, mark read/mark all read)
   - [x] 8C. Profile (own-profile edit, public read-only view)
-- [ ] **Next: Phase 9 — API swap (`services/http.js`, real backend)**
+- [x] Phase 9 — Frontend polish + QA (nav chrome, empty/error/loading states, a11y, spacing/breakpoint consistency, mobile pass at 375px, removed `/styleguide`)
+- [ ] **Next: Phase 10 — API swap (`services/http.js`, real backend)**
 
 ## Workflow rules
 

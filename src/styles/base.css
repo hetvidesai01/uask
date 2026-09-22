@@ -8,6 +8,7 @@ body {
   line-height: var(--lh-normal);
   color: var(--c-text);
   background-color: var(--c-bg);
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {

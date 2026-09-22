@@ -4,12 +4,14 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../hooks/useToast'
 import { isRequired, isValidEmail, minLength } from '../../utils/validators'
 import styles from './Login.module.css'
 
 export default function Login() {
   const { isAuthenticated, login } = useAuth()
   const location = useLocation()
+  const { showToast } = useToast()
 
   const [values, setValues] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
@@ -17,7 +19,10 @@ export default function Login() {
 
   // Single source of truth for where a logged-in user should land — used
   // both for "already logged in" visits and right after a fresh login.
-  const redirectTo = location.state?.from?.pathname ?? '/app/dashboard'
+  // Preserves the full path (including query string) so a deep link like
+  // a filtered Discover URL survives the login round-trip.
+  const from = location.state?.from
+  const redirectTo = from ? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}` : '/app/dashboard'
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />
@@ -54,9 +59,14 @@ export default function Login() {
     if (Object.keys(nextErrors).length > 0) return
 
     setSubmitting(true)
-    await login({ email: values.email })
-    // No imperative navigate here — becoming authenticated flips the
-    // `isAuthenticated` check above on the next render, which redirects.
+    try {
+      await login({ email: values.email })
+      // No imperative navigate here — becoming authenticated flips the
+      // `isAuthenticated` check above on the next render, which redirects.
+    } catch {
+      showToast('Something went wrong logging in. Please try again.', 'error')
+      setSubmitting(false)
+    }
   }
 
   return (
