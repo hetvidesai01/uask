@@ -97,15 +97,43 @@ export default function DashboardPayments() {
     )
   }
 
-  const totalPaid = contracts.reduce(
+  // The top metrics describe performance as a provider — revenue and
+  // ratings are earned/received for work done, not money paid out or
+  // ratings given as a seeker — so they're scoped to contracts where the
+  // current user is the provider.
+  const providerContracts = contracts.filter(
+    (contract) => contract.providerId === user.id && (contract.status === 'active' || contract.status === 'completed')
+  )
+
+  const revenue = providerContracts.reduce(
     (sum, contract) =>
       sum + contract.milestones.filter((m) => isSettled(m.status)).reduce((s, m) => s + m.amount, 0),
     0
   )
-  const milestonesDue = contracts.reduce(
-    (count, contract) => count + contract.milestones.filter((m) => m.status === 'due').length,
+
+  const ratedCompletedContracts = providerContracts.filter(
+    (contract) => contract.status === 'completed' && contract.rating != null
+  )
+  const averageRating = ratedCompletedContracts.length
+    ? ratedCompletedContracts.reduce((sum, contract) => sum + contract.rating, 0) / ratedCompletedContracts.length
+    : null
+
+  const completedMilestoneCount = providerContracts.reduce(
+    (count, contract) => count + contract.milestones.filter((m) => m.status === 'completed').length,
     0
   )
+  const totalMilestoneCount = providerContracts.reduce(
+    (count, contract) => count + contract.milestones.length,
+    0
+  )
+  const milestoneCompletionPct = totalMilestoneCount
+    ? Math.round((completedMilestoneCount / totalMilestoneCount) * 100)
+    : 0
+  // Mock-only placeholder — not a real ranking/scoring algorithm. Scales
+  // milestone completion down to a modest "boost" rather than a 1:1 percentage.
+  const profileBoosterPct = totalMilestoneCount
+    ? Math.round((completedMilestoneCount / totalMilestoneCount) * 20)
+    : 0
 
   const roles = user.roles ?? []
   const isProviderOnly = roles.includes('provider') && !roles.includes('seeker')
@@ -128,9 +156,22 @@ export default function DashboardPayments() {
       ) : (
         <>
           <div className={styles.stats}>
-            <StatCard label="Active projects" value={contracts.length} />
-            <StatCard label="Paid to date" value={formatCurrency(totalPaid, 'USD')} />
-            <StatCard label="Milestones due" value={milestonesDue} />
+            <StatCard label="Revenue" value={formatCurrency(revenue, 'USD')} />
+            <StatCard
+              label="Average rating"
+              value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : 'No ratings yet'}
+            />
+
+            <div className={styles.milestonesCard}>
+              <span className={styles.milestonesLabel}>Milestones</span>
+              <span className={styles.milestonesValue}>
+                {completedMilestoneCount} / {totalMilestoneCount} completed
+              </span>
+              <div className={styles.progressTrack}>
+                <div className={styles.progressFill} style={{ width: `${milestoneCompletionPct}%` }} />
+              </div>
+              <span className={styles.boosterLabel}>Profile Booster +{profileBoosterPct}%</span>
+            </div>
           </div>
 
           <div className={styles.grid}>
@@ -210,6 +251,13 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
         </div>
       ) : (
         <p className={styles.allSettled}>All milestones paid</p>
+      )}
+
+      {contract.status === 'completed' && contract.rating != null && (
+        <div className={styles.ratingRow}>
+          <span className={styles.ratingLabel}>Final rating</span>
+          <span className={styles.ratingValue}>★ {contract.rating.toFixed(1)} / 5</span>
+        </div>
       )}
     </Card>
   )

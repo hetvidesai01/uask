@@ -12,6 +12,9 @@ export const contracts = [
     currency: 'USD',
     deliverables: ['Full page rewrite', 'Headline options', '1 revision round'],
     status: 'active',
+    // The seeker's rating for the provider, given once the contract is
+    // completed — null until then.
+    rating: null,
     createdAt: '2026-09-11T09:00:00.000Z',
     milestones: [
       {
@@ -40,6 +43,7 @@ export const contracts = [
     currency: 'USD',
     deliverables: ['Post replacement', 'Board repair', 'Re-stain repaired area'],
     status: 'completed',
+    rating: 4.8,
     createdAt: '2026-08-29T10:00:00.000Z',
     milestones: [
       {
@@ -75,6 +79,7 @@ export const contracts = [
     currency: 'USD',
     deliverables: ['Event timeline', 'Vendor coordination', 'Day-of support'],
     status: 'active',
+    rating: null,
     createdAt: '2026-09-06T09:00:00.000Z',
     milestones: [
       {

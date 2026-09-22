@@ -38,6 +38,33 @@
   }
 }
 
+.milestonesCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+
+.milestonesLabel {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.milestonesValue {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.boosterLabel {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-red-accent);
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -181,4 +208,23 @@
   font-size: var(--fs-sm);
   color: var(--c-success);
   font-weight: 600;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+}
+
+.ratingLabel {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.ratingValue {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-warning);
 }
