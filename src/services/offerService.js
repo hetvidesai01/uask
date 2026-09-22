@@ -12,6 +12,11 @@ export async function getOffersByIds(ids) {
   return offers.filter((offer) => ids.includes(offer.id))
 }
 
+export async function getOffersByProviderId(providerId) {
+  await delay()
+  return offers.filter((offer) => offer.providerId === providerId)
+}
+
 export async function createOffer(data) {
   await delay()
 

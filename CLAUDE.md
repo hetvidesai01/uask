@@ -78,14 +78,14 @@ src/
 - [x] Phase 4 — Landing page (all sections, Navbar/Footer, scroll-reveal motion)
 - [x] Phase 5 — Auth screens (Login/Signup forms, AuthContext, localStorage persistence)
 - [x] Phase 6 — Mocks + services (6 mock files, 5 service files)
-- [ ] **Next: Phase 7 — core product loop.** Build order (per blueprint §8):
-  1. Discover ASKs (read-only list)
-  2. ASK Details (read-only)
-  3. Create ASK (first write)
-  4. Respond to ASK (second write)
-  5. Compare responses (depends on both writes)
-  6. Dashboard (aggregates everything)
-- [ ] Phase 8 — Secondary screens (Messages, Notifications, Profile)
+- [x] Phase 7 — core product loop. Build order (per blueprint §8):
+  - [x] 7A. Discover ASKs (read-only list)
+  - [x] 7B. ASK Details (read-only)
+  - [x] 7C. Create ASK (first write)
+  - [x] 7D. Respond to ASK (second write)
+  - [x] 7E. Compare responses (depends on both writes)
+  - [x] 7F. Dashboard (aggregates everything)
+- [ ] **Next: Phase 8 — Secondary screens (Messages, Notifications, Profile)**
 - [ ] Phase 9 — API swap (`services/http.js`, real backend)
 
 ## Workflow rules
