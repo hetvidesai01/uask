@@ -10,15 +10,26 @@
   min-height: var(--topbar-h);
   padding-inline: var(--sp-4);
   border-bottom: 1px solid var(--c-border);
-  background-color: var(--c-bg);
+  background-color: var(--c-surface);
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-family: var(--font-display);
   font-size: var(--fs-xl);
   font-weight: 600;
   color: var(--c-text);
   letter-spacing: 0.02em;
+}
+
+.logoDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
 }
 
 .topbarAvatar {
@@ -27,6 +38,11 @@
 
 .main {
   padding-bottom: calc(var(--topbar-h) + var(--sp-6));
+}
+
+/* Desktop-only content top bar (search / roles / notifications / account) */
+.appTopBar {
+  display: none;
 }
 
 /* Mobile bottom tab bar */
@@ -43,19 +59,54 @@
 }
 
 .tabLink {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  min-height: 48px;
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--c-text-mute);
+  transition: color 0.15s ease;
+}
+
+.tabLink::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background-color: var(--c-red);
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
 .tabLink.active {
-  color: var(--c-red-deep);
+  color: var(--c-red-accent);
+}
+
+.tabLink.active::before {
+  opacity: 1;
+}
+
+.tabIconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tabBadge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
 }
 
 .tabLabel {
@@ -74,17 +125,21 @@
   width: 56px;
   height: 56px;
   border-radius: var(--r-full);
-  background-color: var(--c-red);
+  background: var(--grad-signal);
   color: white;
   font-size: var(--fs-2xl);
   line-height: 1;
-  box-shadow: var(--sh-lg);
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--sh-lg), var(--glow-red-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .fab:hover {
-  background-color: var(--c-red-deep);
+  box-shadow: var(--sh-lg), var(--glow-red-md);
   transform: scale(1.05);
+}
+
+.fab:active {
+  transform: scale(0.95);
 }
 
 /* Desktop sidebar */
@@ -115,6 +170,17 @@
     overflow-y: auto;
   }
 
+  /* background-image (not the `background` shorthand) so this layers over
+     Button's own .primary background-color regardless of CSS module load
+     order, rather than racing it for the same shorthand property. */
+  .newAskButton {
+    background-image: var(--grad-signal);
+  }
+
+  .newAskButton:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
   .nav {
     display: flex;
     flex-direction: column;
@@ -122,6 +188,7 @@
   }
 
   .navLink {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--sp-3);
@@ -130,6 +197,7 @@
     font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--c-text-mute);
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .navLink:hover {
@@ -137,39 +205,185 @@
     color: var(--c-text);
   }
 
+  .rail {
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    border-radius: var(--r-full);
+    background: var(--grad-signal);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
   .navLink.active {
-    background-color: var(--c-pink);
-    color: var(--c-red-deep);
+    background-color: var(--c-surface-2);
+    color: var(--c-text);
+  }
+
+  .navLink.active .rail {
+    opacity: 1;
+  }
+
+  .navLink.active .icon {
+    filter: drop-shadow(0 0 4px rgba(208, 39, 39, 0.55));
   }
 
   .icon {
     font-size: var(--fs-base);
   }
 
-  .account {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-2);
-    padding-top: var(--sp-4);
-    border-top: 1px solid var(--c-border);
+  .navBadge {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding-inline: 4px;
+    border-radius: var(--r-full);
+    background-color: var(--c-red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
   }
 
-  .accountLink {
+  .main {
+    margin-left: var(--sidebar-w);
+    padding-bottom: 0;
+  }
+
+  .appTopBar {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    margin-left: var(--sidebar-w);
     display: flex;
     align-items: center;
-    gap: var(--sp-2);
-    padding: var(--sp-1);
+    justify-content: space-between;
+    gap: var(--sp-5);
+    min-height: var(--topbar-h);
+    padding-inline: var(--sp-5);
+    background-color: rgba(20, 18, 18, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .searchIcon {
+    position: absolute;
+    left: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--c-text-faint);
+  }
+
+  .searchInput {
+    width: 100%;
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-7);
+    font-size: var(--fs-sm);
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background-color: var(--c-surface);
+    border: 1px solid var(--c-border);
     border-radius: var(--r-md);
   }
 
-  .accountLink:hover {
+  .searchInput:focus-visible {
+    outline: 2px solid var(--c-red);
+    outline-offset: 1px;
+  }
+
+  .topBarActions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    flex-shrink: 0;
+  }
+
+  .roleIndicator {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border-radius: var(--r-full);
+    background-color: var(--c-surface-2);
+    border: 1px solid var(--c-border);
+  }
+
+  .rolePill {
+    padding: var(--sp-1) var(--sp-3);
+    border-radius: var(--r-full);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--c-text-faint);
+  }
+
+  .roleActive {
+    background-color: var(--c-red-wash);
+    color: var(--c-pink);
+  }
+
+  .bellButton {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-md);
+    color: var(--c-text-mute);
+  }
+
+  .bellButton:hover {
+    background-color: var(--c-surface-2);
+    color: var(--c-text);
+  }
+
+  .bellBadge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding-inline: 3px;
+    border-radius: var(--r-full);
+    background-color: var(--c-red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    box-shadow: var(--glow-red-sm);
+  }
+
+  .accountMenu {
+    position: relative;
+  }
+
+  .accountTrigger {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--r-md);
+    max-width: 180px;
+  }
+
+  .accountTrigger:hover {
     background-color: var(--c-surface-2);
   }
 
   .accountName {
-    flex: 1;
-    min-width: 0;
     font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--c-text);
@@ -178,23 +392,48 @@
     white-space: nowrap;
   }
 
-  .logoutButton {
-    align-self: flex-start;
-    padding: var(--sp-1) var(--sp-2);
-    margin-left: calc(var(--sp-1) * -1);
+  .chevron {
+    font-size: 10px;
+    color: var(--c-text-faint);
+  }
+
+  .dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + var(--sp-2));
+    z-index: 16;
+    min-width: 180px;
+    padding: var(--sp-2);
+    border-radius: var(--r-md);
+    border: 1px solid var(--c-border);
+    background-color: var(--c-surface-2);
+    box-shadow: var(--sh-md);
+    animation: dropdownIn 0.15s ease;
+  }
+
+  .dropdownItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-sm);
     font-size: var(--fs-sm);
     font-weight: 600;
-    color: var(--c-text-mute);
-    border-radius: var(--r-sm);
+    color: var(--c-text);
   }
 
-  .logoutButton:hover {
-    color: var(--c-red-dark);
-    background-color: var(--c-surface-2);
+  .dropdownItem:hover {
+    background-color: var(--c-surface-3);
   }
 
-  .main {
-    margin-left: var(--sidebar-w);
-    padding-bottom: 0;
+  @keyframes dropdownIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
