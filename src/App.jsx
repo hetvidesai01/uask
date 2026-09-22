@@ -19,16 +19,24 @@ import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
 import Toast from './components/ui/Toast'
+import GrainOverlay from './components/ui/GrainOverlay'
+import DesignPreview from './pages/DesignPreview'
 
 function App() {
   return (
     <>
+      <GrainOverlay />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>
+
+        {/* Temporary, dev-only — verifies the Phase 11 dark design foundation
+            before any page-level redesign. Remove once no longer needed,
+            same as the Phase 3 /styleguide route was removed in Phase 9. */}
+        <Route path="/design-preview" element={<DesignPreview />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<AppLayout />}>

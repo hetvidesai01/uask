@@ -25,4 +25,5 @@
 .hoverable:hover {
   box-shadow: var(--sh-md);
   transform: translateY(-2px);
+  border-color: var(--c-border-hover);
 }

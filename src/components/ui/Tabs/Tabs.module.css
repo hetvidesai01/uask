@@ -21,6 +21,6 @@
 }
 
 .active {
-  color: var(--c-red-deep);
-  border-bottom-color: var(--c-red-deep);
+  color: var(--c-red-accent);
+  border-bottom-color: var(--c-red);
 }

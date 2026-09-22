@@ -48,16 +48,17 @@
 
 .primary:hover:not(:disabled) {
   background-color: var(--c-red-deep);
+  box-shadow: var(--glow-red-sm);
 }
 
 .secondary {
   background-color: transparent;
-  color: var(--c-red-deep);
-  border-color: var(--c-red-deep);
+  color: var(--c-text);
+  border-color: var(--c-red);
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: var(--c-pink);
+  background-color: var(--c-red-wash);
 }
 
 .ghost {
@@ -71,8 +72,8 @@
 
 .danger {
   background-color: transparent;
-  color: var(--c-red-dark);
-  border-color: var(--c-red-dark);
+  color: var(--c-text);
+  border-color: var(--c-red);
 }
 
 .danger:hover:not(:disabled) {

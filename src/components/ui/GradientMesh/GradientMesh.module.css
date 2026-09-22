@@ -1,0 +1,30 @@
+.mesh {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blobRed,
+.blobPink {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.blobRed {
+  top: -15%;
+  right: -10%;
+  width: 55%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(208, 39, 39, 0.35) 0%, rgba(208, 39, 39, 0) 70%);
+}
+
+.blobPink {
+  bottom: -20%;
+  left: -10%;
+  width: 45%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(247, 180, 180, 0.18) 0%, rgba(247, 180, 180, 0) 70%);
+}

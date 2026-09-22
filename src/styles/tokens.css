@@ -1,24 +1,46 @@
 :root {
-  /* Brand */
+  /* Brand — exact values preserved, never edit these */
   --c-red:          #D02727;   /* primary actions, links, accents */
-  --c-red-deep:     #992E34;   /* hover/pressed, secondary emphasis */
-  --c-red-dark:     #6E1414;   /* dark bands, heading accent, footer */
-  --c-pink:         #F7B4B4;   /* soft surfaces, tags, borders */
+  --c-red-deep:     #992E34;   /* hover/pressed fills, secondary emphasis */
+  --c-red-dark:     #6E1414;   /* dark bands, gradient stop, danger fills */
+  --c-pink:         #F7B4B4;   /* glow/gradient/highlight accent — not a flat surface */
   --c-pink-tagline: #F0B8B8;   /* tagline text only */
 
-  /* Neutrals */
-  --c-bg:        #FDFCFB;
-  --c-surface:   #FFFFFF;
-  --c-surface-2: #F6F3F2;
-  --c-text:      #1A1A1A;
-  --c-text-mute: #5C5C5C;
-  --c-border:    #E7E2E0;
+  /*
+   * Brand-derived, dark-surface-safe accents.
+   * Contrast rule (verified against --c-bg/--c-surface via WCAG relative luminance):
+   *  - --c-red-deep / --c-red-dark  → fills, backgrounds, gradient stops ONLY.
+   *    Both measure well under 3:1 as foreground text/borders on the near-black
+   *    neutrals below (~2.5:1 and ~1.6:1) — illegible in that role.
+   *  - --c-red        → borders, icons, decorative accents (clears 3:1, ~3.6–3.8:1).
+   *  - --c-red-accent  → the ONLY red allowed as small/body-sized foreground text
+   *    or a focus ring on a dark surface (clears 4.5:1, ~4.8:1).
+   */
+  --c-red-accent: #E6514D;
+  --c-red-wash:   rgba(208, 39, 39, 0.16);
+  --grad-signal:  linear-gradient(135deg, var(--c-red) 0%, var(--c-red-dark) 100%);
+  --glow-red-sm:  0 0 0 1px rgba(208, 39, 39, 0.35), 0 0 16px rgba(208, 39, 39, 0.22);
+  --glow-red-md:  0 0 0 1px rgba(208, 39, 39, 0.4), 0 0 28px rgba(208, 39, 39, 0.3);
 
-  /* Status */
-  --c-success: #2E7D57;
-  --c-warning: #B8860B;
-  --c-info:    #2B6CB0;
-  --c-danger:  var(--c-red-dark);
+  /* Neutrals — dark editorial canvas */
+  --c-bg:        #0B0A0A;
+  --c-surface:   #141212;
+  --c-surface-2: #1C1919;
+  --c-surface-3: #262121;
+  --c-text:      #F5EFEC;
+  --c-text-mute: #A99C99;
+  /* Decorative/non-essential metadata ONLY (timestamps, captions) — ~3.2:1,
+     below body-text AA. Never use for anything conveying required information. */
+  --c-text-faint: #6E6260;
+  --c-border:       #2E2828;
+  --c-border-hover: #4A3E3E;
+
+  /* Status — brightened from the original light-mode values so they stay
+     legible (≥4.5:1) as small text against the dark neutrals above */
+  --c-success: #3FA372;
+  --c-warning: #D6A23C;
+  --c-info:    #4E8FCC;
+  --c-danger:  var(--c-red-accent);
 
   /* Type */
   --font-display: 'EB Garamond', Garamond, 'Times New Roman', serif;
@@ -34,9 +56,12 @@
 
   /* Radius / shadow / layout */
   --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-full: 999px;
-  --sh-sm: 0 1px 2px rgba(26,26,26,.06);
-  --sh-md: 0 4px 12px rgba(26,26,26,.08);
-  --sh-lg: 0 12px 32px rgba(110,20,20,.12);
+  /* Elevation on dark surfaces is primarily surface-lightness + border
+     (see --c-surface-2/-3 and --c-border-hover) — these shadows are a
+     subtle depth cue only, not the main elevation mechanism. */
+  --sh-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --sh-md: 0 6px 16px rgba(0, 0, 0, .5);
+  --sh-lg: 0 20px 48px rgba(0, 0, 0, .6);
   --container: 1180px;
   --topbar-h: 64px;
   --sidebar-w: 240px;

@@ -1,5 +1,6 @@
 html {
   font-size: 16px;
+  color-scheme: dark;
 }
 
 body {
@@ -33,11 +34,11 @@ p {
 }
 
 a {
-  color: var(--c-red);
+  color: var(--c-red-accent);
 }
 
 :focus-visible {
-  outline: 2px solid var(--c-red-deep);
+  outline: 2px solid var(--c-red);
   outline-offset: 2px;
 }
 

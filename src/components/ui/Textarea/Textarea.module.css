@@ -24,7 +24,7 @@
 }
 
 .textarea:focus-visible {
-  outline: 2px solid var(--c-red-deep);
+  outline: 2px solid var(--c-red);
   outline-offset: 1px;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .errorInput {
-  border-color: var(--c-red-dark);
+  border-color: var(--c-red);
 }
 
 .footer {
@@ -51,7 +51,7 @@
 
 .error {
   font-size: var(--fs-xs);
-  color: var(--c-red-dark);
+  color: var(--c-red-accent);
 }
 
 .count {

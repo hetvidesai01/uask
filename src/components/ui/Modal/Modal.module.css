@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(26, 26, 26, 0.5);
+  background-color: rgba(4, 3, 3, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,6 +15,7 @@
   max-height: 90vh;
   overflow-y: auto;
   background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
   box-shadow: var(--sh-lg);
   padding: var(--sp-5);
