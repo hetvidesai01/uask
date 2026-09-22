@@ -1,0 +1,86 @@
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text);
+}
+
+.item:hover {
+  background-color: var(--c-surface-2);
+}
+
+.item.active {
+  background-color: var(--c-pink);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.name {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread .name {
+  font-weight: 700;
+}
+
+.time {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.askTag {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-red-deep);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread .preview {
+  color: var(--c-text);
+}
+
+.badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 6px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  color: white;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}

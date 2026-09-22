@@ -23,6 +23,14 @@ export const threads = [
     unreadCount: 2,
     updatedAt: '2026-09-16T08:50:00.000Z',
   },
+  {
+    id: 'thread-4',
+    participantIds: ['user-1', 'user-7'],
+    askId: 'ask-4',
+    lastMessage: 'Golden hour at the park works great for us — see you Saturday!',
+    unreadCount: 0,
+    updatedAt: '2026-09-10T11:15:00.000Z',
+  },
 ]
 
 export const messages = [
@@ -129,5 +137,43 @@ export const messages = [
     attachments: [],
     createdAt: '2026-09-16T08:50:00.000Z',
     read: false,
+  },
+
+  // thread-4
+  {
+    id: 'message-12',
+    threadId: 'thread-4',
+    senderId: 'user-1',
+    body: "Hi! We'd love an outdoor session — does a local park work for you?",
+    attachments: [],
+    createdAt: '2026-09-09T18:00:00.000Z',
+    read: true,
+  },
+  {
+    id: 'message-13',
+    threadId: 'thread-4',
+    senderId: 'user-7',
+    body: 'That works well — golden hour gives the best light for family portraits.',
+    attachments: [],
+    createdAt: '2026-09-09T18:20:00.000Z',
+    read: true,
+  },
+  {
+    id: 'message-14',
+    threadId: 'thread-4',
+    senderId: 'user-1',
+    body: 'Perfect. Does Saturday around 5pm work?',
+    attachments: [],
+    createdAt: '2026-09-10T11:00:00.000Z',
+    read: true,
+  },
+  {
+    id: 'message-15',
+    threadId: 'thread-4',
+    senderId: 'user-7',
+    body: 'Golden hour at the park works great for us — see you Saturday!',
+    attachments: [],
+    createdAt: '2026-09-10T11:15:00.000Z',
+    read: true,
   },
 ]

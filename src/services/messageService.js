@@ -23,6 +23,23 @@ export async function getMessages(threadId) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 }
 
+export async function markThreadAsRead(threadId, userId) {
+  await delay(150)
+
+  messages
+    .filter((message) => message.threadId === threadId && message.senderId !== userId)
+    .forEach((message) => {
+      message.read = true
+    })
+
+  const thread = threads.find((item) => item.id === threadId)
+  if (thread) {
+    thread.unreadCount = 0
+  }
+
+  return thread ?? null
+}
+
 export async function sendMessage({ threadId, senderId, body }) {
   await delay()
 

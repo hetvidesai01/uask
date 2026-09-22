@@ -1,0 +1,33 @@
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+}
+
+.input {
+  flex: 1;
+  min-height: 40px;
+  max-height: 120px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+  background-color: var(--c-surface-2);
+  resize: none;
+  overflow-y: auto;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--c-red-deep);
+  outline-offset: 1px;
+}
+
+.input:disabled {
+  opacity: 0.6;
+}
