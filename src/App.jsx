@@ -8,6 +8,8 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import DashboardOverview from './pages/Dashboard/DashboardOverview'
+import DashboardPayments from './pages/Dashboard/DashboardPayments'
 import CreateAsk from './pages/CreateAsk'
 import DiscoverAsks from './pages/DiscoverAsks'
 import AskDetails from './pages/AskDetails'
@@ -47,7 +49,10 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />}>
+              <Route index element={<DashboardOverview />} />
+              <Route path="payments" element={<DashboardPayments />} />
+            </Route>
             <Route path="asks/new" element={<CreateAsk />} />
             <Route path="discover" element={<DiscoverAsks />} />
             <Route path="asks/:askId" element={<AskDetails />} />

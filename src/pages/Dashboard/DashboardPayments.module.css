@@ -1,0 +1,184 @@
+.payments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--sp-9);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+}
+
+.subtitle {
+  color: var(--c-text-mute);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--sp-3);
+}
+
+@media (min-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-4);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.cardHeaderText {
+  min-width: 0;
+}
+
+.askEyebrow {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--c-red-accent);
+}
+
+.askTitle {
+  display: block;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.askTitle:hover {
+  color: var(--c-red-accent);
+}
+
+.withParty {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.withParty strong {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.amountRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+}
+
+.amountLabel {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.amount {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.progressBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.progressTrack {
+  height: 6px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--grad-signal);
+}
+
+.progressLabel {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.nextMilestone {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background-color: var(--c-surface-2);
+  border-radius: var(--r-md);
+}
+
+.nextMilestoneText {
+  min-width: 0;
+}
+
+.nextMilestoneTitle {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.nextMilestoneDue {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.nextMilestoneRight {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+}
+
+.nextMilestoneAmount {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.allSettled {
+  font-size: var(--fs-sm);
+  color: var(--c-success);
+  font-weight: 600;
+}
