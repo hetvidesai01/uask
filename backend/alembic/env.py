@@ -6,6 +6,7 @@ from alembic import context
 
 from app.core.config import get_settings
 from app.db.base import Base
+import app.models  # noqa: F401  — register all tables on Base.metadata
 
 config = context.config
 settings = get_settings()
