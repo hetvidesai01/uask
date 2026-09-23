@@ -1,0 +1,62 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.card {
+  padding: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+  transition: border-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--c-border-hover);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+
+.rating {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-red-accent);
+}
+
+.date {
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+  flex-shrink: 0;
+}
+
+.text {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+}
+
+.meta {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.client {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.askLink {
+  color: var(--c-text-mute);
+}
+
+.askLink:hover {
+  color: var(--c-red-accent);
+}

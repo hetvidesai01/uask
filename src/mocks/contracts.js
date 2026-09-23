@@ -22,6 +22,7 @@ export const contracts = [
     rating: null,
     review: null,
     createdAt: '2026-09-11T09:00:00.000Z',
+    completedAt: null,
     milestones: [
       {
         id: 'milestone-1-1',
@@ -54,6 +55,7 @@ export const contracts = [
     rating: 4.8,
     review: 'Fast, tidy work — the deck looks better than before it needed repair.',
     createdAt: '2026-08-29T10:00:00.000Z',
+    completedAt: '2026-09-09T16:00:00.000Z',
     milestones: [
       {
         id: 'milestone-2-1',
@@ -94,6 +96,7 @@ export const contracts = [
     rating: null,
     review: null,
     createdAt: '2026-09-06T09:00:00.000Z',
+    completedAt: null,
     milestones: [
       {
         id: 'milestone-3-1',

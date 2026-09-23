@@ -46,8 +46,15 @@
 }
 
 .name {
+  font-family: var(--font-display);
   font-size: var(--fs-2xl);
   line-height: var(--lh-tight);
+}
+
+.headline {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--c-red-accent);
 }
 
 .nameField {
@@ -78,6 +85,24 @@
 .roleBadge.provider {
   background-color: var(--c-pink);
   color: var(--c-red-deep);
+}
+
+.ratingSummary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.ratingValue {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.ratingCount {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
 }
 
 .metaRow {
@@ -117,6 +142,7 @@
 }
 
 .sectionTitle {
+  font-family: var(--font-display);
   font-size: var(--fs-lg);
 }
 
@@ -146,16 +172,4 @@
 
 .categorySelect {
   max-width: 280px;
-}
-
-.portfolioGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-4);
-}
-
-@media (min-width: 640px) {
-  .portfolioGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }

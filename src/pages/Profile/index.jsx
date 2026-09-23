@@ -9,18 +9,56 @@ import Select from '../../components/ui/Select'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
-import AskCard from '../../components/ask/AskCard'
+import ReputationMetrics from './ReputationMetrics'
+import ReviewsSection from './ReviewsSection'
+import CompletedWorkSection from './CompletedWorkSection'
+import PortfolioSection from './PortfolioSection'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { getUserById } from '../../services/authService'
 import { getAskById, getCategories } from '../../services/askService'
-import { getOffersByProviderId } from '../../services/offerService'
 import { getThreads } from '../../services/messageService'
+import { getCompletedContractsForProvider, getProviderReputation } from '../../services/contractService'
+import { getPortfolioForUser } from '../../services/profileService'
 import { isRequired } from '../../utils/validators'
 import { formatAbsoluteDate } from '../../utils/formatDate'
 import styles from './Profile.module.css'
 
 const ROLE_LABELS = { seeker: 'Seeker', provider: 'Provider' }
+
+// Derived, read-only "headline" — no new editable field on the user model
+// for this phase, just a short professional-role line built from data the
+// profile already has (roles + primary category).
+function getHeadline(profileUser) {
+  const primaryCategory = profileUser.categories?.[0]
+  if (profileUser.roles.includes('provider')) {
+    return primaryCategory ? `${primaryCategory} Provider` : 'Provider'
+  }
+  return 'Seeker'
+}
+
+// Joins a raw completed contract with its ask/client details for the
+// Completed Work and Reviews sections (reviews are just the subset with a
+// non-null rating — see the `reviews` derivation in the component below).
+function toCompletedWorkItem(contract, asksById, clientsById) {
+  const ask = asksById[contract.askId]
+  const client = clientsById[contract.seekerId]
+
+  return {
+    id: contract.id,
+    askId: contract.askId,
+    askTitle: ask?.title ?? 'View ASK',
+    askCategory: ask?.category,
+    clientName: client?.name ?? 'Unknown client',
+    agreedPrice: contract.agreedPrice,
+    currency: contract.currency,
+    completedAt: contract.completedAt,
+    paidMilestoneCount: contract.milestones.filter((m) => m.status === 'paid').length,
+    totalMilestoneCount: contract.milestones.length,
+    rating: contract.rating,
+    text: contract.review,
+  }
+}
 
 export default function Profile() {
   const { userId } = useParams()
@@ -32,7 +70,9 @@ export default function Profile() {
 
   const [status, setStatus] = useState('loading')
   const [profileUser, setProfileUser] = useState(null)
-  const [portfolioAsks, setPortfolioAsks] = useState([])
+  const [reputation, setReputation] = useState(null)
+  const [completedWork, setCompletedWork] = useState([])
+  const [portfolio, setPortfolio] = useState([])
   const [messageThreadId, setMessageThreadId] = useState(null)
   const [categoryOptions, setCategoryOptions] = useState([])
 
@@ -60,16 +100,30 @@ export default function Profile() {
 
       if (found.roles.includes('provider')) {
         tasks.push(
-          getOffersByProviderId(found.id).then(async (offers) => {
-            const acceptedAskIds = [
-              ...new Set(offers.filter((offer) => offer.status === 'accepted').map((offer) => offer.askId)),
-            ]
-            const asks = await Promise.all(acceptedAskIds.map((id) => getAskById(id)))
-            setPortfolioAsks(asks.filter(Boolean))
+          Promise.all([
+            getProviderReputation(found.id),
+            getCompletedContractsForProvider(found.id),
+            getPortfolioForUser(found.id),
+          ]).then(async ([reputationResult, completedContracts, portfolioItems]) => {
+            const askIds = [...new Set(completedContracts.map((contract) => contract.askId))]
+            const clientIds = [...new Set(completedContracts.map((contract) => contract.seekerId))]
+
+            const [asks, clients] = await Promise.all([
+              Promise.all(askIds.map((id) => getAskById(id))),
+              Promise.all(clientIds.map((id) => getUserById(id))),
+            ])
+            const asksById = Object.fromEntries(asks.filter(Boolean).map((ask) => [ask.id, ask]))
+            const clientsById = Object.fromEntries(clients.filter(Boolean).map((client) => [client.id, client]))
+
+            setReputation(reputationResult)
+            setCompletedWork(completedContracts.map((contract) => toCompletedWorkItem(contract, asksById, clientsById)))
+            setPortfolio(portfolioItems)
           })
         )
       } else {
-        setPortfolioAsks([])
+        setReputation(null)
+        setCompletedWork([])
+        setPortfolio([])
       }
 
       if (found.id !== currentUser.id) {
@@ -211,6 +265,16 @@ export default function Profile() {
   const Wrapper = isOwnProfile ? 'form' : 'div'
   const wrapperProps = isOwnProfile ? { onSubmit: handleSave } : {}
 
+  // Contract-computed reputation takes priority once it exists; otherwise
+  // fall back to the profile's seeded baseline rating so this stays
+  // consistent with how the same person's rating shows up elsewhere in the
+  // app (UserMiniCard, Compare Responses) even before they have completed
+  // contracts in this mock dataset.
+  const averageRating = reputation?.averageRating ?? profileUser.rating
+  const reviewCount = reputation?.reviewCount ? reputation.reviewCount : profileUser.reviewCount
+  const reviews = completedWork.filter((item) => item.rating != null)
+  const isProvider = profileUser.roles.includes('provider')
+
   return (
     <div className={styles.page}>
       <Wrapper className={styles.form} {...wrapperProps}>
@@ -235,6 +299,8 @@ export default function Profile() {
                 <h1 className={styles.name}>{profileUser.name}</h1>
               )}
 
+              {!editing && <p className={styles.headline}>{getHeadline(profileUser)}</p>}
+
               <div className={styles.roles}>
                 {profileUser.roles.map((role) => (
                   <span key={role} className={[styles.roleBadge, styles[role]].join(' ')}>
@@ -252,18 +318,21 @@ export default function Profile() {
                   className={styles.locationField}
                 />
               ) : (
-                <div className={styles.metaRow}>
-                  {profileUser.location && <span>{profileUser.location}</span>}
-                  {profileUser.rating != null ? (
-                    <span>
-                      ★ {profileUser.rating.toFixed(1)} ({profileUser.reviewCount}{' '}
-                      {profileUser.reviewCount === 1 ? 'review' : 'reviews'})
+                <>
+                  <div className={styles.ratingSummary}>
+                    <span className={styles.ratingValue}>
+                      {averageRating != null ? `${averageRating.toFixed(1)} / 5` : '— / 5'}
                     </span>
-                  ) : (
-                    <span className={styles.muted}>No reviews yet</span>
-                  )}
-                  <span className={styles.muted}>Member since {formatAbsoluteDate(profileUser.joinedAt)}</span>
-                </div>
+                    <span className={styles.ratingCount}>
+                      {reviewCount > 0 ? `${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'}` : 'No reviews yet'}
+                    </span>
+                  </div>
+
+                  <div className={styles.metaRow}>
+                    {profileUser.location && <span>{profileUser.location}</span>}
+                    <span className={styles.muted}>Member since {formatAbsoluteDate(profileUser.joinedAt)}</span>
+                  </div>
+                </>
               )}
 
               {editing && (
@@ -354,16 +423,54 @@ export default function Profile() {
         </Card>
       </Wrapper>
 
-      {portfolioAsks.length > 0 && (
-        <Card padding="lg" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Portfolio</h2>
-          <p className={styles.sectionSubtitle}>ASKs {profileUser.name.split(' ')[0]} has completed.</p>
-          <div className={styles.portfolioGrid}>
-            {portfolioAsks.map((ask) => (
-              <AskCard key={ask.id} ask={ask} />
-            ))}
-          </div>
-        </Card>
+      {isProvider && reputation && (
+        <>
+          <Card padding="lg" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Reputation</h2>
+            <ReputationMetrics
+              averageRating={averageRating}
+              reviewCount={reviewCount}
+              completedContractCount={reputation.completedContractCount}
+              revenue={reputation.revenue}
+              profileBoosterPct={reputation.profileBoosterPct}
+            />
+          </Card>
+
+          <Card padding="lg" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Reviews</h2>
+            {reviews.length > 0 ? (
+              <ReviewsSection reviews={reviews} />
+            ) : (
+              <p className={styles.muted}>No reviews yet.</p>
+            )}
+          </Card>
+
+          <Card padding="lg" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Completed work</h2>
+            {completedWork.length > 0 ? (
+              <CompletedWorkSection items={completedWork} />
+            ) : (
+              <p className={styles.muted}>No completed contracts yet.</p>
+            )}
+          </Card>
+
+          <Card padding="lg" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Portfolio</h2>
+            {portfolio.length > 0 ? (
+              <PortfolioSection items={portfolio} />
+            ) : (
+              <EmptyState
+                icon="🖼️"
+                title="No portfolio items yet"
+                message={
+                  isOwnProfile
+                    ? "Add a few samples of your work so clients can see what you do before they hire you."
+                    : `${profileUser.name.split(' ')[0]} hasn't added any portfolio items yet.`
+                }
+              />
+            )}
+          </Card>
+        </>
       )}
     </div>
   )

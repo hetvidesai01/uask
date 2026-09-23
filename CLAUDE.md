@@ -55,6 +55,7 @@ Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.r
 - The Premium/Upgrade flow is a **modal, not a route** (`AppLayout` owns the `subscription`/`premiumOpen` state and renders `PremiumModal` once, globally, rather than adding an `/app/premium` page) — chosen because it integrates with the shell without touching `App.jsx`'s route tree or any individual page. `subscriptionService.js` follows the same mock-service pattern as the rest of `services/` (delay + localStorage-backed persistence, same call signature a real API would use later).
 - `components/onboarding/` (currently just `ProductTour`) holds the guided-onboarding modal, added for the Help Center + Onboarding phase. `ProductTour` is mounted once in `AppLayout` (like `PremiumModal`) and auto-opens for a logged-in user until they Skip/Finish it; completion is tracked per-user in localStorage via `src/utils/onboarding.js`'s `onboardingStorageKey(userId)`, which both `ProductTour` (read/write via `useLocalStorage`) and the Help page's "Restart Product Tour" control (`resetOnboarding(userId)`, then navigates to `/app/dashboard`) agree on.
 - `/help` is a **public route** (rendered inside `PublicLayout`, reachable logged-out or logged-in — same pattern the existing `/` route already follows). Since the app shell (`AppLayout`) has no nav item pointing at it, a small "❓ Help" icon-link was added to both the mobile and desktop top bars (next to the notification bell) purely so a logged-in user has a way to reach it and the "Restart Product Tour" control — this is the one shell change in that phase, everything else about `AppLayout` is unchanged.
+- Profile & Reputation (Product Change Phase 7): the reputation math (`getProviderReputation`, `getCompletedContractsForProvider`) lives in `contractService.js` — same simple milestone-based Profile Booster formula (`round(completedMilestones / totalMilestones * 20)`) already used on the Payments dashboard and the Contract page, not a new algorithm. It's scoped to contracts where the profile's owner is the provider; a plain mock-only Portfolio (`profileService.js` + `mocks/portfolio.js`, no upload flow) is separate from that. `Profile/index.jsx` only renders the reputation/reviews/completed-work/portfolio sections when the viewed profile has the `provider` role, and falls back to the profile's seeded `rating`/`reviewCount` for Average Rating whenever there's no rated completed contract yet, so the number stays consistent with `UserMiniCard`/`CompareResponses` elsewhere in the app rather than showing "— / 5" for most of the mock dataset.
 - Page folder convention: `PageName/index.jsx` + `PageName.module.css`, plus any page-local sub-components in the same folder — e.g. `Landing/` (multi-section), `Dashboard/` (shell + `DashboardOverview` + `DashboardPayments` + `ActivityFeed` + `useCountUp`), `Inbox/` (shell + `Thread` + `NotificationsPanel`), `Contract/` (shell + `MilestoneTimeline` + `RatingForm`), `AskDetails/` (+ `StatusRail`).
 
 ## Folder structure (current)
@@ -71,8 +72,9 @@ src/
 │  ├─ Contract/         Contract summary/payment/milestones/rating screen + MilestoneTimeline + RatingForm
 │  ├─ Inbox/            merged Messages + Notifications (tabs) + Thread + NotificationsPanel
 │  ├─ Help/             HowItWorksSection (signal rail), GuideSection (shared, used for both guides), FaqSection (accordion), ProductTourCallout
+│  ├─ Profile/          + ReputationMetrics, ReviewsSection, CompletedWorkSection, PortfolioSection (provider-only; Product Change Phase 7)
 │  ├─ DesignPreview/    temporary, dev-only — inspects the dark token system; not linked from nav
-│  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, Profile, NotFound — unchanged)
+│  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, NotFound — unchanged)
 ├─ components/
 │  ├─ ui/              generic, reusable, no business logic (13 original + GrainOverlay + GradientMesh)
 │  ├─ layout/          Navbar (scroll-aware), Footer
@@ -86,8 +88,8 @@ src/
 ├─ context/            AuthContext.jsx, ToastContext.jsx
 ├─ hooks/               useAuth, useToast, useLocalStorage, useInView, useReducedMotion
 ├─ utils/               motion.js (Framer Motion variants), formatDate.js, formatCurrency.js, validators.js, onboarding.js (localStorage key + reset helper)
-├─ services/            authService, askService, offerService, messageService, notificationService, contractService, subscriptionService
-└─ mocks/               users, asks, offers, messages, notifications, categories, contracts, subscriptions
+├─ services/            authService, askService, offerService, messageService, notificationService, contractService, subscriptionService, profileService
+└─ mocks/               users, asks, offers, messages, notifications, categories, contracts, subscriptions, portfolio
 ```
 
 ## Route map (current)
@@ -146,7 +148,7 @@ src/
 - [ ] AI Ask Assistant (inside Create ASK) — not started
 - [x] Premium/Upgrade screen — right-side `UpgradeTeaser` on all `/app/*` screens (collapsible, dismissible, fixed on desktop ≥1200px / inline banner below that) + `PremiumModal` (Basic vs Premium comparison, ₹149/mo or ₹999/yr, mock "Upgrade to Premium" flow via `subscriptionService`, no real billing)
 - [x] Help section (replacing "How it works" in public nav; FAQs/guides) — `/help` (public route): How UASK Works (signal rail), Guide for ASK creators, Guide for providers, accordion FAQs, plus a "Restart Product Tour" control. Guided onboarding: `ProductTour` (5 steps — Discover/Create ASK/Inbox/Dashboard/Profile — Next/Back/Skip/Finish), auto-opens once per user in `AppLayout`, completion tracked in localStorage
-- [ ] Profile rating display tweak ("4.8 / 5" format) — not started
+- [x] Profile & Reputation Upgrade (Product Change Phase 7, supersedes the earlier "4.8 / 5" rating-format item) — Profile summary now leads with a prominent "4.8 / 5" rating + review count and a derived headline (`"{primary category} Provider"` / `"Seeker"`, read-only — no new editable field). Provider profiles additionally get: Reputation metrics (Average Rating, Completed Contracts, Total Revenue, Profile Booster with a non-ranking-guarantee info toggle), Reviews, Completed work / contract history, and a mock-only Portfolio with an empty state — all gated behind the `provider` role so a dual-role profile isn't duplicated, just extended
 - [x] "Browse" → "Discover" wording pass (Navbar, Discover subtitle, Dashboard empty state, Landing categories heading)
 
 ## Workflow rules
