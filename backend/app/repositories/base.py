@@ -1,14 +1,12 @@
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.db.base import Base
 
-ModelT = TypeVar("ModelT", bound=Base)
 
-
-class BaseRepository(Generic[ModelT]):
+class BaseRepository[ModelT: Base]:
     """Minimal shared CRUD. Prefer dedicated queries when they read better."""
 
     def __init__(self, session: Session, model: type[ModelT]) -> None:

@@ -1,4 +1,5 @@
 from app.schemas.ask import AskCreate, AskResponse, AskStatusUpdate, AskUpdate
+from app.schemas.auth import AuthResponse, LoginRequest, RefreshResponse, SignupRequest
 from app.schemas.base import CamelModel
 from app.schemas.common import AttachmentRef, ErrorResponse, Page, PageMeta
 from app.schemas.notification import NotificationResponse
@@ -24,9 +25,11 @@ __all__ = [
     "AskStatusUpdate",
     "AskUpdate",
     "AttachmentRef",
+    "AuthResponse",
     "CamelModel",
     "ErrorResponse",
     "LastMessagePreview",
+    "LoginRequest",
     "MessageCreate",
     "MessageResponse",
     "NotificationResponse",
@@ -37,6 +40,8 @@ __all__ = [
     "Page",
     "PageMeta",
     "PasswordUpdate",
+    "RefreshResponse",
+    "SignupRequest",
     "ThreadCreate",
     "ThreadResponse",
     "UserCreate",

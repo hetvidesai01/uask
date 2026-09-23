@@ -1,10 +1,6 @@
-from typing import Generic, TypeVar
-
 from pydantic import Field
 
 from app.schemas.base import CamelModel
-
-T = TypeVar("T")
 
 DEFAULT_PAGE = 1
 DEFAULT_PAGE_SIZE = 20
@@ -31,7 +27,7 @@ class PageParams:
         return self.page_size
 
 
-class Page(CamelModel, Generic[T]):
+class Page[T](CamelModel):
     """Standard list envelope — every list endpoint returns this shape."""
 
     items: list[T]
@@ -42,7 +38,7 @@ class Page(CamelModel, Generic[T]):
     has_next: bool
 
 
-def build_page(
+def build_page[T](
     items: list[T],
     *,
     page: int,

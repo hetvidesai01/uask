@@ -1,10 +1,6 @@
-from typing import Generic, TypeVar
-
 from pydantic import Field
 
 from app.schemas.base import CamelModel
-
-T = TypeVar("T")
 
 
 class PageMeta(CamelModel):
@@ -15,7 +11,7 @@ class PageMeta(CamelModel):
     has_next: bool
 
 
-class Page(CamelModel, Generic[T]):
+class Page[T](CamelModel):
     items: list[T]
     page: int = Field(ge=1)
     page_size: int = Field(ge=1, le=100)

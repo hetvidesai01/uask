@@ -48,6 +48,7 @@ class Thread(Base, TimestampMixin):
     last_message: Mapped["Message | None"] = relationship(
         foreign_keys=[last_message_id],
         post_update=True,
+        viewonly=True,
     )
 
 
@@ -126,7 +127,10 @@ class Message(Base):
         server_default=func.now(),
     )
 
-    thread: Mapped[Thread] = relationship(back_populates="messages")
+    thread: Mapped[Thread] = relationship(
+        back_populates="messages",
+        foreign_keys=[thread_id],
+    )
     sender: Mapped["User"] = relationship(  # noqa: F821
         back_populates="messages_sent",
     )

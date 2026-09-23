@@ -1,13 +1,13 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     seeker = "seeker"
     provider = "provider"
     admin = "admin"
 
 
-class AskStatus(str, Enum):
+class AskStatus(StrEnum):
     open = "open"
     matched = "matched"
     in_review = "in_review"
@@ -15,7 +15,7 @@ class AskStatus(str, Enum):
     cancelled = "cancelled"
 
 
-class OfferStatus(str, Enum):
+class OfferStatus(StrEnum):
     pending = "pending"
     shortlisted = "shortlisted"
     accepted = "accepted"
@@ -23,7 +23,7 @@ class OfferStatus(str, Enum):
     withdrawn = "withdrawn"
 
 
-class NotificationType(str, Enum):
+class NotificationType(StrEnum):
     ask_new_offer = "ask_new_offer"
     offer_shortlisted = "offer_shortlisted"
     offer_accepted = "offer_accepted"

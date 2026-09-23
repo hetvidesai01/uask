@@ -1,18 +1,18 @@
 import uuid
 from datetime import datetime
-from typing import Any
 
 from sqlalchemy import (
-    CheckConstraint,
     DateTime,
-    Enum as SAEnum,
     ForeignKey,
     Index,
     String,
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import (
+    Enum as SAEnum,
+)
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.enums import NotificationType
