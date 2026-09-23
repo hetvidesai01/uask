@@ -181,7 +181,7 @@ export default function CreateAsk() {
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Post a new ASK</h1>
+          <h1 className={styles.title}>Create ASK</h1>
           <p className={styles.subtitle}>Tell providers what you need — it takes about a minute.</p>
         </div>
         {hadSavedDraft && (

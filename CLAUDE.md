@@ -151,6 +151,13 @@ src/
 - [x] Profile & Reputation Upgrade (Product Change Phase 7, supersedes the earlier "4.8 / 5" rating-format item) — Profile summary now leads with a prominent "4.8 / 5" rating + review count and a derived headline (`"{primary category} Provider"` / `"Seeker"`, read-only — no new editable field). Provider profiles additionally get: Reputation metrics (Average Rating, Completed Contracts, Total Revenue, Profile Booster with a non-ranking-guarantee info toggle), Reviews, Completed work / contract history, and a mock-only Portfolio with an empty state — all gated behind the `provider` role so a dual-role profile isn't duplicated, just extended
 - [x] "Browse" → "Discover" wording pass (Navbar, Discover subtitle, Dashboard empty state, Landing categories heading)
 
+### Product Change Phase 8 — Full Frontend QA + Consistency Pass (done)
+Whole-app audit before backend/API integration — terminology, navigation, UI/dark-theme/motion consistency, responsive/empty-state/architecture hygiene. Findings and fixes are in conversation history; the concrete changes made:
+- Unified the "create an ASK" entry point's label to **Create ASK** everywhere it's a literal nav element (sidebar button, mobile FAB, the `/app/asks/new` page's own `<h1>` — previously "+ New ASK" / "Post a new ASK" in three different places for the same destination). Narrative copy elsewhere ("Post an ASK" CTAs on Landing/Dashboard/Signup, "You posted…" activity feed text) was left as-is — that's consistent marketing/activity voice across itself, not a nav label, and rewriting it was judged out of scope for this pass.
+- Two leftover "browse" verbs in Help's copy (a provider-guide step, an FAQ answer) reworded to match the canonical **Discover** terminology, now that "Browse ASKs" is fully retired.
+- Extracted the duplicated "signal rail" markup/CSS (`Landing/FlowSection` and `Help/HowItWorksSection` had copy-pasted, near-identical implementations) into a shared `components/ui/SignalRail` atom — zero visual change, removes ~150 lines of duplication.
+- Confirmed clean via static audit (no code changes needed): no hardcoded hex/light-theme colors outside `tokens.css`, no broken `Link`/`navigate` targets, no pages importing `mocks/` directly, no dead page/component files, no unconditional fixed-width (≥300px) CSS that could force mobile overflow, no animation loops/scroll-linked parallax/3D tilt outside the intentional `Spinner`.
+
 ## Workflow rules
 
 - Work **one phase (or sub-phase) at a time** — don't jump ahead or bundle multiple phases into one change.

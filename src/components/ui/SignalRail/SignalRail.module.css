@@ -1,0 +1,116 @@
+.steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 900px) {
+  .steps {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--sp-4);
+  }
+}
+
+.rail {
+  position: absolute;
+  left: 24px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--c-border) 0%, var(--c-red) 50%, var(--c-border) 100%);
+  transform-origin: top center;
+}
+
+@media (min-width: 900px) {
+  .rail {
+    left: 10%;
+    right: 10%;
+    top: 24px;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+    background: linear-gradient(90deg, var(--c-border) 0%, var(--c-red) 50%, var(--c-border) 100%);
+    transform-origin: left center;
+  }
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  flex: 1;
+}
+
+@media (min-width: 900px) {
+  .step {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--sp-3);
+  }
+}
+
+.marker {
+  position: relative;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ghostNumeral {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-5xl);
+  color: var(--c-surface-3);
+  z-index: 0;
+  transform: translate(-6px, -6px);
+  user-select: none;
+}
+
+@media (min-width: 900px) {
+  .ghostNumeral {
+    transform: translate(0, -10px);
+  }
+}
+
+.dot {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-3);
+  border: 1px solid var(--c-border-hover);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.active .dot {
+  background-color: var(--c-red);
+  border-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--sp-1);
+}
+
+.description {
+  color: var(--c-text-mute);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+}

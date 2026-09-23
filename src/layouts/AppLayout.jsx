@@ -105,7 +105,7 @@ export default function AppLayout() {
         </Link>
 
         <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
-          + New ASK
+          + Create ASK
         </Button>
 
         <nav className={styles.nav} aria-label="Primary">
@@ -262,7 +262,7 @@ export default function AppLayout() {
         ))}
       </nav>
 
-      <Link to="/app/asks/new" className={styles.fab} aria-label="Post a new ASK">
+      <Link to="/app/asks/new" className={styles.fab} aria-label="Create ASK">
         <span aria-hidden="true">+</span>
       </Link>
     </div>

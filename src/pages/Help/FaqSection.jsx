@@ -20,7 +20,7 @@ const FAQS = [
   {
     question: 'How do providers respond?',
     answer:
-      'Providers browse or get matched to relevant ASKs and submit an offer with their price, timeline and a short proposal. You can compare every offer side by side before choosing.',
+      'Providers discover or get matched to relevant ASKs and submit an offer with their price, timeline and a short proposal. You can compare every offer side by side before choosing.',
   },
   {
     question: 'How does UASK AI work?',

@@ -135,7 +135,7 @@
   font-size: 10px;
 }
 
-/* Floating "+ New ASK" action (mobile only) */
+/* Floating "+ Create ASK" action (mobile only) */
 .fab {
   position: fixed;
   right: var(--sp-4);

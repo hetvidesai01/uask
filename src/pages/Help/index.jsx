@@ -36,7 +36,7 @@ const ASKER_STEPS = [
 const PROVIDER_STEPS = [
   {
     title: 'Discover relevant ASKs',
-    body: 'Browse or get matched to ASKs in your categories — filter by budget, location and deadline.',
+    body: 'Find ASKs in your categories on the Discover page, or get matched automatically — filter by budget, location and deadline.',
   },
   {
     title: 'Respond with an offer',
