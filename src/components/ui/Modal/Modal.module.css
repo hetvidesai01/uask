@@ -21,6 +21,10 @@
   padding: var(--sp-5);
 }
 
+.modal.lg {
+  max-width: 760px;
+}
+
 /* The dialog itself is only a focus landing point, not a control —
    its own focusable children keep the global focus-visible ring. */
 .modal:focus {

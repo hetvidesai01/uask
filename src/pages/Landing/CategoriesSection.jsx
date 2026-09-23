@@ -21,7 +21,7 @@ export default function CategoriesSection() {
   return (
     <section className="section">
       <div className="container">
-        <h2 className={styles.heading}>Browse by category</h2>
+        <h2 className={styles.heading}>Discover by category</h2>
 
         <motion.div
           ref={ref}

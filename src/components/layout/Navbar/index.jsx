@@ -34,7 +34,7 @@ export default function Navbar() {
 
         <nav className={styles.links} aria-label="Primary">
           <a href="/#how-it-works">How it works</a>
-          <Link to="/app/discover">Browse ASKs</Link>
+          <Link to="/app/discover">Discover ASKs</Link>
         </nav>
 
         <div className={styles.actions}>

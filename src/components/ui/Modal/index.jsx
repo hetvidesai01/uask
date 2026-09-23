@@ -5,7 +5,7 @@ import styles from './Modal.module.css'
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export default function Modal({ open, onClose, title, children }) {
+export default function Modal({ open, onClose, title, size = 'md', children }) {
   const dialogRef = useRef(null)
   const previouslyFocused = useRef(null)
 
@@ -59,7 +59,7 @@ export default function Modal({ open, onClose, title, children }) {
     <div className={styles.overlay} onClick={onClose}>
       <div
         ref={dialogRef}
-        className={styles.modal}
+        className={[styles.modal, size === 'lg' ? styles.lg : ''].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="true"
         aria-label={title}

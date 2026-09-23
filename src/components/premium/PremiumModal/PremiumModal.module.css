@@ -1,0 +1,178 @@
+.intro {
+  margin-bottom: var(--sp-5);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.planCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+}
+
+.premiumCard {
+  border-color: var(--c-red);
+  background-color: var(--c-red-wash);
+  box-shadow: var(--glow-red-sm);
+}
+
+.planName {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.premiumCard .planName {
+  color: var(--c-pink);
+}
+
+.planPrice {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.planPriceUnit {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-text-mute);
+}
+
+.planNote {
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+}
+
+.billingToggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  margin-block: 2px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+}
+
+.billingOption {
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+}
+
+.billingActive {
+  background-color: var(--c-red-wash);
+  color: var(--c-pink);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-bottom: var(--sp-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  border-bottom: 1px solid var(--c-border);
+  white-space: nowrap;
+}
+
+.table thead th {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-faint);
+  background-color: var(--c-surface-2);
+}
+
+.table tbody th {
+  font-weight: 500;
+  color: var(--c-text-mute);
+  white-space: normal;
+}
+
+.table tbody td {
+  color: var(--c-text);
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Higher-specificity compound selectors so this wins over the
+   .table thead th / .table tbody td rules above. */
+.table th.premiumCol,
+.table td.premiumCol {
+  color: var(--c-red-accent);
+  font-weight: 600;
+  background-color: var(--c-red-wash);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-block: var(--sp-5);
+  text-align: center;
+}
+
+.successIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-full);
+  background: var(--grad-signal);
+  color: white;
+  font-size: var(--fs-xl);
+  box-shadow: var(--glow-red-md);
+}
+
+.successTitle {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.successCopy {
+  max-width: 360px;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 639px) {
+  .plans {
+    grid-template-columns: 1fr;
+  }
+}

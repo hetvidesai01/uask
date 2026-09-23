@@ -2,9 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import UpgradeTeaser from '../components/premium/UpgradeTeaser'
+import PremiumModal from '../components/premium/PremiumModal'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
 import { getThreads } from '../services/messageService'
+import { getSubscription, upgradeToPremium } from '../services/subscriptionService'
 import styles from './AppLayout.module.css'
 
 const NAV_ITEMS = [
@@ -26,10 +30,13 @@ function tabLinkClass({ isActive }) {
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [subscription, setSubscription] = useState(null)
+  const [premiumOpen, setPremiumOpen] = useState(false)
   const menuRef = useRef(null)
 
   // Inbox badge = unread notifications + unread messages across all
@@ -41,6 +48,16 @@ export default function AppLayout() {
       const unreadNotifications = notifications.filter((item) => !item.read).length
       const unreadMessages = threads.reduce((sum, thread) => sum + thread.unreadCount, 0)
       setUnreadCount(unreadNotifications + unreadMessages)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [user.id])
+
+  useEffect(() => {
+    let cancelled = false
+    getSubscription(user.id).then((result) => {
+      if (!cancelled) setSubscription(result)
     })
     return () => {
       cancelled = true
@@ -69,6 +86,13 @@ export default function AppLayout() {
     event.preventDefault()
     setSearch('')
     navigate('/app/discover')
+  }
+
+  async function handleUpgrade(billingCycle) {
+    const updated = await upgradeToPremium(user.id, billingCycle)
+    setSubscription(updated)
+    showToast("You're now on UASK Premium.")
+    return updated
   }
 
   return (
@@ -198,9 +222,19 @@ export default function AppLayout() {
 
       <main className={styles.main}>
         <div className="container">
+          {subscription && subscription.plan !== 'premium' && (
+            <UpgradeTeaser onCompare={() => setPremiumOpen(true)} />
+          )}
           <Outlet />
         </div>
       </main>
+
+      <PremiumModal
+        open={premiumOpen}
+        onClose={() => setPremiumOpen(false)}
+        plan={subscription?.plan ?? 'basic'}
+        onUpgrade={handleUpgrade}
+      />
 
       <nav className={styles.tabBar} aria-label="Primary">
         {NAV_ITEMS.map((item) => (

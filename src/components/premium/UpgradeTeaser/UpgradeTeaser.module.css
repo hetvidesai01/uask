@@ -1,0 +1,108 @@
+.teaser {
+  position: relative;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background-color: var(--c-surface-2);
+  border: 1px solid var(--c-red);
+  box-shadow: var(--sh-sm), var(--glow-red-sm);
+}
+
+.controls {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  display: flex;
+  gap: 2px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-sm);
+  color: var(--c-text-faint);
+  font-size: var(--fs-sm);
+  line-height: 1;
+}
+
+.iconButton:hover {
+  background-color: var(--c-surface-3);
+  color: var(--c-text-mute);
+}
+
+.kicker {
+  display: inline-block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-red-accent);
+}
+
+.title {
+  margin-bottom: var(--sp-1);
+  padding-right: var(--sp-6);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+}
+
+.copy {
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.collapsedTab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-text-mute);
+}
+
+.collapsedTab:hover {
+  color: var(--c-text);
+  border-color: var(--c-border-hover);
+}
+
+.collapsedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--grad-signal);
+  box-shadow: var(--glow-red-sm);
+}
+
+/* Desktop: float as a fixed panel clear of the container so it never
+   competes with a page's own layout/grid (e.g. DiscoverAsks' filter aside). */
+@media (min-width: 1200px) {
+  .teaser {
+    position: fixed;
+    right: var(--sp-5);
+    bottom: var(--sp-6);
+    z-index: 12;
+    width: 260px;
+    margin-bottom: 0;
+  }
+
+  .collapsedTab {
+    position: fixed;
+    right: var(--sp-5);
+    bottom: var(--sp-6);
+    z-index: 12;
+    margin-bottom: 0;
+  }
+}

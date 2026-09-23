@@ -237,7 +237,7 @@ export default function DashboardOverview() {
               <EmptyState
                 icon="📨"
                 title="No offers yet"
-                message="Browse open ASKs and submit a response to start providing."
+                message="Discover open ASKs and submit a response to start providing."
                 action={
                   <Button as={Link} to="/app/discover" variant="secondary">
                     Discover ASKs

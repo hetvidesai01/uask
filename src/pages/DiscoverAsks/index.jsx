@@ -81,7 +81,7 @@ export default function DiscoverAsks() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Discover ASKs</h1>
-        <p className={styles.subtitle}>Browse open requests from seekers and find one to respond to.</p>
+        <p className={styles.subtitle}>Discover open requests from seekers and find one to respond to.</p>
       </div>
 
       <div className={styles.layout}>
