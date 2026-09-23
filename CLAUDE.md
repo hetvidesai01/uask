@@ -8,6 +8,86 @@ A **reverse marketplace**: users post what they need (an "ASK") and relevant pro
 
 **Core flow:** `ASK → MATCH → RESPOND → COMPARE → CONNECT`
 
+## Current product state
+
+A fully functional frontend is built — React + Vite, React Router, plain CSS / CSS Modules, Framer Motion, a
+mock-first service architecture (`services/` is the only layer allowed to import `mocks/`) — with **no real
+backend/API integration yet**.
+
+### Completed product features
+- [x] Authentication (mock, localStorage-persisted)
+- [x] Landing page
+- [x] Discover ASKs
+- [x] ASK Details
+- [x] Create ASK
+- [x] Respond to ASK
+- [x] Compare Responses
+- [x] Dashboard
+- [x] Unified Inbox — Messages + Notifications tabs
+- [x] Payments & Milestones dashboard
+- [x] Contract + milestone workflow, mock payment states, contract-completion rating/review
+- [x] Profile Booster concept (frontend/mock reputation signal — not a real ranking algorithm)
+- [x] Premium/Upgrade experience — Basic vs Premium comparison, right-side Premium teaser
+- [x] Help Center + guided onboarding
+- [x] Profile & reputation upgrade — ratings out of 5, reviews, completed contract history, portfolio mock section
+- [ ] **AI Ask Assistant** — mentioned in Help's guide copy and the onboarding tour as a planned capability, but
+  **not implemented** in Create ASK yet (verified against the code — nothing AI-related exists under
+  `pages/CreateAsk/`). Don't assume it exists; build it fresh when that phase is actually requested.
+
+### Important terminology
+Use these terms consistently everywhere (normalized app-wide during the Phase 8 QA pass):
+- **Discover ASKs** — never "Browse ASKs"
+- **Create ASK** — the sidebar button, mobile FAB, and the `/app/asks/new` page heading all say exactly this
+- **Inbox** — not separate "Messages" / "Notifications" nav items (those are tabs *inside* Inbox, which is correct)
+- **Basic** / **Premium** — the two plan names
+- **Payments & Milestones** — the Dashboard sub-route and its heading
+- **Profile Booster** — the reputation-signal concept; don't rename it "reputation score" or similar
+
+### Payments & Milestones metrics
+Top metrics on `/app/dashboard/payments` (and mirrored, scoped to a provider's own contracts, in `Profile`'s
+Reputation section):
+- **Revenue** — sum of paid milestone amounts across the provider's active + completed contracts
+- **Average Rating** — mean of `rating` across the provider's completed + rated contracts, formatted `"X.X / 5"`
+- **Milestones** — completed/total count, a progress bar, and the **Profile Booster** impact
+  (`round(completedMilestones / totalMilestones × 20)` — the same simple formula, computed independently but
+  identically, in `DashboardPayments`, `Contract`, and `Profile`'s `getProviderReputation`)
+
+### Premium
+- Pricing: **₹149/month** or **₹999/year**
+- Comparison includes: unlimited AI ASK Assistant, AI Proposal Assistant, AI Matching, Auto Contracts, Profile
+  Boosts, advanced analytics, smart alerts (full Basic-vs-Premium table lives in `components/premium/PremiumModal`)
+- **No real billing/payment integration exists** — `subscriptionService.js` is a mock, localStorage-backed
+  service; "Upgrade to Premium" is a simulated flow only
+
+### Current visual state — IMPORTANT
+The product currently ships the **dark editorial/cinematic redesign** described under "Design system — source of
+truth" below — that section is still 100% accurate for the code as it exists right now.
+
+**However, the user has decided to move away from that direction.** A new visual strategy — **"UASK Open
+Call"** — has been approved *conceptually* (a full strategy document exists as a Claude Artifact from the planning
+session that produced it): light, editorial, kinetic, youthful creative-tech; warm off-white canvas; strong
+red/burgundy brand accents; more purposeful animation. It keeps all five existing brand hexes (`#D02727`,
+`#992E34`, `#F7B4B4`, `#6E1414`, `#F0B8B8`) and moves the *neutral* palette from dark to a warm light system
+(canvas ≈ `#FBF3EF`, surface ≈ `#FFFDFB`, blush ≈ `#F9DAD5`, ink ≈ `#241512`). Planned typography: **Instrument
+Serif** + **Instrument Sans** as the new display/UI pair, **EB Garamond** kept selectively, **JetBrains Mono**
+used selectively for data/numerals. Planned motifs: a signal/broadcast mark, floating layered cards, category
+chips, asymmetric layouts, an occasional hand-marked underline, blush organic shapes. Planned motion: staggered
+reveals, spring interactions, a magnetic CTA, cursor-reactive cards, animated counters, shared layout transitions,
+spring milestone/progress animations, subtle page transitions — all respecting `prefers-reduced-motion`.
+
+**The new light redesign has NOT been implemented yet. Do not assume Phase 1 is complete, and don't build on top
+of light-mode tokens that don't exist in the code.** Planned implementation order:
+1. Light design foundation
+2. Landing page
+3. App shell
+4. Core product loop
+5. Dashboard + Payments & Milestones
+6. Contract + Inbox
+7. Profile + Premium + Help
+8. Motion polish + full QA
+
+**Next task when resumed: Light Redesign Phase 1 — Design Foundation.**
+
 ## Scope
 
 **Frontend only, for now.** No backend, no database, no real API. All data is mock (`src/mocks/`) served through a service layer (`src/services/`) with artificial delays, designed to be swapped for real HTTP calls later without touching any page code.
@@ -22,6 +102,10 @@ A **reverse marketplace**: users post what they need (an "ASK") and relevant pro
 **Explicitly not used** unless the user asks for it later: Tailwind, TypeScript, Redux, a backend, a database.
 
 ## Design system — source of truth
+
+> This section documents the **currently implemented** dark editorial system — still accurate for the code as it
+> exists today. See "Current product state → Current visual state" above for the approved-but-not-yet-built
+> "Open Call" light redesign direction; don't conflate the two.
 
 `src/styles/tokens.css` defines every brand color, font, spacing, radius, shadow, gradient, and glow as a CSS custom property. **Never hard-code a hex value or px number in a component — always reference a token.**
 
@@ -141,6 +225,18 @@ src/
 - [x] App shell redesign — dark sidebar with rail-indicator active state, new desktop top bar (search/role indicator/notifications/account menu), restyled mobile nav + FAB
 - [x] Core loop screens redesign — Dashboard, Discover, ASK Details (+ compact status rail), Compare Responses restyled to the dark system with restrained motion
 
+### Light redesign — "Open Call" (strategy approved, implementation NOT started)
+Full strategy — creative concept, color/typography/motion systems, screen-by-screen treatment — is in a Claude
+Artifact from the planning session; summarized under "Current product state → Current visual state" above.
+- [ ] 1. Light design foundation — **next task when resumed**
+- [ ] 2. Landing page
+- [ ] 3. App shell
+- [ ] 4. Core product loop
+- [ ] 5. Dashboard + Payments & Milestones
+- [ ] 6. Contract + Inbox
+- [ ] 7. Profile + Premium + Help
+- [ ] 8. Motion polish + full QA
+
 ### Product structure changes (see conversation history for the full 8-item plan; status below)
 - [x] Unified Inbox — merged Messages + Notifications into `/app/inbox` (tabs), combined unread badge, old routes redirect
 - [x] Dashboard restructuring — split into ASKs & Offers (`/app/dashboard`) and Payments & Milestones (`/app/dashboard/payments`) sub-routes with a real internal nav switch
@@ -158,6 +254,15 @@ Whole-app audit before backend/API integration — terminology, navigation, UI/d
 - Extracted the duplicated "signal rail" markup/CSS (`Landing/FlowSection` and `Help/HowItWorksSection` had copy-pasted, near-identical implementations) into a shared `components/ui/SignalRail` atom — zero visual change, removes ~150 lines of duplication.
 - Confirmed clean via static audit (no code changes needed): no hardcoded hex/light-theme colors outside `tokens.css`, no broken `Link`/`navigate` targets, no pages importing `mocks/` directly, no dead page/component files, no unconditional fixed-width (≥300px) CSS that could force mobile overflow, no animation loops/scroll-linked parallax/3D tilt outside the intentional `Spinner`.
 
+## Architecture rules to preserve
+
+- Pages/components must never import raw mocks directly — `services/` remains the only data boundary.
+- Preserve existing routes and product logic unless a task absolutely requires changing them.
+- No backend/API swap yet.
+- No real AI integration yet (AI Ask Assistant, AI Proposal Assistant, AI Matching are all UI-facing concepts only, unbuilt or mock).
+- No real payment gateway yet (Premium's "Upgrade" flow and all contract/milestone "payment" actions are mock/simulated).
+- Don't redo completed functionality unless explicitly asked.
+
 ## Workflow rules
 
 - Work **one phase (or sub-phase) at a time** — don't jump ahead or bundle multiple phases into one change.
@@ -165,4 +270,5 @@ Whole-app audit before backend/API integration — terminology, navigation, UI/d
 - **Don't redo completed phases** unless explicitly asked to.
 - **Stop after the requested phase/sub-phase** and report what changed — don't keep going into the next one unprompted.
 - **Backend/API integration has not started.** The frontend is still 100% mock-driven — Phase 10 (`services/http.js`, real API) is next but not yet requested. Don't begin it unprompted.
-- **Don't begin redesign work** on completed phases/screens, and don't modify app code, unless a specific task explicitly calls for it — preserve the current UASK brand system and existing functionality as-is.
+- **Don't begin redesign work** on completed phases/screens, and don't modify app code, unless a specific task explicitly calls for it — preserve the current UASK brand system and existing functionality as-is. (This applies to the *implemented* dark editorial system; the approved-but-unbuilt "Open Call" light redesign is the one exception once its phases are actually requested — see "Current visual state" above.)
+- **Standing cadence:** implement → test locally → `git status` → commit → push → move to the next phase. Keep phases small; don't bundle large, unrelated changes into a single step.
