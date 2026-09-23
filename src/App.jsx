@@ -5,6 +5,7 @@ import AppLayout from './layouts/AppLayout'
 import ProtectedRoute from './layouts/ProtectedRoute'
 
 import Landing from './pages/Landing'
+import Help from './pages/Help'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -38,6 +39,7 @@ function App() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
+          <Route path="/help" element={<Help />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>

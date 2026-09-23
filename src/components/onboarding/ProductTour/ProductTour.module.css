@@ -1,0 +1,60 @@
+.tour {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  text-align: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red-wash);
+  border: 1px solid var(--c-red);
+  box-shadow: var(--glow-red-sm);
+  font-size: var(--fs-2xl);
+}
+
+.description {
+  max-width: 360px;
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.skipButton {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-faint);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+}
+
+.skipButton:hover {
+  color: var(--c-text-mute);
+  background-color: var(--c-surface-2);
+}
+
+.navButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}

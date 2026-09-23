@@ -33,7 +33,7 @@ export default function Navbar() {
         </Link>
 
         <nav className={styles.links} aria-label="Primary">
-          <a href="/#how-it-works">How it works</a>
+          <Link to="/help">Help</Link>
           <Link to="/app/discover">Discover ASKs</Link>
         </nav>
 

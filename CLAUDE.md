@@ -51,8 +51,10 @@ Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.r
 - Reusable UI atoms live in `components/ui/` — the original 13 (Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard), plus `GrainOverlay` and `GradientMesh` added during the redesign.
 - Public-site chrome lives in `components/layout/` (Navbar, Footer) — Navbar is now scroll-aware (transparent-over-hero on the landing route only, solid elsewhere).
 - App-shell chrome (`layouts/AppLayout.jsx`) now includes a genuine **desktop top bar** (search input, read-only role indicator, notification bell with combined unread badge, account dropdown menu) in addition to the sidebar — this is a change from the original Phase-9 build, where desktop had sidebar-only navigation and "top bar" was mobile-only. A standalone `PageHeader` component is still the one piece of the original blueprint shell not built.
-- Domain components live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`, `components/contract/` (currently just `ContractStatusBadge`, added for the Contract + Milestone flow), and now `components/premium/` (`UpgradeTeaser`, `PremiumModal` — added for the Premium/Upgrade flow).
+- Domain components live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`, `components/contract/` (currently just `ContractStatusBadge`, added for the Contract + Milestone flow), and `components/premium/` (`UpgradeTeaser`, `PremiumModal` — added for the Premium/Upgrade flow).
 - The Premium/Upgrade flow is a **modal, not a route** (`AppLayout` owns the `subscription`/`premiumOpen` state and renders `PremiumModal` once, globally, rather than adding an `/app/premium` page) — chosen because it integrates with the shell without touching `App.jsx`'s route tree or any individual page. `subscriptionService.js` follows the same mock-service pattern as the rest of `services/` (delay + localStorage-backed persistence, same call signature a real API would use later).
+- `components/onboarding/` (currently just `ProductTour`) holds the guided-onboarding modal, added for the Help Center + Onboarding phase. `ProductTour` is mounted once in `AppLayout` (like `PremiumModal`) and auto-opens for a logged-in user until they Skip/Finish it; completion is tracked per-user in localStorage via `src/utils/onboarding.js`'s `onboardingStorageKey(userId)`, which both `ProductTour` (read/write via `useLocalStorage`) and the Help page's "Restart Product Tour" control (`resetOnboarding(userId)`, then navigates to `/app/dashboard`) agree on.
+- `/help` is a **public route** (rendered inside `PublicLayout`, reachable logged-out or logged-in — same pattern the existing `/` route already follows). Since the app shell (`AppLayout`) has no nav item pointing at it, a small "❓ Help" icon-link was added to both the mobile and desktop top bars (next to the notification bell) purely so a logged-in user has a way to reach it and the "Restart Product Tour" control — this is the one shell change in that phase, everything else about `AppLayout` is unchanged.
 - Page folder convention: `PageName/index.jsx` + `PageName.module.css`, plus any page-local sub-components in the same folder — e.g. `Landing/` (multi-section), `Dashboard/` (shell + `DashboardOverview` + `DashboardPayments` + `ActivityFeed` + `useCountUp`), `Inbox/` (shell + `Thread` + `NotificationsPanel`), `Contract/` (shell + `MilestoneTimeline` + `RatingForm`), `AskDetails/` (+ `StatusRail`).
 
 ## Folder structure (current)
@@ -68,6 +70,7 @@ src/
 │  ├─ AskDetails/       + StatusRail (compact ASK→MATCH→RESPOND→COMPARE→CONNECT progress rail)
 │  ├─ Contract/         Contract summary/payment/milestones/rating screen + MilestoneTimeline + RatingForm
 │  ├─ Inbox/            merged Messages + Notifications (tabs) + Thread + NotificationsPanel
+│  ├─ Help/             HowItWorksSection (signal rail), GuideSection (shared, used for both guides), FaqSection (accordion), ProductTourCallout
 │  ├─ DesignPreview/    temporary, dev-only — inspects the dark token system; not linked from nav
 │  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, Profile, NotFound — unchanged)
 ├─ components/
@@ -78,10 +81,11 @@ src/
 │  ├─ messages/         ThreadList, ThreadListItem, MessageBubble, MessageComposer
 │  ├─ notifications/    NotificationItem
 │  ├─ contract/         ContractStatusBadge
-│  └─ premium/          UpgradeTeaser (right-side app-shell teaser), PremiumModal (Basic/Premium compare + mock upgrade)
+│  ├─ premium/          UpgradeTeaser (right-side app-shell teaser), PremiumModal (Basic/Premium compare + mock upgrade)
+│  └─ onboarding/       ProductTour (guided-onboarding modal, mounted in AppLayout)
 ├─ context/            AuthContext.jsx, ToastContext.jsx
 ├─ hooks/               useAuth, useToast, useLocalStorage, useInView, useReducedMotion
-├─ utils/               motion.js (Framer Motion variants), formatDate.js, formatCurrency.js, validators.js
+├─ utils/               motion.js (Framer Motion variants), formatDate.js, formatCurrency.js, validators.js, onboarding.js (localStorage key + reset helper)
 ├─ services/            authService, askService, offerService, messageService, notificationService, contractService, subscriptionService
 └─ mocks/               users, asks, offers, messages, notifications, categories, contracts, subscriptions
 ```
@@ -90,6 +94,7 @@ src/
 
 ```
 /                              Landing
+/help                          Help center — How UASK Works, guides, FAQs, Restart Product Tour (Product Change Phase 6)
 /login, /signup
 /design-preview                temporary, dev-only
 
@@ -140,7 +145,7 @@ src/
 - [x] Contract + Payment/Milestone flow — "View Contract" entry point from ASK Details once an offer is accepted, full Contract screen (summary/deliverables/payment summary/milestone timeline with role-based mock actions/completion/rating), feeds Dashboard's Revenue/Average Rating/Milestones metrics
 - [ ] AI Ask Assistant (inside Create ASK) — not started
 - [x] Premium/Upgrade screen — right-side `UpgradeTeaser` on all `/app/*` screens (collapsible, dismissible, fixed on desktop ≥1200px / inline banner below that) + `PremiumModal` (Basic vs Premium comparison, ₹149/mo or ₹999/yr, mock "Upgrade to Premium" flow via `subscriptionService`, no real billing)
-- [ ] Help section (replacing "How it works" in public nav; FAQs/guides) — not started
+- [x] Help section (replacing "How it works" in public nav; FAQs/guides) — `/help` (public route): How UASK Works (signal rail), Guide for ASK creators, Guide for providers, accordion FAQs, plus a "Restart Product Tour" control. Guided onboarding: `ProductTour` (5 steps — Discover/Create ASK/Inbox/Dashboard/Profile — Next/Back/Skip/Finish), auto-opens once per user in `AppLayout`, completion tracked in localStorage
 - [ ] Profile rating display tweak ("4.8 / 5" format) — not started
 - [x] "Browse" → "Discover" wording pass (Navbar, Discover subtitle, Dashboard empty state, Landing categories heading)
 

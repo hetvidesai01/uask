@@ -1,0 +1,74 @@
+.kicker {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-red-accent);
+  text-align: center;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  text-align: center;
+  margin-bottom: var(--sp-8);
+}
+
+.list {
+  max-width: 720px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.item {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface);
+  overflow: hidden;
+}
+
+.itemHeading {
+  margin: 0;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-4);
+  text-align: left;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.trigger:hover {
+  background-color: var(--c-surface-2);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--c-text-faint);
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  color: var(--c-red-accent);
+  transform: rotate(180deg);
+}
+
+.panel {
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+
+.answer {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}

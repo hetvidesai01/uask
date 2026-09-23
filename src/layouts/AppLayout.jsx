@@ -4,6 +4,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import UpgradeTeaser from '../components/premium/UpgradeTeaser'
 import PremiumModal from '../components/premium/PremiumModal'
+import ProductTour from '../components/onboarding/ProductTour'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
@@ -131,9 +132,14 @@ export default function AppLayout() {
           UASK
           <span className={styles.logoDot} aria-hidden="true" />
         </Link>
-        <Link to="/app/profile" className={styles.topbarAvatar} aria-label="Your profile">
-          <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-        </Link>
+        <div className={styles.topbarActions}>
+          <Link to="/help" className={styles.helpButton} aria-label="Help">
+            <span aria-hidden="true">❓</span>
+          </Link>
+          <Link to="/app/profile" className={styles.topbarAvatar} aria-label="Your profile">
+            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+          </Link>
+        </div>
       </header>
 
       {/* Desktop-only content top bar: search, role indicator, notifications, account menu */}
@@ -168,6 +174,10 @@ export default function AppLayout() {
               </span>
             ))}
           </div>
+
+          <Link to="/help" className={styles.helpButton} aria-label="Help">
+            <span aria-hidden="true">❓</span>
+          </Link>
 
           <Link to="/app/inbox?tab=notifications" className={styles.bellButton} aria-label="Notifications">
             <span aria-hidden="true">🔔</span>
@@ -235,6 +245,8 @@ export default function AppLayout() {
         plan={subscription?.plan ?? 'basic'}
         onUpgrade={handleUpgrade}
       />
+
+      <ProductTour />
 
       <nav className={styles.tabBar} aria-label="Primary">
         {NAV_ITEMS.map((item) => (

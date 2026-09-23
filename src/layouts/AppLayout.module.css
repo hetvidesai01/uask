@@ -36,6 +36,28 @@
   display: inline-flex;
 }
 
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.helpButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-md);
+  color: var(--c-text-mute);
+  font-size: var(--fs-sm);
+}
+
+.helpButton:hover {
+  background-color: var(--c-surface-2);
+  color: var(--c-text);
+}
+
 .main {
   padding-bottom: calc(var(--topbar-h) + var(--sp-6));
 }
