@@ -6,26 +6,34 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import bcrypt
 from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
-from passlib.context import CryptContext
 
 from app.core.config import get_settings
 from app.core.exceptions import UnauthorizedError
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+BCRYPT_ROUNDS = 12
+BCRYPT_MAX_PASSWORD_BYTES = 72
 
 REFRESH_COOKIE_NAME = "refresh_token"
 REFRESH_TOKEN_BYTES = 32
 
 
+def _password_bytes(password: str) -> bytes:
+    return password.encode("utf-8")[:BCRYPT_MAX_PASSWORD_BYTES]
+
+
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
+    return bcrypt.hashpw(_password_bytes(password), salt).decode("utf-8")
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
     try:
-        return pwd_context.verify(plain_password, password_hash)
+        return bcrypt.checkpw(
+            _password_bytes(plain_password), password_hash.encode("utf-8")
+        )
     except ValueError:
         return False
 
