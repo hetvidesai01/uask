@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import Avatar from '../../components/ui/Avatar'
 import Card from '../../components/ui/Card'
+import EmptyState from '../../components/ui/EmptyState'
 import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import { useInView } from '../../hooks/useInView'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
@@ -17,8 +18,16 @@ const SAMPLE_COUNT = 3
 // serve) rather than a hand-duplicated fake array — this is what's
 // actually in the mock dataset, not invented marketing content.
 export default function SampleAsksSection() {
+  // `ref` must sit on an element that's always mounted — useInView's
+  // IntersectionObserver attaches once, on mount, to whatever `ref.current`
+  // is at that moment. Attaching it to content that's conditionally
+  // rendered only after the async load resolves meant the observer never
+  // attached at all, isInView stayed false forever, and the cards sat
+  // permanently at opacity: 0 while still taking up their full grid
+  // height — heading/subtitle followed by a large blank area.
   const [ref, isInView] = useInView()
   const [samples, setSamples] = useState([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -29,7 +38,10 @@ export default function SampleAsksSection() {
       const withRequesters = await Promise.all(
         picked.map(async (ask) => ({ ask, requester: await getUserById(ask.requesterId) })),
       )
-      if (!cancelled) setSamples(withRequesters)
+      if (!cancelled) {
+        setSamples(withRequesters)
+        setLoaded(true)
+      }
     }
 
     load()
@@ -40,13 +52,12 @@ export default function SampleAsksSection() {
 
   return (
     <section className={`section ${styles.sampleAsks}`}>
-      <div className="container">
+      <div className="container" ref={ref}>
         <h2 className={styles.heading}>Real ASKs, real momentum</h2>
         <p className={styles.subheading}>A live look at what&apos;s actually being posted.</p>
 
-        {samples.length > 0 && (
+        {samples.length > 0 ? (
           <motion.div
-            ref={ref}
             className={styles.grid}
             initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
@@ -85,6 +96,14 @@ export default function SampleAsksSection() {
               </motion.div>
             ))}
           </motion.div>
+        ) : (
+          loaded && (
+            <EmptyState
+              icon="📭"
+              title="No sample ASKs yet"
+              message="Check back soon — new requests are posted regularly."
+            />
+          )
         )}
       </div>
     </section>

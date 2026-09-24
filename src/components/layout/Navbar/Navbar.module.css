@@ -47,6 +47,7 @@
   display: block;
   height: 34px;
   width: auto;
+  object-fit: contain;
 }
 
 @media (min-width: 640px) {

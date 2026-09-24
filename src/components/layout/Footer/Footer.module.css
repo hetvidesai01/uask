@@ -16,6 +16,11 @@
   display: block;
   height: 36px;
   width: auto;
+  /* .top is a column flex container with no align-items set, so its
+     default `stretch` was forcing this img to full container width
+     while height stayed fixed — distorting the logo. */
+  align-self: flex-start;
+  object-fit: contain;
 }
 
 .tagline {
