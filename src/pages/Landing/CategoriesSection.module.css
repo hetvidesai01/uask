@@ -2,65 +2,49 @@
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
   text-align: center;
+}
+
+.subheading {
+  margin-top: var(--sp-2);
   margin-bottom: var(--sp-7);
+  color: var(--c-text-mute);
+  text-align: center;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  border-top: 1px solid var(--c-border);
-  border-left: 1px solid var(--c-border);
-}
-
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.item {
+.cluster {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--sp-3);
-  padding: var(--sp-4);
-  height: 100%;
-  border-right: 1px solid var(--c-border);
-  border-bottom: 1px solid var(--c-border);
-  color: var(--c-text);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  max-width: 760px;
+  margin-inline: auto;
 }
 
-.item:hover {
-  background-color: var(--c-surface-2);
-  color: var(--c-red-accent);
+.chipWrap {
+  display: inline-flex;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-full);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
+  color: var(--c-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--c-red);
+  background-color: var(--c-red-wash);
+  color: var(--c-red-deep);
 }
 
 .icon {
-  font-size: var(--fs-lg);
-  opacity: 0.85;
-}
-
-.label {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  flex: 1;
-}
-
-.arrow {
-  font-size: var(--fs-sm);
-  color: var(--c-text-faint);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.item:hover .arrow {
-  opacity: 1;
-  transform: translateX(0);
+  font-size: var(--fs-base);
 }

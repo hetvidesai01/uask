@@ -82,13 +82,30 @@ spring milestone/progress animations, subtle page transitions — all respecting
 without a page-by-page rewrite. Typography tokens now point at Instrument Serif/Instrument Sans, with EB Garamond
 and JetBrains Mono as separate selective tokens. New foundation-only pieces: `components/ui/SignalMark`
 (broadcast-mark primitive), `FloatingCard`, `StaggerReveal`, `AnimatedCounter`, `HandUnderline`, and three new
-motion variants (`fadeRise`, `springScale`, `pageEntrance` in `utils/motion.js`) — all built but **not yet wired
-into any real page**. `/design-preview` shows all of it. **Do not assume any page beyond this foundation has been
-visually redesigned** — Landing, the app shell, and every other screen still only look different because their
-existing dark-editorial CSS is 100% token-driven and inherited the new palette; none of their layout, motion, or
-copy has been touched. Planned implementation order:
+motion variants (`fadeRise`, `springScale`, `pageEntrance` in `utils/motion.js`) — built in Phase 1, now put to
+use in Phase 2 (below). The official logo (`src/assets/brand/uask.logo.png` — see "Brand assets") replaced the
+text wordmark app-wide (Navbar/Footer/AppLayout sidebar+topbar) shortly after Phase 1, ahead of Landing itself.
+
+**Light Redesign Phase 2 (Landing page) is now done.** The Landing page is fully redesigned for the light system —
+asymmetric hero with oversized `Instrument Serif` type and a two-sided (`HeroSignal`) graphic showing both a
+posted ASK and named providers responding; `FlowSection` (still `id="how-it-works"`) rebuilt as a one-shot
+animated ASK→MATCH→RESPOND→COMPARE→CONNECT product story built from `SignalMark` + plain `motion.div`s (no
+canvas/WebGL) that plays once via `useInView` and settles into a static "one offer connected" end state — it no
+longer reuses the shared `SignalRail` atom (that atom is now Help-page-only, see "Folder structure" below); a new
+`ReverseMarketplaceSection` contrasts the traditional flow against UASK's; `SampleAsksSection` now fetches real
+sample ASKs through `askService.getAsks()` + `authService.getUserById()` (not a hand-duplicated fake array) and
+renders them as cursor-tilt `TiltCard`s (a Landing-local component built directly on Framer's
+`useMotionValue`/`useSpring`/`useTransform`, explicitly gated on `useReducedMotion()` since those imperative APIs
+don't read `MotionConfig` automatically); `CategoriesSection` is a spring/stagger chip cluster sourced from
+`askService.getCategories()`; `CtaSection` moved off the old dark `--c-red-dark` band onto a `--blush`→`--canvas`
+gradient with the official logo and a primary "Create ASK" action. `ValuePropsSection` was left untouched — it
+already read correctly under the light tokens. No stats/social-proof section was added — the pre-redesign Landing
+page had none to preserve, and inventing numbers wasn't an option. **Do not assume any page beyond Landing has
+been visually redesigned** — the app shell, dashboard, and every other screen still only look different because
+their CSS is 100% token-driven and inherited the light palette from Phase 1; none of their layout, motion, or copy
+has been touched yet. Planned implementation order:
 1. ~~Light design foundation~~ — done
-2. Landing page
+2. ~~Landing page~~ — done
 3. App shell
 4. Core product loop
 5. Dashboard + Payments & Milestones
@@ -96,7 +113,7 @@ copy has been touched. Planned implementation order:
 7. Profile + Premium + Help
 8. Motion polish + full QA
 
-**Next task when resumed: Light Redesign Phase 2 — Landing page.**
+**Next task when resumed: Light Redesign Phase 3 — App shell.**
 
 ## Scope
 
@@ -146,9 +163,10 @@ redraw, re-export, crop, or otherwise modify it — resize only via CSS (`height
 aspect ratio.
 
 Rendered in place of a text "UASK" wordmark at every major brand position: the public `Navbar` (also covers the
-Login/Signup auth screens, which have no logo of their own and rely on `Navbar` via `PublicLayout`), `Footer`, and
-`AppLayout`'s sidebar + mobile top bar (both instances). Each usage is `<img src={uaskLogo} alt="UASK" ... />` —
-always keep the `alt="UASK"` text exactly as-is. Textual mentions of "UASK" elsewhere (page copy, titles like
+Login/Signup auth screens, which have no logo of their own and rely on `Navbar` via `PublicLayout`), `Footer`,
+`AppLayout`'s sidebar + mobile top bar (both instances), and (added in Light Redesign Phase 2) Landing's
+`CtaSection`. Each usage is `<img src={uaskLogo} alt="UASK" ... />` — always keep the `alt="UASK"` text exactly
+as-is. Textual mentions of "UASK" elsewhere (page copy, titles like
 "UASK Premium," the footer copyright line, document `<title>`) stay as plain text — only standalone brand-mark
 lockups get the image.
 
@@ -175,7 +193,9 @@ src/
 ├─ styles/            tokens.css (light "Open Call" foundation), reset.css, base.css, utilities.css
 ├─ layouts/           PublicLayout, AppLayout (sidebar + desktop top bar + mobile shell), ProtectedRoute
 ├─ pages/             one folder per route (see App.jsx for the route map)
-│  ├─ Landing/         Hero + HeroSignal, FlowSection ("signal rail"), ValueProps, SampleAsks, Categories, Cta
+│  ├─ Landing/         Hero + HeroSignal (light redesign, Phase 2), FlowSection (animated product-story sequence,
+│  │                   no longer the SignalRail atom), ReverseMarketplaceSection, ValueProps, SampleAsks (real
+│  │                   data via askService/authService), Categories (chip cluster), Cta
 │  ├─ Dashboard/        shell (nav switch) + DashboardOverview + DashboardPayments + ActivityFeed + useCountUp
 │  ├─ AskDetails/       + StatusRail (compact ASK→MATCH→RESPOND→COMPARE→CONNECT progress rail)
 │  ├─ Contract/         Contract summary/payment/milestones/rating screen + MilestoneTimeline + RatingForm
@@ -259,8 +279,13 @@ Artifact from the planning session; summarized under "Current product state → 
   `FloatingCard`/`StaggerReveal`/`AnimatedCounter`/`HandUnderline` wrappers, 3 new motion variants, contrast
   fixes for pink-foreground-on-light-bg bugs the palette flip exposed (Badge/AppLayout/PremiumModal/Landing
   kicker), `color-scheme: light`. Nothing page-specific was redesigned — see "Current visual state" above.
-- [ ] 2. Landing page — **next task when resumed**
-- [ ] 3. App shell
+- [x] 2. Landing page — asymmetric hero (oversized Instrument Serif, two-sided `HeroSignal` graphic), `FlowSection`
+  rebuilt as a one-shot animated ASK→MATCH→RESPOND→COMPARE→CONNECT sequence (`SignalMark`-based, no longer the
+  shared `SignalRail` atom), new `ReverseMarketplaceSection`, `SampleAsksSection` wired to real
+  `askService`/`authService` data with cursor-tilt cards, `CategoriesSection` as a spring/stagger chip cluster,
+  `CtaSection` moved to a blush surface with the official logo. `ValuePropsSection` untouched (already correct).
+  No stats section added (none existed to preserve).
+- [ ] 3. App shell — **next task when resumed**
 - [ ] 4. Core product loop
 - [ ] 5. Dashboard + Payments & Milestones
 - [ ] 6. Contract + Inbox

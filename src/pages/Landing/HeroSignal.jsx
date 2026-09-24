@@ -1,18 +1,21 @@
 import { motion } from 'framer-motion'
+import SignalMark from '../../components/ui/SignalMark'
 import styles from './HeroSignal.module.css'
 
-// One ASK, radiating out to several provider responses — a small custom
-// graphic that makes the reverse-marketplace idea legible without text.
+// One ASK, radiating out to real providers who respond — makes the
+// reverse-marketplace idea legible without text: post once, skilled
+// people come to you. Plays once on mount (no loop), respects
+// prefers-reduced-motion automatically via MotionConfig.
 const OFFERS = [
-  { id: 'design', top: '10%', price: '$450', label: 'Design offer' },
-  { id: 'writing', top: '46%', price: '$220', label: 'Writing offer' },
-  { id: 'dev', top: '82%', price: '$600', label: 'Dev offer' },
+  { id: 'design', top: '6%', name: 'Maya R.', role: 'Designer', price: '$450' },
+  { id: 'writing', top: '42%', name: 'Theo W.', role: 'Writer', price: '$220' },
+  { id: 'dev', top: '78%', name: 'Chen L.', role: 'Developer', price: '$600' },
 ]
 
 const PATHS = [
-  'M 60 200 C 160 120, 240 80, 340 60',
-  'M 60 200 C 160 200, 240 200, 340 200',
-  'M 60 200 C 160 280, 240 320, 340 340',
+  'M 72 200 C 170 120, 250 80, 340 50',
+  'M 72 200 C 170 200, 250 200, 340 200',
+  'M 72 200 C 170 280, 250 320, 340 350',
 ]
 
 export default function HeroSignal() {
@@ -27,24 +30,19 @@ export default function HeroSignal() {
             strokeWidth="1.5"
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 0.6 }}
+            animate={{ pathLength: 1, opacity: 0.55 }}
             transition={{ duration: 1, ease: 'easeInOut', delay: 0.5 + index * 0.15 }}
           />
         ))}
-        <motion.circle
-          cx="60"
-          cy="200"
-          r="10"
-          fill="var(--c-red)"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-        />
       </svg>
 
+      <div className={styles.markWrap}>
+        <SignalMark size="md" rings={2} animated />
+      </div>
+
       <div className={styles.askChip}>
-        <span className={styles.askDot} />
-        Your ASK
+        <span className={styles.askEyebrow}>Your ASK</span>
+        <span className={styles.askTitle}>Logo for a new bakery</span>
       </div>
 
       {OFFERS.map((offer, index) => (
@@ -54,11 +52,15 @@ export default function HeroSignal() {
           style={{ top: offer.top }}
           initial={{ opacity: 0, x: 12, scale: 0.94 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.45, delay: 0.9 + index * 0.15, ease: 'easeOut' }}
+          transition={{ duration: 0.45, delay: 1 + index * 0.15, ease: 'easeOut' }}
         >
-          <span className={styles.offerAvatar} aria-hidden="true" />
+          <span className={styles.offerAvatar} aria-hidden="true">
+            {offer.name.charAt(0)}
+          </span>
           <div>
-            <p className={styles.offerLabel}>{offer.label}</p>
+            <p className={styles.offerLabel}>
+              {offer.name} <span className={styles.offerRole}>· {offer.role}</span>
+            </p>
             <p className={styles.offerPrice}>{offer.price}</p>
           </div>
         </motion.div>

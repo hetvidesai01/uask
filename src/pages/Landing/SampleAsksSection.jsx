@@ -1,94 +1,130 @@
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import Avatar from '../../components/ui/Avatar'
-import Badge from '../../components/ui/Badge'
 import Card from '../../components/ui/Card'
-import Tag from '../../components/ui/Tag'
+import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import { useInView } from '../../hooks/useInView'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { staggerContainer, staggerItem } from '../../utils/motion'
+import { getAsks } from '../../services/askService'
+import { getUserById } from '../../services/authService'
+import { formatBudgetRange } from '../../utils/formatCurrency'
 import styles from './SampleAsksSection.module.css'
 
-// Static examples for the landing page only — not wired to services/mocks.
-const SAMPLE_ASKS = [
-  {
-    title: 'Logo for a new bakery',
-    category: 'Design',
-    status: 'open',
-    budget: '$300–$500',
-    timeline: '1 week',
-    tags: ['Remote'],
-    requester: 'Priya K.',
-    responses: 4,
-  },
-  {
-    title: 'Rewrite my product landing page',
-    category: 'Writing',
-    status: 'matched',
-    budget: '$150–$250',
-    timeline: '3 days',
-    tags: ['Remote', 'Urgent'],
-    requester: 'Sam T.',
-    responses: 6,
-  },
-  {
-    title: 'Fix a checkout bug on my store',
-    category: 'Development',
-    status: 'open',
-    budget: '$400–$800',
-    timeline: '2 weeks',
-    tags: ['Remote'],
-    requester: 'Jordan L.',
-    responses: 2,
-  },
-]
+const SAMPLE_COUNT = 3
 
+// Pulls real ASKs (through askService, same call a real API would later
+// serve) rather than a hand-duplicated fake array — this is what's
+// actually in the mock dataset, not invented marketing content.
 export default function SampleAsksSection() {
   const [ref, isInView] = useInView()
+  const [samples, setSamples] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      const results = await getAsks({ sort: 'newest' })
+      const picked = results.slice(0, SAMPLE_COUNT)
+      const withRequesters = await Promise.all(
+        picked.map(async (ask) => ({ ask, requester: await getUserById(ask.requesterId) })),
+      )
+      if (!cancelled) setSamples(withRequesters)
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <section className={`section ${styles.sampleAsks}`}>
       <div className="container">
         <h2 className={styles.heading}>Real ASKs, real momentum</h2>
+        <p className={styles.subheading}>A live look at what&apos;s actually being posted.</p>
 
-        <motion.div
-          ref={ref}
-          className={styles.grid}
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-          variants={staggerContainer}
-          transition={{ staggerChildren: 0.12 }}
-        >
-          {SAMPLE_ASKS.map((ask) => (
-            <motion.div key={ask.title} variants={staggerItem}>
-              <Card hoverable className={styles.card}>
-                <span className={styles.categoryEyebrow}>{ask.category}</span>
+        {samples.length > 0 && (
+          <motion.div
+            ref={ref}
+            className={styles.grid}
+            initial="hidden"
+            animate={isInView ? 'visible' : 'hidden'}
+            variants={staggerContainer}
+            transition={{ staggerChildren: 0.12 }}
+          >
+            {samples.map(({ ask, requester }, index) => (
+              <motion.div
+                key={ask.id}
+                variants={staggerItem}
+                className={index % 2 === 1 ? styles.offset : ''}
+              >
+                <TiltCard>
+                  <span className={styles.categoryEyebrow}>{ask.category}</span>
 
-                <div className={styles.cardHeader}>
-                  <p className={styles.title}>{ask.title}</p>
-                  <Badge variant={ask.status}>{ask.status === 'open' ? 'Open' : 'Matched'}</Badge>
-                </div>
-
-                <p className={styles.meta}>
-                  {ask.budget} · {ask.timeline}
-                </p>
-
-                <div className={styles.tags}>
-                  {ask.tags.map((tag) => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </div>
-
-                <div className={styles.footer}>
-                  <div className={styles.requester}>
-                    <Avatar name={ask.requester} size="sm" />
-                    <span>{ask.requester}</span>
+                  <div className={styles.cardHeader}>
+                    <p className={styles.title}>{ask.title}</p>
+                    <AskStatusBadge status={ask.status} />
                   </div>
-                  <span className={styles.responses}>{ask.responses} offers so far</span>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+
+                  <p className={styles.meta}>
+                    {formatBudgetRange(ask.budgetMin, ask.budgetMax, ask.currency)} ·{' '}
+                    {ask.isRemote ? 'Remote' : ask.location}
+                  </p>
+
+                  <div className={styles.footer}>
+                    <div className={styles.requester}>
+                      <Avatar name={requester?.name ?? 'UASK user'} size="sm" />
+                      <span>{requester?.name ?? 'UASK user'}</span>
+                    </div>
+                    <span className={styles.responses}>
+                      {ask.responseCount} {ask.responseCount === 1 ? 'offer' : 'offers'} so far
+                    </span>
+                  </div>
+                </TiltCard>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
+  )
+}
+
+// Restrained cursor-reactive tilt, desktop only in practice (mousemove
+// never fires from touch input). Explicitly checked against reduced
+// motion — useSpring/useTransform are Framer's imperative motion-value
+// APIs, which (like the animate() call in useCountUp) don't read the
+// <MotionConfig reducedMotion> context automatically.
+function TiltCard({ children }) {
+  const prefersReducedMotion = useReducedMotion()
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [5, -5]), { stiffness: 300, damping: 30 })
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-5, 5]), { stiffness: 300, damping: 30 })
+
+  function handleMouseMove(event) {
+    if (prefersReducedMotion) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    x.set((event.clientX - rect.left) / rect.width - 0.5)
+    y.set((event.clientY - rect.top) / rect.height - 0.5)
+  }
+
+  function handleMouseLeave() {
+    x.set(0)
+    y.set(0)
+  }
+
+  return (
+    <motion.div
+      className={styles.tiltWrap}
+      style={{ rotateX, rotateY, transformPerspective: 800 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <Card hoverable padding="md" className={styles.card}>
+        {children}
+      </Card>
+    </motion.div>
   )
 }

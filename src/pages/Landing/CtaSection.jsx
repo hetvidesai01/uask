@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Button from '../../components/ui/Button'
-import GradientMesh from '../../components/ui/GradientMesh'
+import SignalMark from '../../components/ui/SignalMark'
 import { useInView } from '../../hooks/useInView'
+import { hoverLift } from '../../utils/motion'
+import uaskLogo from '../../assets/brand/uask.logo.png'
 import styles from './CtaSection.module.css'
 
 export default function CtaSection() {
@@ -10,7 +12,9 @@ export default function CtaSection() {
 
   return (
     <section className={`section ${styles.cta}`}>
-      <GradientMesh />
+      <div className={styles.markWrap} aria-hidden="true">
+        <SignalMark size="lg" rings={3} />
+      </div>
       <div className={`container ${styles.container}`}>
         <motion.div
           ref={ref}
@@ -19,14 +23,19 @@ export default function CtaSection() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
+          <img src={uaskLogo} alt="UASK" className={styles.logo} />
+
           <h2 className={styles.heading}>
             Ready to post your <em>first</em> ASK?
           </h2>
           <p className={styles.subtitle}>It takes a couple of minutes, and providers come to you.</p>
+
           <div className={styles.actions}>
-            <Button as={Link} to="/signup" size="lg" inverted>
-              Get started — it's free
-            </Button>
+            <motion.div initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} variants={hoverLift}>
+              <Button as={Link} to="/signup" size="lg">
+                Create ASK
+              </Button>
+            </motion.div>
             <Link to="/login" className={styles.loginLink}>
               Already have an account? Log in
             </Link>

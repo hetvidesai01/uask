@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import HeroSection from './HeroSection'
 import FlowSection from './FlowSection'
+import ReverseMarketplaceSection from './ReverseMarketplaceSection'
 import ValuePropsSection from './ValuePropsSection'
 import SampleAsksSection from './SampleAsksSection'
 import CategoriesSection from './CategoriesSection'
@@ -19,6 +20,7 @@ export default function Landing() {
     <div>
       <HeroSection />
       <FlowSection />
+      <ReverseMarketplaceSection />
       <ValuePropsSection />
       <SampleAsksSection />
       <CategoriesSection />

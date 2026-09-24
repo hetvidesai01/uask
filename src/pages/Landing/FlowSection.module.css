@@ -2,9 +2,162 @@
   background-color: var(--c-surface-2);
 }
 
+.headingRow {
+  text-align: center;
+  margin-bottom: var(--sp-6);
+}
+
 .heading {
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
+}
+
+.subheading {
+  margin-top: var(--sp-2);
+  color: var(--c-text-mute);
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-7);
+}
+
+.stepWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.step {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.stepArrow {
+  color: var(--c-text-faint);
+  font-size: var(--fs-sm);
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.askCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-lg);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
   text-align: center;
-  margin-bottom: var(--sp-8);
+}
+
+.askEyebrow {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-red-accent);
+}
+
+.askTitle {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.markRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.mark {
+  flex-shrink: 0;
+}
+
+.markCaption {
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+}
+
+.offers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.offerCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 148px;
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+}
+
+.offerCard.selected {
+  border-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
+}
+
+.offerAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-full);
+  background-color: var(--c-pink);
+  color: var(--c-red-dark);
+  font-weight: 700;
+}
+
+.offerName {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.offerPrice {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-text-mute);
+}
+
+.selectedBadge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }

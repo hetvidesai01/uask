@@ -1,7 +1,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding-top: calc(var(--topbar-h) + var(--sp-7));
+  padding-top: calc(var(--topbar-h) + var(--sp-6));
   padding-bottom: var(--sp-8);
 }
 
@@ -13,7 +13,21 @@
 }
 
 .mesh {
-  opacity: 0.7;
+  opacity: 0.5;
+}
+
+/* Soft floating blush shape behind the graphic column — decorative only,
+   static (no loop), part of the "blush organic shapes" motif. */
+.blob {
+  position: absolute;
+  top: 8%;
+  right: -8%;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--blush) 0%, rgba(249, 218, 213, 0) 72%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .inner {
@@ -28,7 +42,8 @@
   .inner {
     flex-direction: row;
     align-items: center;
-    gap: var(--sp-8);
+    justify-content: space-between;
+    gap: var(--sp-6);
   }
 }
 
@@ -36,15 +51,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 @media (min-width: 900px) {
   .copy {
-    flex: 1;
-    align-items: flex-start;
-    text-align: left;
+    flex: 0 1 620px;
   }
 }
 
@@ -70,20 +83,18 @@
   box-shadow: var(--glow-red-sm);
 }
 
+/* Oversized editorial display type — deliberately beyond the standard
+   --fs-* scale (page-specific flourish for the hero only). */
 .title {
   font-family: var(--font-display);
-  font-size: var(--fs-4xl);
-  line-height: var(--lh-tight);
+  font-size: clamp(2.75rem, 5vw + 1.5rem, 5.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
 }
 
-.title em {
-  font-style: italic;
-  color: var(--c-red-accent);
-}
-
-@media (min-width: 640px) {
+@media (min-width: 900px) {
   .title {
-    font-size: var(--fs-5xl);
+    font-size: clamp(3.5rem, 4.5vw + 1.5rem, 5.75rem);
   }
 }
 
@@ -100,20 +111,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
-}
-
-@media (min-width: 900px) {
-  .stagger {
-    align-items: flex-start;
-  }
 }
 
 .subtitle {
   font-size: var(--fs-lg);
   color: var(--c-text-mute);
-  max-width: 42ch;
+  max-width: 44ch;
 }
 
 .actions {
@@ -132,10 +137,15 @@
 
 .graphic {
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 900px) {
   .graphic {
-    flex: 1;
+    flex: 0 1 420px;
+    /* Break the grid slightly — offset down so it doesn't line up
+       edge-to-edge with the copy column. */
+    margin-top: var(--sp-7);
   }
 }

@@ -1,12 +1,18 @@
 .sampleAsks {
-  background-color: var(--c-surface-2);
+  background-color: var(--canvas);
 }
 
 .heading {
   font-family: var(--font-display);
   font-size: var(--fs-3xl);
   text-align: center;
+}
+
+.subheading {
+  margin-top: var(--sp-2);
   margin-bottom: var(--sp-7);
+  color: var(--c-text-mute);
+  text-align: center;
 }
 
 .grid {
@@ -27,18 +33,24 @@
   }
 }
 
+/* Layered/floating feel: alternate cards sit slightly lower so the grid
+   doesn't read as perfectly rigid. */
+@media (min-width: 900px) {
+  .offset {
+    margin-top: var(--sp-6);
+  }
+}
+
+.tiltWrap {
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
 .card {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
   height: 100%;
-  transition: outline-color 0.2s ease;
-  outline: 1px solid transparent;
-  outline-offset: 2px;
-}
-
-.card:hover {
-  outline-color: rgba(208, 39, 39, 0.35);
 }
 
 .categoryEyebrow {
@@ -65,12 +77,6 @@
   color: var(--c-text-mute);
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
 .footer {
   display: flex;
   align-items: center;
@@ -90,6 +96,7 @@
 }
 
 .responses {
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--c-text-faint);
 }

@@ -11,34 +11,47 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 0 6px rgba(208, 39, 39, 0.35));
+  filter: drop-shadow(0 0 6px rgba(208, 39, 39, 0.25));
+}
+
+.markWrap {
+  position: absolute;
+  left: 18%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 
 .askChip {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 18%;
+  top: 67%;
+  transform: translateX(-50%);
   z-index: 1;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 2px;
   padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-full);
+  border-radius: var(--r-md);
   background-color: var(--c-surface);
-  border: 1px solid var(--c-red);
-  box-shadow: var(--glow-red-sm);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
   white-space: nowrap;
 }
 
-.askDot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--r-full);
-  background-color: var(--c-red);
+.askEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-red-accent);
+}
+
+.askTitle {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text);
 }
 
 .offerChip {
@@ -53,24 +66,40 @@
   border-radius: var(--r-md);
   background-color: var(--c-surface);
   border: 1px solid var(--c-border);
-  min-width: 132px;
+  box-shadow: var(--shadow-card);
+  min-width: 148px;
 }
 
 .offerAvatar {
-  width: 24px;
-  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   border-radius: var(--r-full);
   background-color: var(--c-pink);
+  color: var(--c-red-dark);
+  font-size: var(--fs-xs);
+  font-weight: 700;
   flex-shrink: 0;
 }
 
 .offerLabel {
   font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.offerRole {
+  font-weight: 400;
   color: var(--c-text-mute);
 }
 
 .offerPrice {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--c-text);
+  color: var(--c-red-deep);
 }
