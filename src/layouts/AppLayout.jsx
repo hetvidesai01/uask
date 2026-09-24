@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import UpgradeTeaser from '../components/premium/UpgradeTeaser'
@@ -11,7 +12,11 @@ import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
 import { getThreads } from '../services/messageService'
 import { getSubscription, upgradeToPremium } from '../services/subscriptionService'
+import { hoverLift } from '../utils/motion'
 import styles from './AppLayout.module.css'
+
+const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
+const DOT_SPRING = { type: 'spring', stiffness: 420, damping: 28 }
 
 const NAV_ITEMS = [
   { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -99,32 +104,55 @@ export default function AppLayout() {
 
   return (
     <div className={styles.shell}>
-      <aside className={styles.sidebar}>
+      <motion.aside
+        className={styles.sidebar}
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      >
         <Link to="/app/dashboard" className={styles.logo}>
           <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
         </Link>
 
-        <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
-          + Create ASK
-        </Button>
+        <motion.div initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} variants={hoverLift}>
+          <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
+            + Create ASK
+          </Button>
+        </motion.div>
 
         <nav className={styles.nav} aria-label="Primary">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.to} to={item.to} className={navLinkClass}>
-              <span className={styles.rail} aria-hidden="true" />
-              <span className={styles.icon} aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.label}
-              {item.to === '/app/inbox' && unreadCount > 0 && (
-                <span className={styles.navBadge} aria-hidden="true">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
+              {({ isActive }) => (
+                <>
+                  <motion.span
+                    className={styles.activeDot}
+                    aria-hidden="true"
+                    initial={false}
+                    animate={{ scale: isActive ? 1 : 0.4, opacity: isActive ? 1 : 0 }}
+                    transition={DOT_SPRING}
+                  />
+                  <span className={styles.icon} aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  {item.label}
+                  {item.to === '/app/inbox' && unreadCount > 0 && (
+                    <motion.span
+                      className={styles.navBadge}
+                      aria-hidden="true"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={BADGE_SPRING}
+                    >
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </motion.span>
+                  )}
+                </>
               )}
             </NavLink>
           ))}
         </nav>
-      </aside>
+      </motion.aside>
 
       {/* Mobile top bar (logo + avatar, scrolls with the page) */}
       <header className={styles.topbar}>
@@ -181,9 +209,15 @@ export default function AppLayout() {
           <Link to="/app/inbox?tab=notifications" className={styles.bellButton} aria-label="Notifications">
             <span aria-hidden="true">🔔</span>
             {unreadCount > 0 && (
-              <span className={styles.bellBadge} aria-hidden="true">
+              <motion.span
+                className={styles.bellBadge}
+                aria-hidden="true"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={BADGE_SPRING}
+              >
                 {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
+              </motion.span>
             )}
           </Link>
 
@@ -253,7 +287,13 @@ export default function AppLayout() {
             <span className={styles.tabIconWrap}>
               <span aria-hidden="true">{item.icon}</span>
               {item.to === '/app/inbox' && unreadCount > 0 && (
-                <span className={styles.tabBadge} aria-hidden="true" />
+                <motion.span
+                  className={styles.tabBadge}
+                  aria-hidden="true"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={BADGE_SPRING}
+                />
               )}
             </span>
             <span className={styles.tabLabel}>{item.label}</span>

@@ -3,9 +3,9 @@
   margin-bottom: var(--sp-5);
   padding: var(--sp-4);
   border-radius: var(--r-lg);
-  background-color: var(--c-surface-2);
-  border: 1px solid var(--c-red);
-  box-shadow: var(--sh-sm), var(--glow-red-sm);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
 }
 
 .controls {
