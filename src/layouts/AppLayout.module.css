@@ -20,8 +20,17 @@
 
 .logoImg {
   display: block;
-  height: 32px;
+  height: 34px;
   width: auto;
+}
+
+/* Only the sidebar instance of .logo is visible at this width (the mobile
+   .topbar is hidden here — see the ≥900px block below), so this bump only
+   ever affects the sidebar logo in practice. */
+@media (min-width: 900px) {
+  .logoImg {
+    height: 44px;
+  }
 }
 
 .topbarAvatar {

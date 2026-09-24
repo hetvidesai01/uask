@@ -45,8 +45,14 @@
 
 .logoImg {
   display: block;
-  height: 36px;
+  height: 34px;
   width: auto;
+}
+
+@media (min-width: 640px) {
+  .logoImg {
+    height: 44px;
+  }
 }
 
 .links {
