@@ -20,7 +20,11 @@
 }
 
 .overHero.scrolled {
-  background-color: rgba(11, 10, 10, 0.82);
+  /* Warm-surface frosted scrim — was a leftover hardcoded near-black
+     (rgba(11,10,10,...) = the old dark-theme --c-bg) from before the
+     light redesign; light-mode equivalent of --c-surface at the same
+     opacity. */
+  background-color: rgba(255, 253, 251, 0.82);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom-color: var(--c-border);
@@ -37,20 +41,12 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  font-family: var(--font-display);
-  font-size: var(--fs-2xl);
-  font-weight: 600;
-  color: var(--c-text);
-  letter-spacing: 0.01em;
 }
 
-.logoDot {
-  width: 7px;
-  height: 7px;
-  border-radius: var(--r-full);
-  background-color: var(--c-red);
-  box-shadow: var(--glow-red-sm);
+.logoImg {
+  display: block;
+  height: 36px;
+  width: auto;
 }
 
 .links {

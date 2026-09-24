@@ -5,6 +5,7 @@ import Button from '../components/ui/Button'
 import UpgradeTeaser from '../components/premium/UpgradeTeaser'
 import PremiumModal from '../components/premium/PremiumModal'
 import ProductTour from '../components/onboarding/ProductTour'
+import uaskLogo from '../assets/brand/uask.logo.png'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
@@ -100,8 +101,7 @@ export default function AppLayout() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <Link to="/app/dashboard" className={styles.logo}>
-          UASK
-          <span className={styles.logoDot} aria-hidden="true" />
+          <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
         </Link>
 
         <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
@@ -129,8 +129,7 @@ export default function AppLayout() {
       {/* Mobile top bar (logo + avatar, scrolls with the page) */}
       <header className={styles.topbar}>
         <Link to="/app/dashboard" className={styles.logo}>
-          UASK
-          <span className={styles.logoDot} aria-hidden="true" />
+          <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
         </Link>
         <div className={styles.topbarActions}>
           <Link to="/help" className={styles.helpButton} aria-label="Help">

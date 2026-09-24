@@ -16,20 +16,12 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 600;
-  color: var(--c-text);
-  letter-spacing: 0.02em;
 }
 
-.logoDot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--r-full);
-  background-color: var(--c-red);
-  box-shadow: var(--glow-red-sm);
+.logoImg {
+  display: block;
+  height: 32px;
+  width: auto;
 }
 
 .topbarAvatar {

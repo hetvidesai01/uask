@@ -138,6 +138,20 @@ Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.r
 
 **Mobile-first, accessible by default:** unchanged — every input has a real `<label>`, every icon-only control has an `aria-label`, visible `:focus-visible` ring everywhere (now `--c-red`, not `--c-red-deep` — that was one of the contrast fixes), touch targets sized comfortably, Modal has a real focus trap + focus restore, Tabs support arrow-key navigation.
 
+## Brand assets
+
+**Official logo:** `src/assets/brand/uask.logo.png` — a transparent-background PNG lockup ("Uask" wordmark + the
+signal-dot motif already built into the "U," plus a baked-in tagline). This is the one official logo file; do not
+redraw, re-export, crop, or otherwise modify it — resize only via CSS (`height` + `width: auto`) to preserve its
+aspect ratio.
+
+Rendered in place of a text "UASK" wordmark at every major brand position: the public `Navbar` (also covers the
+Login/Signup auth screens, which have no logo of their own and rely on `Navbar` via `PublicLayout`), `Footer`, and
+`AppLayout`'s sidebar + mobile top bar (both instances). Each usage is `<img src={uaskLogo} alt="UASK" ... />` —
+always keep the `alt="UASK"` text exactly as-is. Textual mentions of "UASK" elsewhere (page copy, titles like
+"UASK Premium," the footer copyright line, document `<title>`) stay as plain text — only standalone brand-mark
+lockups get the image.
+
 ## Architecture rules
 
 - **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way. This was upheld throughout the redesign and the product-structure changes — the new `contractService.js` follows the identical pattern.
@@ -157,7 +171,8 @@ Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.r
 ```
 src/
 ├─ main.jsx (wraps app in <MotionConfig reducedMotion="user">), App.jsx (route tree), index.css
-├─ styles/            tokens.css (dark editorial), reset.css, base.css, utilities.css
+├─ assets/            brand/uask.logo.png — official logo asset (see "Brand assets" below)
+├─ styles/            tokens.css (light "Open Call" foundation), reset.css, base.css, utilities.css
 ├─ layouts/           PublicLayout, AppLayout (sidebar + desktop top bar + mobile shell), ProtectedRoute
 ├─ pages/             one folder per route (see App.jsx for the route map)
 │  ├─ Landing/         Hero + HeroSignal, FlowSection ("signal rail"), ValueProps, SampleAsks, Categories, Cta
@@ -170,8 +185,9 @@ src/
 │  ├─ DesignPreview/    temporary, dev-only — inspects the dark token system; not linked from nav
 │  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, NotFound — unchanged)
 ├─ components/
-│  ├─ ui/              generic, reusable, no business logic (13 original + GrainOverlay + GradientMesh)
-│  ├─ layout/          Navbar (scroll-aware), Footer
+│  ├─ ui/              generic, reusable, no business logic (13 original + GrainOverlay/GradientMesh/SignalMark/
+│  │                   FloatingCard/StaggerReveal/AnimatedCounter/HandUnderline — light-redesign foundation atoms)
+│  ├─ layout/          Navbar (scroll-aware, renders the logo image), Footer (renders the logo image)
 │  ├─ ask/              AskCard, AskFilters, AskFormStep1-4, AskMetaGrid, AskStatusBadge, UserMiniCard
 │  ├─ offer/            OfferCard, OfferFormStep1-3, OfferList, OfferStatusBadge
 │  ├─ messages/         ThreadList, ThreadListItem, MessageBubble, MessageComposer

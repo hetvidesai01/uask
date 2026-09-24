@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import uaskLogo from '../../../assets/brand/uask.logo.png'
 import styles from './Footer.module.css'
 
 export default function Footer() {
@@ -6,10 +7,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className="container">
         <div className={styles.top}>
-          <span className={styles.logo}>
-            UASK
-            <span className={styles.logoDot} aria-hidden="true" />
-          </span>
+          <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
           <p className={styles.tagline}>Post what you need. Let the offers come to you.</p>
         </div>
 

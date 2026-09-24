@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Button from '../../ui/Button'
+import uaskLogo from '../../../assets/brand/uask.logo.png'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
@@ -28,8 +29,7 @@ export default function Navbar() {
     <header className={classes}>
       <div className={`container ${styles.inner}`}>
         <Link to="/" className={styles.logo}>
-          UASK
-          <span className={styles.logoDot} aria-hidden="true" />
+          <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
         </Link>
 
         <nav className={styles.links} aria-label="Primary">
