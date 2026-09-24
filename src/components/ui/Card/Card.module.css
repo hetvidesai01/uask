@@ -2,7 +2,7 @@
   background-color: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--sh-sm);
+  box-shadow: var(--shadow-card);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .hoverable:hover {
-  box-shadow: var(--sh-md);
+  box-shadow: var(--shadow-lift);
   transform: translateY(-2px);
   border-color: var(--c-border-hover);
 }

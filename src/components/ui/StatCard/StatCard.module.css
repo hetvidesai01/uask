@@ -14,6 +14,8 @@
 }
 
 .value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-3xl);
   font-weight: 600;
   color: var(--c-text);

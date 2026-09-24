@@ -10,17 +10,17 @@
 }
 
 .open {
-  background-color: rgba(63, 163, 114, 0.18);
+  background-color: rgba(46, 125, 87, 0.14);
   color: var(--c-success);
 }
 
 .matched {
-  background-color: rgba(78, 143, 204, 0.18);
+  background-color: rgba(43, 108, 176, 0.14);
   color: var(--c-info);
 }
 
 .in_review {
-  background-color: rgba(214, 162, 60, 0.2);
+  background-color: rgba(184, 134, 11, 0.16);
   color: var(--c-warning);
 }
 
@@ -31,10 +31,10 @@
 
 .accepted {
   background-color: var(--c-red-wash);
-  color: var(--c-pink);
+  color: var(--c-red-deep);
 }
 
 .rejected {
-  background-color: rgba(110, 20, 20, 0.28);
+  background-color: rgba(110, 20, 20, 0.14);
   color: var(--c-text-mute);
 }

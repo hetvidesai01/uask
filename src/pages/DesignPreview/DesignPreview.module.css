@@ -21,7 +21,7 @@
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
   background-color: var(--c-red-wash);
-  color: var(--c-pink);
+  color: var(--c-red-deep);
   font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
@@ -99,26 +99,48 @@
 }
 
 .swatchToken {
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   color: var(--c-text-faint);
 }
 
+.labeledSwatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+.radiusSwatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  width: 120px;
+  border: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
 .gradientSwatch {
   height: 64px;
-  width: 220px;
+  width: 200px;
   border-radius: var(--r-md);
   background: var(--grad-signal);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 600;
 }
 
 .glowSwatch {
   height: 64px;
-  width: 220px;
+  width: 200px;
   border-radius: var(--r-md);
   background-color: var(--c-surface);
   box-shadow: var(--glow-red-sm);
@@ -126,8 +148,32 @@
   align-items: center;
   justify-content: center;
   color: var(--c-text-mute);
+  font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 600;
+}
+
+.cardShadowSwatch,
+.liftShadowSwatch {
+  height: 64px;
+  width: 200px;
+  border-radius: var(--r-md);
+  background-color: var(--c-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-mute);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.cardShadowSwatch {
+  box-shadow: var(--shadow-card);
+}
+
+.liftShadowSwatch {
+  box-shadow: var(--shadow-lift);
 }
 
 .displaySample {
@@ -138,6 +184,25 @@
 .bodySample {
   color: var(--c-text-mute);
   max-width: 60ch;
+}
+
+.heritageSample {
+  font-family: var(--font-heritage);
+  font-style: italic;
+  font-size: var(--fs-xl);
+  color: var(--c-text);
+}
+
+.monoSample {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.underlineSample {
+  font-size: var(--fs-lg);
+  color: var(--c-text);
 }
 
 .lineRevealWrap {
@@ -164,6 +229,16 @@
   font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
+}
+
+.motionTile {
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-mute);
 }
 
 .motionCard {

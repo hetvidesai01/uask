@@ -75,9 +75,19 @@ chips, asymmetric layouts, an occasional hand-marked underline, blush organic sh
 reveals, spring interactions, a magnetic CTA, cursor-reactive cards, animated counters, shared layout transitions,
 spring milestone/progress animations, subtle page transitions — all respecting `prefers-reduced-motion`.
 
-**The new light redesign has NOT been implemented yet. Do not assume Phase 1 is complete, and don't build on top
-of light-mode tokens that don't exist in the code.** Planned implementation order:
-1. Light design foundation
+**Light Redesign Phase 1 (Design Foundation) is now done** — `styles/tokens.css` carries the new light token set
+(bare names `--canvas`/`--surface`/`--blush`/`--blush-deep`/`--red`/`--red-deep`/`--burgundy`/`--pink`/
+`--pink-tagline`/`--ink`/`--ink-mute`/`--ink-faint`/`--border`/`--border-strong`, plus `--shadow-card`/
+`--shadow-lift`), with every pre-existing `--c-*` token aliased to it so the whole app inherited the light system
+without a page-by-page rewrite. Typography tokens now point at Instrument Serif/Instrument Sans, with EB Garamond
+and JetBrains Mono as separate selective tokens. New foundation-only pieces: `components/ui/SignalMark`
+(broadcast-mark primitive), `FloatingCard`, `StaggerReveal`, `AnimatedCounter`, `HandUnderline`, and three new
+motion variants (`fadeRise`, `springScale`, `pageEntrance` in `utils/motion.js`) — all built but **not yet wired
+into any real page**. `/design-preview` shows all of it. **Do not assume any page beyond this foundation has been
+visually redesigned** — Landing, the app shell, and every other screen still only look different because their
+existing dark-editorial CSS is 100% token-driven and inherited the new palette; none of their layout, motion, or
+copy has been touched. Planned implementation order:
+1. ~~Light design foundation~~ — done
 2. Landing page
 3. App shell
 4. Core product loop
@@ -86,7 +96,7 @@ of light-mode tokens that don't exist in the code.** Planned implementation orde
 7. Profile + Premium + Help
 8. Motion polish + full QA
 
-**Next task when resumed: Light Redesign Phase 1 — Design Foundation.**
+**Next task when resumed: Light Redesign Phase 2 — Landing page.**
 
 ## Scope
 
@@ -225,11 +235,15 @@ src/
 - [x] App shell redesign — dark sidebar with rail-indicator active state, new desktop top bar (search/role indicator/notifications/account menu), restyled mobile nav + FAB
 - [x] Core loop screens redesign — Dashboard, Discover, ASK Details (+ compact status rail), Compare Responses restyled to the dark system with restrained motion
 
-### Light redesign — "Open Call" (strategy approved, implementation NOT started)
+### Light redesign — "Open Call" (in progress — Phase 1 done)
 Full strategy — creative concept, color/typography/motion systems, screen-by-screen treatment — is in a Claude
 Artifact from the planning session; summarized under "Current product state → Current visual state" above.
-- [ ] 1. Light design foundation — **next task when resumed**
-- [ ] 2. Landing page
+- [x] 1. Light design foundation — light token set (`tokens.css`) with `--c-*` back-compat aliases, typography
+  tokens (Instrument Serif/Sans, EB Garamond, JetBrains Mono), new radius/shadow scale, `SignalMark`,
+  `FloatingCard`/`StaggerReveal`/`AnimatedCounter`/`HandUnderline` wrappers, 3 new motion variants, contrast
+  fixes for pink-foreground-on-light-bg bugs the palette flip exposed (Badge/AppLayout/PremiumModal/Landing
+  kicker), `color-scheme: light`. Nothing page-specific was redesigned — see "Current visual state" above.
+- [ ] 2. Landing page — **next task when resumed**
 - [ ] 3. App shell
 - [ ] 4. Core product loop
 - [ ] 5. Dashboard + Payments & Milestones

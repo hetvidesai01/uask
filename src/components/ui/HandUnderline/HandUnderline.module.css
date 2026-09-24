@@ -1,0 +1,14 @@
+.wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.stroke {
+  position: absolute;
+  left: -2%;
+  bottom: -0.22em;
+  width: 104%;
+  height: 0.4em;
+  color: var(--c-red);
+  pointer-events: none;
+}

@@ -38,7 +38,7 @@
 }
 
 .premiumCard .planName {
-  color: var(--c-pink);
+  color: var(--c-red-deep);
 }
 
 .planPrice {
@@ -80,7 +80,7 @@
 
 .billingActive {
   background-color: var(--c-red-wash);
-  color: var(--c-pink);
+  color: var(--c-red-deep);
 }
 
 .tableWrap {

@@ -1,0 +1,13 @@
+.wrap {
+  display: block;
+}
+
+.card {
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.wrap:hover .card,
+.wrap:focus-within .card {
+  box-shadow: var(--shadow-lift);
+}

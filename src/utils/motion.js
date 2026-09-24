@@ -1,5 +1,5 @@
-// Reusable Framer Motion variants for the dark editorial redesign.
-// Foundation only — not wired into any page yet (Phase 12+ does that).
+// Reusable Framer Motion variants, shared across both the dark editorial
+// redesign and the "Open Call" light redesign that's replacing it.
 // Every consumer sits inside the app-level <MotionConfig reducedMotion="user">
 // (see main.jsx), so these automatically collapse to instant when the user
 // has "reduce motion" on — no per-variant reduced-motion branching needed.
@@ -16,6 +16,26 @@ export const staggerContainer = {
 export const staggerItem = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+}
+
+// Standalone fade+rise for a single element (not part of a stagger group).
+export const fadeRise = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+}
+
+// Springy scale-in — for elements that should feel like they "arrive"
+// (modals, success states, floating cards) rather than just fade.
+export const springScale = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 22 } },
+}
+
+// A quieter, shorter rise for whole-page/route entrances — not meant to
+// draw attention the way a section reveal does.
+export const pageEntrance = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
 }
 
 // Pair with a wrapper that has `overflow: hidden` so the line clips in from

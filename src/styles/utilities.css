@@ -39,6 +39,23 @@
   transform: none;
 }
 
+/* Typography utilities — centralize font-family switches here rather
+   than styling headings independently on every page. */
+.text-display {
+  font-family: var(--font-display);
+}
+
+.text-heritage {
+  font-family: var(--font-heritage);
+  font-style: italic;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
