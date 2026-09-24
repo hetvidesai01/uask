@@ -1,12 +1,19 @@
 # UASK — Frontend
 
-Full spec lives in `UASK_FRONTEND_BLUEPRINT.md`. Read that first for anything not covered here — this file is the quick-context summary, that file is the source of truth for detailed specs (route map, component prop tables, exact token values, build order). **Note:** the blueprint's own §5 "Design system" section describes the *original light-mode* palette and button/badge treatments — that was superseded by the dark editorial redesign (see below). The token values, button variants, and badge colors documented in *this* file reflect the current, actual state; treat the blueprint as historical/structural reference only for anything visual.
+Full spec lives in `UASK_FRONTEND_BLUEPRINT.md`. Read that first for anything not covered here — this file is the quick-context summary, that file is the source of truth for detailed *structural* specs (route map shape, component prop tables, build order). **Note:** the blueprint's own §5 "Design system" section describes the *original light-mode* palette from the very first build — that was superseded by a dark editorial/cinematic redesign, which has since itself been superseded by the current **"Open Call"** light system (see "Design system — source of truth" below, which reflects the actual current code). Treat the blueprint as historical/structural reference only for anything visual.
 
 ## What UASK is
 
 A **reverse marketplace**: users post what they need (an "ASK") and relevant providers respond with offers, instead of searching a catalog of listings.
 
 **Core flow:** `ASK → MATCH → RESPOND → COMPARE → CONNECT`
+
+**Marketplace positioning:** UASK is a **professional / project-based** reverse marketplace — Design, Development,
+Photography/Videography, Writing, Marketing, Branding, Content Creation, Business/Strategy, Data/Analytics,
+Technology, and similar professional/creative categories. It does **not** position itself around home services,
+household errands, cleaners, plumbers, electricians, movers, or delivery-style local chores — those category
+examples were deliberately removed from the mock category taxonomy and sample content (see "Progress" below);
+don't reintroduce them in new copy, categories, or seed data.
 
 ## Current product state
 
@@ -27,15 +34,17 @@ backend/API integration yet**.
 - [x] Payments & Milestones dashboard
 - [x] Contract + milestone workflow, mock payment states, contract-completion rating/review
 - [x] Profile Booster concept (frontend/mock reputation signal — not a real ranking algorithm)
-- [x] Premium/Upgrade experience — Basic vs Premium comparison, right-side Premium teaser
+- [x] Premium/Upgrade experience — Basic vs Premium comparison, right-edge Premium teaser that opens a right-side
+  slide-over `PremiumDrawer`
 - [x] Help Center + guided onboarding
 - [x] Profile & reputation upgrade — ratings out of 5, reviews, completed contract history, portfolio mock section
 - [ ] **AI Ask Assistant** — mentioned in Help's guide copy and the onboarding tour as a planned capability, but
-  **not implemented** in Create ASK yet (verified against the code — nothing AI-related exists under
-  `pages/CreateAsk/`). Don't assume it exists; build it fresh when that phase is actually requested.
+  **still not implemented** in Create ASK (re-verified against the code — nothing AI-related exists under
+  `pages/CreateAsk/`). This is explicitly in scope for **Light Redesign Phase 4** below — don't assume it exists
+  before then, and don't build it ahead of that phase being requested.
 
 ### Important terminology
-Use these terms consistently everywhere (normalized app-wide during the Phase 8 QA pass):
+Use these terms consistently everywhere:
 - **Discover ASKs** — never "Browse ASKs"
 - **Create ASK** — the sidebar button, mobile FAB, and the `/app/asks/new` page heading all say exactly this
 - **Inbox** — not separate "Messages" / "Notifications" nav items (those are tabs *inside* Inbox, which is correct)
@@ -55,65 +64,45 @@ Reputation section):
 ### Premium
 - Pricing: **₹149/month** or **₹999/year**
 - Comparison includes: unlimited AI ASK Assistant, AI Proposal Assistant, AI Matching, Auto Contracts, Profile
-  Boosts, advanced analytics, smart alerts (full Basic-vs-Premium table lives in `components/premium/PremiumModal`)
+  Boosts, advanced analytics, smart alerts (full Basic-vs-Premium table lives in `components/premium/PremiumDrawer`)
+- Entry point is a small always-visible teaser (`components/premium/UpgradeTeaser`) that rests mostly off the right
+  edge of the viewport and slides into view on hover/focus — not a persistent card, and no dismiss/collapse state.
+  Clicking it opens `PremiumDrawer`, a right-side slide-over (built on the generic `components/ui/Drawer` atom —
+  see "Design system" below) with the same comparison table, pricing, and mock upgrade flow the old centered
+  `PremiumModal` had before it was replaced.
 - **No real billing/payment integration exists** — `subscriptionService.js` is a mock, localStorage-backed
   service; "Upgrade to Premium" is a simulated flow only
 
-### Current visual state — IMPORTANT
-The product currently ships the **dark editorial/cinematic redesign** described under "Design system — source of
-truth" below — that section is still 100% accurate for the code as it exists right now.
+### Current visual direction — IMPORTANT
+The product is mid-way through the **"Open Call"** light redesign (approved conceptually as a full strategy —
+creative concept, color/typography/motion systems, screen-by-screen treatment — captured in a Claude Artifact from
+the planning session; summarized here). It replaced an earlier dark editorial/cinematic redesign, which itself
+replaced the original light-mode build from the blueprint. Characteristics: light, editorial, kinetic, youthful
+creative-tech; warm off-white canvas; strong red/burgundy brand accents; more purposeful animation and motion.
+Keeps all five original brand hexes (`#D02727`, `#992E34`, `#F7B4B4`, `#6E1414`, `#F0B8B8`) and uses a warm light
+neutral system (canvas ≈ `#FBF3EF`, surface ≈ `#FFFDFB`, blush ≈ `#F9DAD5`, ink ≈ `#241512`). Typography:
+**Instrument Serif** + **Instrument Sans** as the display/UI pair, **EB Garamond** kept selectively, **JetBrains
+Mono** used selectively for data/numerals. Motion direction: staggered reveals, spring interactions, cursor-reactive
+cards, animated counters, shared layout transitions, spring progress animations, subtle page transitions — all
+respecting `prefers-reduced-motion`. (A true cursor-following "magnetic" CTA was considered for Phase 2/3 CTAs but
+deliberately not built — the design foundation doesn't have a magnetic primitive, so those buttons use spring
+hover/press motion instead; build a magnetic primitive first if that's explicitly wanted later.)
 
-**However, the user has decided to move away from that direction.** A new visual strategy — **"UASK Open
-Call"** — has been approved *conceptually* (a full strategy document exists as a Claude Artifact from the planning
-session that produced it): light, editorial, kinetic, youthful creative-tech; warm off-white canvas; strong
-red/burgundy brand accents; more purposeful animation. It keeps all five existing brand hexes (`#D02727`,
-`#992E34`, `#F7B4B4`, `#6E1414`, `#F0B8B8`) and moves the *neutral* palette from dark to a warm light system
-(canvas ≈ `#FBF3EF`, surface ≈ `#FFFDFB`, blush ≈ `#F9DAD5`, ink ≈ `#241512`). Planned typography: **Instrument
-Serif** + **Instrument Sans** as the new display/UI pair, **EB Garamond** kept selectively, **JetBrains Mono**
-used selectively for data/numerals. Planned motifs: a signal/broadcast mark, floating layered cards, category
-chips, asymmetric layouts, an occasional hand-marked underline, blush organic shapes. Planned motion: staggered
-reveals, spring interactions, a magnetic CTA, cursor-reactive cards, animated counters, shared layout transitions,
-spring milestone/progress animations, subtle page transitions — all respecting `prefers-reduced-motion`.
-
-**Light Redesign Phase 1 (Design Foundation) is now done** — `styles/tokens.css` carries the new light token set
-(bare names `--canvas`/`--surface`/`--blush`/`--blush-deep`/`--red`/`--red-deep`/`--burgundy`/`--pink`/
-`--pink-tagline`/`--ink`/`--ink-mute`/`--ink-faint`/`--border`/`--border-strong`, plus `--shadow-card`/
-`--shadow-lift`), with every pre-existing `--c-*` token aliased to it so the whole app inherited the light system
-without a page-by-page rewrite. Typography tokens now point at Instrument Serif/Instrument Sans, with EB Garamond
-and JetBrains Mono as separate selective tokens. New foundation-only pieces: `components/ui/SignalMark`
-(broadcast-mark primitive), `FloatingCard`, `StaggerReveal`, `AnimatedCounter`, `HandUnderline`, and three new
-motion variants (`fadeRise`, `springScale`, `pageEntrance` in `utils/motion.js`) — built in Phase 1, now put to
-use in Phase 2 (below). The official logo (`src/assets/brand/uask.logo.png` — see "Brand assets") replaced the
-text wordmark app-wide (Navbar/Footer/AppLayout sidebar+topbar) shortly after Phase 1, ahead of Landing itself.
-
-**Light Redesign Phase 2 (Landing page) is now done.** The Landing page is fully redesigned for the light system —
-asymmetric hero with oversized `Instrument Serif` type and a two-sided (`HeroSignal`) graphic showing both a
-posted ASK and named providers responding; `FlowSection` (still `id="how-it-works"`) rebuilt as a one-shot
-animated ASK→MATCH→RESPOND→COMPARE→CONNECT product story built from `SignalMark` + plain `motion.div`s (no
-canvas/WebGL) that plays once via `useInView` and settles into a static "one offer connected" end state — it no
-longer reuses the shared `SignalRail` atom (that atom is now Help-page-only, see "Folder structure" below); a new
-`ReverseMarketplaceSection` contrasts the traditional flow against UASK's; `SampleAsksSection` now fetches real
-sample ASKs through `askService.getAsks()` + `authService.getUserById()` (not a hand-duplicated fake array) and
-renders them as cursor-tilt `TiltCard`s (a Landing-local component built directly on Framer's
-`useMotionValue`/`useSpring`/`useTransform`, explicitly gated on `useReducedMotion()` since those imperative APIs
-don't read `MotionConfig` automatically); `CategoriesSection` is a spring/stagger chip cluster sourced from
-`askService.getCategories()`; `CtaSection` moved off the old dark `--c-red-dark` band onto a `--blush`→`--canvas`
-gradient with the official logo and a primary "Create ASK" action. `ValuePropsSection` was left untouched — it
-already read correctly under the light tokens. No stats/social-proof section was added — the pre-redesign Landing
-page had none to preserve, and inventing numbers wasn't an option. **Do not assume any page beyond Landing has
-been visually redesigned** — the app shell, dashboard, and every other screen still only look different because
-their CSS is 100% token-driven and inherited the light palette from Phase 1; none of their layout, motion, or copy
-has been touched yet. Planned implementation order:
+**Phases 1–3 are done. Phase 4 has not been started — wait for explicit instruction before beginning it.**
 1. ~~Light design foundation~~ — done
 2. ~~Landing page~~ — done
-3. App shell
-4. Core product loop
+3. ~~App shell~~ — done
+4. Core product loop (Discover ASKs, ASK Details, Create ASK + AI Assistant, Respond to ASK) — **next, not started**
 5. Dashboard + Payments & Milestones
 6. Contract + Inbox
 7. Profile + Premium + Help
 8. Motion polish + full QA
 
-**Next task when resumed: Light Redesign Phase 3 — App shell.**
+**Do not assume any page beyond Landing and the app shell chrome (Navbar/Footer/AppLayout) has been visually
+redesigned.** Dashboard, Discover, ASK Details, Create ASK, Respond to ASK, Compare Responses, Contract, Inbox,
+Profile, Help, and the Premium comparison content all still use dark-editorial-era layout/motion — they only look
+different from before because the global tokens are 100% inherited from Phase 1's light palette, not because their
+layout, spacing, motion, or copy has been touched.
 
 ## Scope
 
@@ -124,64 +113,103 @@ has been touched yet. Planned implementation order:
 - React + Vite
 - React Router (client-side routing, `BrowserRouter`)
 - Plain CSS with **CSS Modules** (`Component.module.css`)
-- **Framer Motion** — added during the dark editorial redesign for the motion system (page/section reveals, staggered groups, the landing "signal rail," count-up stats). Wired globally via `<MotionConfig reducedMotion="user">` in `main.jsx`, so every `motion.*` component automatically respects `prefers-reduced-motion`.
+- **Framer Motion** — the app's motion system (page/section reveals, staggered groups, spring interactions, count-up stats, the product-story sequence on Landing). Wired globally via `<MotionConfig reducedMotion="user">` in `main.jsx`, so every `motion.*` component automatically respects `prefers-reduced-motion`.
 
 **Explicitly not used** unless the user asks for it later: Tailwind, TypeScript, Redux, a backend, a database.
 
 ## Design system — source of truth
 
-> This section documents the **currently implemented** dark editorial system — still accurate for the code as it
-> exists today. See "Current product state → Current visual state" above for the approved-but-not-yet-built
-> "Open Call" light redesign direction; don't conflate the two.
+`src/styles/tokens.css` defines every brand color, font, spacing, radius, shadow, and gradient as a CSS custom
+property. **Never hard-code a hex value or px number in a component — always reference a token.**
 
-`src/styles/tokens.css` defines every brand color, font, spacing, radius, shadow, gradient, and glow as a CSS custom property. **Never hard-code a hex value or px number in a component — always reference a token.**
+UASK is currently the light editorial **"Open Call"** system (Light Redesign Phases 1–3):
 
-UASK is now a **dark editorial / cinematic** product (redesigned from the original light theme — see "Visual redesign" under Progress). Key facts about the current token set:
-
-- **Brand hexes are unchanged from the original spec** — `--c-red: #D02727`, `--c-red-deep: #992E34`, `--c-red-dark: #6E1414`, `--c-pink: #F7B4B4`, `--c-pink-tagline: #F0B8B8`. The redesign never altered these five values, only how/where they're used.
-- **Neutrals are now dark**: `--c-bg: #0B0A0A` (canvas), `--c-surface: #141212`, `--c-surface-2: #1C1919`, `--c-surface-3: #262121`, `--c-text: #F5EFEC`, `--c-text-mute: #A99C99`, `--c-text-faint: #6E6260` (decorative/non-essential metadata only — below body-text AA), `--c-border: #2E2828`, `--c-border-hover: #4A3E3E`.
-- **Brand-derived accents (new)**: `--c-red-accent: #E6514D` (the *only* red allowed as small foreground text or a focus ring on a dark surface — verified ≥4.5:1), `--c-red-wash: rgba(208,39,39,.16)` (soft interactive tint), `--grad-signal` (the signature red gradient), `--glow-red-sm` / `--glow-red-md` (restrained glow shadows).
-- **Contrast rule, documented as comments in `tokens.css` itself**: `--c-red-deep` / `--c-red-dark` = fills/backgrounds/gradient stops *only*, never foreground text or borders on a dark neutral (both measure well under 3:1 there). `--c-red` = borders/icons/decorative accents (clears 3:1). `--c-red-accent` = small foreground text and focus rings (clears 4.5:1). This rule was the source of several real contrast bugs found and fixed during the redesign — respect it in any new component.
-- **Status colors were brightened** for dark-surface legibility (`--c-success`, `--c-warning`, `--c-info`); `--c-danger` now aliases `--c-red-accent` (was `--c-red-dark`).
-- **Shadows are black-based** (`--sh-sm/md/lg` use `rgba(0,0,0,…)`), not the light-tuned rgba values from the original spec. Elevation is primarily **surface lightness + border**, shadows are a secondary depth cue — heavy box-shadow stacking is avoided by convention.
-- Typography rules (`--font-display` reserved for landing H1/section H2s/hero-style titles; everything else `--font-body`) are unchanged. No monospace font was added — considered during the redesign and explicitly deferred.
+- **Brand hexes unchanged from the original spec** — `--red: #D02727`, `--red-deep: #992E34`, `--burgundy: #6E1414`,
+  `--pink: #F7B4B4`, `--pink-tagline: #F0B8B8`. Every earlier `--c-red`/`--c-red-deep`/`--c-red-dark`/`--c-pink`/
+  `--c-pink-tagline` name still works — aliased to these bare tokens for backward compatibility with the ~50
+  existing consumers that predate Phase 1.
+- **Neutrals are warm and light**: `--canvas: #FBF3EF` (page background, aliased as `--c-bg`), `--surface:
+  #FFFDFB` (raised card background, aliased as `--c-surface`), `--blush: #F9DAD5` and `--blush-deep: #F3BFB8`
+  (soft accent surfaces — active nav pills, decorative bands), `--ink: #241512` / `--ink-mute: #6B5750` /
+  `--ink-faint: #A89189` (aliased as `--c-text` / `--c-text-mute` / `--c-text-faint`), `--border: #EAD6CF` /
+  `--border-strong: #DFB9B0` (aliased as `--c-border` / `--c-border-hover`).
+- **Contrast rule** (inverted from the old dark-theme rule): `--red` clears ~4.8:1 directly on the light neutrals
+  above, so unlike the dark system it's safe as small foreground text, icons, borders, and focus rings on its own
+  — `--c-red-accent` simply aliases `--red`. `--red-deep` / `--burgundy` are for richer fills, hover states, and
+  text that wants more weight (e.g. on a pale `--c-red-wash` band). `--pink` / `--pink-tagline` are decoration/fill
+  only, or foreground text on a *dark* band — never foreground text directly on the light canvas/surface (this was
+  the source of several real contrast bugs found and fixed during the Phase 1 palette flip — Badge, AppLayout,
+  PremiumDrawer's plan cards, Landing's hero kicker).
+- **Status colors** tuned for light-surface legibility (`--c-success: #2E7D57`, `--c-warning: #B8860B`,
+  `--c-info: #2B6CB0`); `--c-danger` aliases `--red`.
+- **Elevation**: `--shadow-card` / `--shadow-lift` are warm, directional, burgundy-tinted shadows (not black-based)
+  — aliased as `--sh-sm`/`--sh-md`/`--sh-lg` for older consumers. Elevation is primarily surface lightness + a
+  hairline border; shadows are a secondary, restrained depth cue.
+- **Typography**: `--font-display` → Instrument Serif (major editorial headings — landing H1, section H2s,
+  hero-style titles), `--font-body` → Instrument Sans (everything else), `--font-heritage` → EB Garamond
+  (occasional expressive moments, used selectively), `--font-mono` → JetBrains Mono (prices, stats, timestamps,
+  small data labels — used selectively, e.g. `StatCard`'s value, `AnimatedCounter`).
+- **Radius**: `--r-sm: 8px`, `--r-md: 14px`, `--r-lg: 20px`, `--r-full: 999px` — rounder than the old dark system.
 - Breakpoints unchanged: mobile-first, `min-width` only — `640px`, `900px`, `1200px`.
+- `html { color-scheme: light; }` (was `dark` before Phase 1 — affects native form-control/scrollbar theming).
 
-Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.row`, `.section`, `.reveal`/`.isVisible`, `.sr-only` — unchanged.
+Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.row`, `.section`,
+`.reveal`/`.isVisible`, `.sr-only`, plus typography helpers `.text-display` / `.text-heritage` / `.text-mono`.
 
-**Motion system**: `src/utils/motion.js` exports reusable Framer Motion variants (`staggerContainer`, `staggerItem`, `lineReveal`, `cardEntrance`, `hoverLift`). `src/hooks/useReducedMotion.js` re-exports Framer Motion's hook for the rare case a component needs to branch logic explicitly (e.g. `useCountUp`, since Framer's imperative `animate()` API doesn't read the `MotionConfig` context automatically). Rule established during the redesign: **motion communicates state/hierarchy, it doesn't decorate** — no infinite/looping animation anywhere, no scroll-linked parallax, no 3D tilt.
+**Motion system**: `src/utils/motion.js` exports reusable Framer Motion variants — `staggerContainer`,
+`staggerItem`, `fadeRise`, `springScale`, `pageEntrance`, `lineReveal`, `cardEntrance`, `hoverLift`.
+`src/hooks/useReducedMotion.js` re-exports Framer Motion's hook for the cases where a component needs to branch
+logic explicitly rather than rely on `MotionConfig` — anywhere using Framer's *imperative* APIs (`animate()`,
+`useMotionValue`/`useSpring`/`useTransform`) rather than the declarative `motion.*` props, e.g. `useCountUp`,
+`AnimatedCounter`, and Landing's cursor-tilt `TiltCard`. Rule established during the redesign and still in force:
+**motion communicates state/hierarchy, it doesn't decorate** — no infinite/looping animation anywhere (the one
+sanctioned exception is `Spinner`'s loading rotation), no scroll-linked parallax, no constant/idle-nudge
+animations (considered for the Premium teaser, deliberately left out for this reason).
 
-**Graphics primitives**: `components/ui/GrainOverlay` (a static, low-opacity film-grain texture mounted once globally in `App.jsx`) and `components/ui/GradientMesh` (a reusable low-opacity red/pink radial glow, used on the landing hero and final CTA band — not mounted globally).
+**Reusable atoms added during the light redesign** (`components/ui/`): `SignalMark` (broadcast-mark primitive —
+central dot + optional radiating rings, static or one-shot-animated, used in Landing's hero/product-story/CTA),
+`FloatingCard`, `StaggerReveal`, `AnimatedCounter`, `HandUnderline`, `Drawer` (generic right-side slide-over —
+focus trap, Escape-to-close, overlay-click-to-close, focus restore, body-scroll lock, spring slide animation; this
+is the `Drawer` atom the original blueprint planned but never built — `PremiumDrawer` is its first consumer, it's
+available for other uses like a future mobile filter drawer).
 
-**Mobile-first, accessible by default:** unchanged — every input has a real `<label>`, every icon-only control has an `aria-label`, visible `:focus-visible` ring everywhere (now `--c-red`, not `--c-red-deep` — that was one of the contrast fixes), touch targets sized comfortably, Modal has a real focus trap + focus restore, Tabs support arrow-key navigation.
+**Graphics primitives**: `components/ui/GrainOverlay` (a static, low-opacity film-grain texture mounted once
+globally in `App.jsx`) and `components/ui/GradientMesh` (a reusable low-opacity red/pink radial glow, used on the
+Landing hero — not mounted globally).
+
+**Mobile-first, accessible by default:** every input has a real `<label>`, every icon-only control has an
+`aria-label`, visible `:focus-visible` ring everywhere (`--red`), touch targets sized comfortably, `Modal` and
+`Drawer` both have a real focus trap + focus restore, `Tabs` supports arrow-key navigation.
 
 ## Brand assets
 
 **Official logo:** `src/assets/brand/uask.logo.png` — a transparent-background PNG lockup ("Uask" wordmark + the
 signal-dot motif already built into the "U," plus a baked-in tagline). This is the one official logo file; do not
-redraw, re-export, crop, or otherwise modify it — resize only via CSS (`height` + `width: auto`) to preserve its
-aspect ratio.
+redraw, re-export, crop, or otherwise modify it — resize only via CSS (`height` + `width: auto`, plus
+`object-fit: contain` as a backstop) to preserve its aspect ratio. **Watch for flex containers with no explicit
+`align-items`** — a column flex parent's default `stretch` distorted the Footer logo once already (fixed with
+`align-self: flex-start`); check any new placement the same way.
 
 Rendered in place of a text "UASK" wordmark at every major brand position: the public `Navbar` (also covers the
 Login/Signup auth screens, which have no logo of their own and rely on `Navbar` via `PublicLayout`), `Footer`,
-`AppLayout`'s sidebar + mobile top bar (both instances), and (added in Light Redesign Phase 2) Landing's
-`CtaSection`. Each usage is `<img src={uaskLogo} alt="UASK" ... />` — always keep the `alt="UASK"` text exactly
-as-is. Textual mentions of "UASK" elsewhere (page copy, titles like
-"UASK Premium," the footer copyright line, document `<title>`) stay as plain text — only standalone brand-mark
-lockups get the image.
+`AppLayout`'s sidebar + mobile top bar (both instances), and Landing's `CtaSection`. Each usage is
+`<img src={uaskLogo} alt="UASK" ... />` — always keep the `alt="UASK"` text exactly as-is. Textual mentions of
+"UASK" elsewhere (page copy, titles like "UASK Premium," the footer copyright line, document `<title>`) stay as
+plain text — only standalone brand-mark lockups get the image.
 
 ## Architecture rules
 
-- **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way. This was upheld throughout the redesign and the product-structure changes — the new `contractService.js` follows the identical pattern.
-- **Components don't import from `pages/`.** Data flows one direction: `pages/` → `services/` → `mocks/` (mock era) or `services/` → `http.js` → API (post-Phase-9).
-- Reusable UI atoms live in `components/ui/` — the original 13 (Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard), plus `GrainOverlay` and `GradientMesh` added during the redesign.
-- Public-site chrome lives in `components/layout/` (Navbar, Footer) — Navbar is now scroll-aware (transparent-over-hero on the landing route only, solid elsewhere).
-- App-shell chrome (`layouts/AppLayout.jsx`) now includes a genuine **desktop top bar** (search input, read-only role indicator, notification bell with combined unread badge, account dropdown menu) in addition to the sidebar — this is a change from the original Phase-9 build, where desktop had sidebar-only navigation and "top bar" was mobile-only. A standalone `PageHeader` component is still the one piece of the original blueprint shell not built.
-- Domain components live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`, `components/contract/` (currently just `ContractStatusBadge`, added for the Contract + Milestone flow), and `components/premium/` (`UpgradeTeaser`, `PremiumModal` — added for the Premium/Upgrade flow).
-- The Premium/Upgrade flow is a **modal, not a route** (`AppLayout` owns the `subscription`/`premiumOpen` state and renders `PremiumModal` once, globally, rather than adding an `/app/premium` page) — chosen because it integrates with the shell without touching `App.jsx`'s route tree or any individual page. `subscriptionService.js` follows the same mock-service pattern as the rest of `services/` (delay + localStorage-backed persistence, same call signature a real API would use later).
-- `components/onboarding/` (currently just `ProductTour`) holds the guided-onboarding modal, added for the Help Center + Onboarding phase. `ProductTour` is mounted once in `AppLayout` (like `PremiumModal`) and auto-opens for a logged-in user until they Skip/Finish it; completion is tracked per-user in localStorage via `src/utils/onboarding.js`'s `onboardingStorageKey(userId)`, which both `ProductTour` (read/write via `useLocalStorage`) and the Help page's "Restart Product Tour" control (`resetOnboarding(userId)`, then navigates to `/app/dashboard`) agree on.
-- `/help` is a **public route** (rendered inside `PublicLayout`, reachable logged-out or logged-in — same pattern the existing `/` route already follows). Since the app shell (`AppLayout`) has no nav item pointing at it, a small "❓ Help" icon-link was added to both the mobile and desktop top bars (next to the notification bell) purely so a logged-in user has a way to reach it and the "Restart Product Tour" control — this is the one shell change in that phase, everything else about `AppLayout` is unchanged.
-- Profile & Reputation (Product Change Phase 7): the reputation math (`getProviderReputation`, `getCompletedContractsForProvider`) lives in `contractService.js` — same simple milestone-based Profile Booster formula (`round(completedMilestones / totalMilestones * 20)`) already used on the Payments dashboard and the Contract page, not a new algorithm. It's scoped to contracts where the profile's owner is the provider; a plain mock-only Portfolio (`profileService.js` + `mocks/portfolio.js`, no upload flow) is separate from that. `Profile/index.jsx` only renders the reputation/reviews/completed-work/portfolio sections when the viewed profile has the `provider` role, and falls back to the profile's seeded `rating`/`reviewCount` for Average Rating whenever there's no rated completed contract yet, so the number stays consistent with `UserMiniCard`/`CompareResponses` elsewhere in the app rather than showing "— / 5" for most of the mock dataset.
+- **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way.
+- **Components don't import from `pages/`.** Data flows one direction: `pages/` → `services/` → `mocks/` (mock era) or `services/` → `http.js` → API (post-Phase-10).
+- Reusable UI atoms live in `components/ui/` — the original 13 (Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard) plus the light-redesign additions listed under "Design system" above.
+- Public-site chrome lives in `components/layout/` (Navbar, Footer) — Navbar is scroll-aware (transparent-over-hero on the landing route only, solid elsewhere) and renders the logo image; Footer renders the logo image too.
+- App-shell chrome (`layouts/AppLayout.jsx`): a floating light sidebar panel (desktop, inset with rounded corners + soft shadow, not a full-bleed rail), a sticky desktop top bar (search, read-only role indicator, notification bell with combined unread badge, account dropdown menu), and a separate mobile shell (top bar + bottom tab bar + FAB). A standalone `PageHeader` component is still the one piece of the original blueprint shell not built.
+- Domain components live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`, `components/contract/` (currently just `ContractStatusBadge`), and `components/premium/` (`UpgradeTeaser` — the edge-peek teaser, `PremiumDrawer` — the slide-over comparison, built on `components/ui/Drawer`).
+- The Premium/Upgrade flow is a **drawer, not a route** (`AppLayout` owns the `subscription`/`premiumOpen` state and renders `PremiumDrawer` once, globally) — same reasoning as before: integrates with the shell without touching `App.jsx`'s route tree or any individual page. `subscriptionService.js` follows the same mock-service pattern as the rest of `services/` (delay + localStorage-backed persistence, same call signature a real API would use later).
+- `components/onboarding/` (currently just `ProductTour`) holds the guided-onboarding modal, mounted once in `AppLayout` (like `PremiumDrawer`) and auto-opens for a logged-in user until they Skip/Finish it; completion is tracked per-user in localStorage via `src/utils/onboarding.js`'s `onboardingStorageKey(userId)`.
+- `/help` is a **public route** (rendered inside `PublicLayout`, reachable logged-out or logged-in). A small "❓ Help" icon-link sits in both the mobile and desktop app-shell top bars.
+- Profile & Reputation: the reputation math (`getProviderReputation`, `getCompletedContractsForProvider`) lives in `contractService.js` — the same milestone-based Profile Booster formula used on the Payments dashboard and the Contract page. `Profile/index.jsx` only renders the reputation/reviews/completed-work/portfolio sections for the `provider` role, and falls back to the profile's seeded `rating`/`reviewCount` whenever there's no rated completed contract yet.
+- **Mock user persistence**: `authService.js`'s `users` array is localStorage-persisted (key `uask.mock.users`), not just re-imported fresh from `mocks/users.js` on every load. This matters because `login()`/`signup()` push newly-created users into that array at runtime — without persisting it, a reload would reset `users` to just the 3 seeded accounts, and `getUserById(currentUser.id)` would return `null` for anyone else, even though `AuthContext`'s own separate localStorage key still remembered them as logged in (this was a real bug — "Profile not found" on your own `/app/profile` after a refresh — fixed by persisting the array; see "Progress" below). `updateUser()` also persists, so profile edits now survive a reload too.
 - Page folder convention: `PageName/index.jsx` + `PageName.module.css`, plus any page-local sub-components in the same folder — e.g. `Landing/` (multi-section), `Dashboard/` (shell + `DashboardOverview` + `DashboardPayments` + `ActivityFeed` + `useCountUp`), `Inbox/` (shell + `Thread` + `NotificationsPanel`), `Contract/` (shell + `MilestoneTimeline` + `RatingForm`), `AskDetails/` (+ `StatusRail`).
 
 ## Folder structure (current)
@@ -189,44 +217,53 @@ lockups get the image.
 ```
 src/
 ├─ main.jsx (wraps app in <MotionConfig reducedMotion="user">), App.jsx (route tree), index.css
-├─ assets/            brand/uask.logo.png — official logo asset (see "Brand assets" below)
-├─ styles/            tokens.css (light "Open Call" foundation), reset.css, base.css, utilities.css
-├─ layouts/           PublicLayout, AppLayout (sidebar + desktop top bar + mobile shell), ProtectedRoute
+├─ assets/            brand/uask.logo.png — official logo asset (see "Brand assets" above)
+├─ styles/            tokens.css (light "Open Call" system), reset.css, base.css, utilities.css
+├─ layouts/           PublicLayout, AppLayout (floating sidebar + desktop top bar + mobile shell), ProtectedRoute
 ├─ pages/             one folder per route (see App.jsx for the route map)
-│  ├─ Landing/         Hero + HeroSignal (light redesign, Phase 2), FlowSection (animated product-story sequence,
-│  │                   no longer the SignalRail atom), ReverseMarketplaceSection, ValueProps, SampleAsks (real
-│  │                   data via askService/authService), Categories (chip cluster), Cta
+│  ├─ Landing/         Hero + HeroSignal (light, asymmetric), FlowSection (animated ASK→MATCH→RESPOND→COMPARE→
+│  │                   CONNECT product-story sequence, SignalMark-based — no longer the SignalRail atom),
+│  │                   ReverseMarketplaceSection, ValueProps, SampleAsks (real data via askService/authService,
+│  │                   cursor-tilt cards), Categories (spring/stagger chip cluster), Cta (blush surface + logo)
 │  ├─ Dashboard/        shell (nav switch) + DashboardOverview + DashboardPayments + ActivityFeed + useCountUp
 │  ├─ AskDetails/       + StatusRail (compact ASK→MATCH→RESPOND→COMPARE→CONNECT progress rail)
 │  ├─ Contract/         Contract summary/payment/milestones/rating screen + MilestoneTimeline + RatingForm
 │  ├─ Inbox/            merged Messages + Notifications (tabs) + Thread + NotificationsPanel
-│  ├─ Help/             HowItWorksSection (signal rail), GuideSection (shared, used for both guides), FaqSection (accordion), ProductTourCallout
-│  ├─ Profile/          + ReputationMetrics, ReviewsSection, CompletedWorkSection, PortfolioSection (provider-only; Product Change Phase 7)
-│  ├─ DesignPreview/    temporary, dev-only — inspects the dark token system; not linked from nav
-│  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, NotFound — unchanged)
+│  ├─ Help/             HowItWorksSection (signal rail — the shared SignalRail atom's only remaining consumer),
+│  │                   GuideSection (shared, used for both guides), FaqSection (accordion), ProductTourCallout
+│  ├─ Profile/          + ReputationMetrics, ReviewsSection, CompletedWorkSection, PortfolioSection (provider-only)
+│  ├─ DesignPreview/    temporary, dev-only — inspects the light token system; not linked from nav
+│  └─ (Login, Signup, CreateAsk, DiscoverAsks, RespondToAsk, CompareResponses, NotFound — not yet visually
+│      redesigned; still dark-editorial-era layout with the light tokens inherited underneath)
 ├─ components/
-│  ├─ ui/              generic, reusable, no business logic (13 original + GrainOverlay/GradientMesh/SignalMark/
-│  │                   FloatingCard/StaggerReveal/AnimatedCounter/HandUnderline — light-redesign foundation atoms)
+│  ├─ ui/              generic, reusable, no business logic — the original 13 (Button, Input, Textarea, Select,
+│  │                   Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard) plus GrainOverlay,
+│  │                   GradientMesh, SignalMark, SignalRail, FloatingCard, StaggerReveal, AnimatedCounter,
+│  │                   HandUnderline, Drawer
 │  ├─ layout/          Navbar (scroll-aware, renders the logo image), Footer (renders the logo image)
 │  ├─ ask/              AskCard, AskFilters, AskFormStep1-4, AskMetaGrid, AskStatusBadge, UserMiniCard
 │  ├─ offer/            OfferCard, OfferFormStep1-3, OfferList, OfferStatusBadge
 │  ├─ messages/         ThreadList, ThreadListItem, MessageBubble, MessageComposer
 │  ├─ notifications/    NotificationItem
 │  ├─ contract/         ContractStatusBadge
-│  ├─ premium/          UpgradeTeaser (right-side app-shell teaser), PremiumModal (Basic/Premium compare + mock upgrade)
+│  ├─ premium/          UpgradeTeaser (right-edge peek tab), PremiumDrawer (Basic/Premium compare + mock upgrade,
+│  │                   built on components/ui/Drawer)
 │  └─ onboarding/       ProductTour (guided-onboarding modal, mounted in AppLayout)
 ├─ context/            AuthContext.jsx, ToastContext.jsx
 ├─ hooks/               useAuth, useToast, useLocalStorage, useInView, useReducedMotion
 ├─ utils/               motion.js (Framer Motion variants), formatDate.js, formatCurrency.js, validators.js, onboarding.js (localStorage key + reset helper)
-├─ services/            authService, askService, offerService, messageService, notificationService, contractService, subscriptionService, profileService
-└─ mocks/               users, asks, offers, messages, notifications, categories, contracts, subscriptions, portfolio
+├─ services/            authService (persists its mock `users` array to localStorage — see "Architecture rules"),
+│                       askService, offerService, messageService, notificationService, contractService,
+│                       subscriptionService, profileService
+└─ mocks/               users, asks, offers, messages, notifications, categories, contracts, subscriptions,
+                        portfolio — categories/asks no longer include "Home services"/"Errands" (see "Progress")
 ```
 
 ## Route map (current)
 
 ```
 /                              Landing
-/help                          Help center — How UASK Works, guides, FAQs, Restart Product Tour (Product Change Phase 6)
+/help                          Help center — How UASK Works, guides, FAQs, Restart Product Tour
 /login, /signup
 /design-preview                temporary, dev-only
 
@@ -238,92 +275,104 @@ src/
 /app/asks/:askId               ASK details (shows "View Contract" once an offer is accepted)
 /app/asks/:askId/respond       Respond to ASK
 /app/asks/:askId/compare       Compare responses
-/app/asks/:askId/contract      Contract + milestones + rating (new — Product Change Phase 3)
+/app/asks/:askId/contract      Contract + milestones + rating
 /app/inbox                     Inbox — Messages tab (default)
 /app/inbox/messages/:threadId  Inbox — Messages tab, thread open
 /app/inbox?tab=notifications   Inbox — Notifications tab
-/app/profile, /app/profile/:userId
+/app/profile                   Own profile — resolves via the authenticated user's id (see "Auth" below)
+/app/profile/:userId           Another user's profile
 
 /app/messages, /app/messages/:threadId, /app/notifications   → redirect to the /app/inbox equivalents (back-compat only)
 ```
 
 ## Auth (mock, no backend)
 
-`AuthContext` persists the logged-in user to `localStorage` (`uask.auth.user`) via `useLocalStorage`. `authService.login`/`.signup` simulate a network call (~400ms) and either match a seeded mock user by email or fabricate a minimal profile. `ProtectedRoute` redirects unauthenticated visits to `/app/*` → `/login` (remembering the original destination via router state so login returns you there); an authenticated visit to `/login` or `/signup` redirects to `/app/dashboard`.
+`AuthContext` persists the logged-in user to `localStorage` (`uask.auth.user`) via `useLocalStorage`.
+`authService.login`/`.signup` simulate a network call (~400ms) and either match a seeded mock user by email or
+fabricate a minimal profile. `authService.js`'s underlying `users` array is *also* localStorage-persisted (key
+`uask.mock.users` — see "Architecture rules" above) so a fabricated/signed-up user's own profile still resolves
+after a reload, not just their login session. `ProtectedRoute` redirects unauthenticated visits to `/app/*` →
+`/login` (remembering the original destination via router state so login returns you there); an authenticated
+visit to `/login` or `/signup` redirects to `/app/dashboard`.
+
+`Profile/index.jsx` resolves `targetId` as `useParams().userId ?? currentUser.id` — so `/app/profile` (no param)
+always resolves the authenticated user's own id, `/app/profile/:userId` resolves whichever id is in the URL, and
+`isOwnProfile = targetId === currentUser.id` drives the edit-vs-message-button UI split. No user id is ever
+hardcoded. A genuinely nonexistent id still correctly renders the "Profile not found" `EmptyState`.
 
 ## Progress
 
-### Original build (Phases 1–9)
-- [x] Phase 1 — Setup
-- [x] Phase 2 — Routing + layouts
-- [x] Phase 3 — UI kit (13 components + `/styleguide`, later removed)
-- [x] Phase 4 — Landing page (original light-mode version — since redesigned)
-- [x] Phase 5 — Auth screens
-- [x] Phase 6 — Mocks + services
-- [x] Phase 7 — Core product loop (Discover, ASK Details, Create ASK, Respond, Compare, Dashboard)
-- [x] Phase 8 — Secondary screens (Messages, Notifications, Profile — Messages/Notifications later merged into Inbox)
-- [x] Phase 9 — Frontend polish + QA
-- [ ] **Phase 10 — API swap** (`services/http.js`, real backend) — not started. All services are still 100% mock.
+### Original build (Phases 1–9) + dark editorial redesign — historical, done
+The app went through an original light-mode build (Phases 1–9 in the blueprint's numbering), then a full dark
+editorial/cinematic redesign of every screen. Both are complete history at this point — current code no longer
+resembles either visually. `services/http.js` (the real-API swap) has still never been started; all services are
+100% mock.
 
-### Visual redesign — dark editorial / cinematic system (done, all phases)
-- [x] Design foundation — dark token system, motion utilities, `GrainOverlay`/`GradientMesh`, `/design-preview`
-- [x] Landing page redesign — scroll-aware Navbar, cinematic hero + `HeroSignal` graphic, flow section rebuilt as a "signal rail," editorial value props, premium sample-ASK cards, index-style categories, gradient-mesh CTA, restyled Footer
-- [x] App shell redesign — dark sidebar with rail-indicator active state, new desktop top bar (search/role indicator/notifications/account menu), restyled mobile nav + FAB
-- [x] Core loop screens redesign — Dashboard, Discover, ASK Details (+ compact status rail), Compare Responses restyled to the dark system with restrained motion
-
-### Light redesign — "Open Call" (in progress — Phase 1 done)
-Full strategy — creative concept, color/typography/motion systems, screen-by-screen treatment — is in a Claude
-Artifact from the planning session; summarized under "Current product state → Current visual state" above.
-- [x] 1. Light design foundation — light token set (`tokens.css`) with `--c-*` back-compat aliases, typography
-  tokens (Instrument Serif/Sans, EB Garamond, JetBrains Mono), new radius/shadow scale, `SignalMark`,
-  `FloatingCard`/`StaggerReveal`/`AnimatedCounter`/`HandUnderline` wrappers, 3 new motion variants, contrast
-  fixes for pink-foreground-on-light-bg bugs the palette flip exposed (Badge/AppLayout/PremiumModal/Landing
-  kicker), `color-scheme: light`. Nothing page-specific was redesigned — see "Current visual state" above.
-- [x] 2. Landing page — asymmetric hero (oversized Instrument Serif, two-sided `HeroSignal` graphic), `FlowSection`
-  rebuilt as a one-shot animated ASK→MATCH→RESPOND→COMPARE→CONNECT sequence (`SignalMark`-based, no longer the
-  shared `SignalRail` atom), new `ReverseMarketplaceSection`, `SampleAsksSection` wired to real
-  `askService`/`authService` data with cursor-tilt cards, `CategoriesSection` as a spring/stagger chip cluster,
-  `CtaSection` moved to a blush surface with the official logo. `ValuePropsSection` untouched (already correct).
-  No stats section added (none existed to preserve).
-- [ ] 3. App shell — **next task when resumed**
-- [ ] 4. Core product loop
+### Light redesign — "Open Call" (in progress — Phases 1–3 done)
+- [x] **Phase 1 — Design Foundation**: new light token system (bare names aliased from every pre-existing `--c-*`
+  token), typography foundation (Instrument Serif/Sans, EB Garamond, JetBrains Mono), new radius/shadow scale,
+  motion primitives (`fadeRise`/`springScale`/`pageEntrance`), reusable creative wrappers (`SignalMark`,
+  `FloatingCard`, `StaggerReveal`, `AnimatedCounter`, `HandUnderline`), several pink-foreground-on-light-bg
+  contrast fixes the palette flip exposed, `color-scheme: light`. Official logo integrated app-wide shortly after
+  (Navbar/Footer/AppLayout), ahead of Landing.
+- [x] **Phase 2 — Landing Page**: asymmetric hero (oversized Instrument Serif, two-sided `HeroSignal` graphic),
+  `FlowSection` rebuilt as a one-shot animated ASK→MATCH→RESPOND→COMPARE→CONNECT product-story sequence
+  (`SignalMark`-based, no longer the shared `SignalRail` atom — that's now Help-page-only), new
+  `ReverseMarketplaceSection`, `SampleAsksSection` wired to real `askService`/`authService` data with cursor-tilt
+  cards, `CategoriesSection` as a spring/stagger chip cluster, `CtaSection` moved to a blush surface with the
+  official logo. `ValuePropsSection` left untouched (already correct under the light tokens). Follow-up bug-fix
+  pass: fixed `SampleAsksSection` rendering a large permanent blank area (the `useInView` ref was attached to
+  content that only mounted after the async data load resolved, so the IntersectionObserver never attached and
+  the stagger animation's `hidden` state — `opacity: 0` — never cleared; fixed by moving the ref to an
+  always-mounted wrapper, plus added an `EmptyState` fallback for a genuinely-empty result), fixed the Footer
+  logo rendering stretched (a column flex parent's default `align-items: stretch` was distorting it — added
+  `align-self: flex-start`), and removed "Home services"/"Errands" from `mocks/categories.js` and recategorized/
+  removed the sample asks that used them (see "Marketplace positioning" above).
+- [x] **Phase 3 — App Shell**: sidebar redesigned from a full-bleed dark rail into a floating light panel (inset,
+  rounded, soft shadow); nav active state is a blush pill + spring-animated red dot (the old vertical gradient
+  rail indicator and icon glow filter were removed); Create ASK is a pill-shaped button with spring hover/press
+  motion; desktop top bar's frosted background fixed from a leftover hardcoded dark rgba to a warm-light
+  equivalent, search softened to a borderless pill; mobile tab bar active state is a blush icon pill; small spring
+  "pop" added to all three unread badges (sidebar, bell, tab bar); sidebar plays a one-shot fade+slide entrance.
+  Premium teaser/drawer redesigned in the same spirit as a follow-up: `UpgradeTeaser` went from a
+  dismissible/collapsible card to an always-visible right-edge peek tab (see "Premium" above), and its trigger now
+  opens `PremiumDrawer` (built on the new generic `Drawer` atom) instead of the old centered `PremiumModal`, which
+  was deleted.
+- [ ] 4. Core product loop (Discover ASKs, ASK Details, Create ASK + AI Ask Assistant, Respond to ASK) — **next;
+  not started; wait for explicit instruction**
 - [ ] 5. Dashboard + Payments & Milestones
 - [ ] 6. Contract + Inbox
 - [ ] 7. Profile + Premium + Help
 - [ ] 8. Motion polish + full QA
 
-### Product structure changes (see conversation history for the full 8-item plan; status below)
-- [x] Unified Inbox — merged Messages + Notifications into `/app/inbox` (tabs), combined unread badge, old routes redirect
-- [x] Dashboard restructuring — split into ASKs & Offers (`/app/dashboard`) and Payments & Milestones (`/app/dashboard/payments`) sub-routes with a real internal nav switch
-- [x] Contract + Payment/Milestone flow — "View Contract" entry point from ASK Details once an offer is accepted, full Contract screen (summary/deliverables/payment summary/milestone timeline with role-based mock actions/completion/rating), feeds Dashboard's Revenue/Average Rating/Milestones metrics
-- [ ] AI Ask Assistant (inside Create ASK) — not started
-- [x] Premium/Upgrade screen — right-side `UpgradeTeaser` on all `/app/*` screens (collapsible, dismissible, fixed on desktop ≥1200px / inline banner below that) + `PremiumModal` (Basic vs Premium comparison, ₹149/mo or ₹999/yr, mock "Upgrade to Premium" flow via `subscriptionService`, no real billing)
-- [x] Help section (replacing "How it works" in public nav; FAQs/guides) — `/help` (public route): How UASK Works (signal rail), Guide for ASK creators, Guide for providers, accordion FAQs, plus a "Restart Product Tour" control. Guided onboarding: `ProductTour` (5 steps — Discover/Create ASK/Inbox/Dashboard/Profile — Next/Back/Skip/Finish), auto-opens once per user in `AppLayout`, completion tracked in localStorage
-- [x] Profile & Reputation Upgrade (Product Change Phase 7, supersedes the earlier "4.8 / 5" rating-format item) — Profile summary now leads with a prominent "4.8 / 5" rating + review count and a derived headline (`"{primary category} Provider"` / `"Seeker"`, read-only — no new editable field). Provider profiles additionally get: Reputation metrics (Average Rating, Completed Contracts, Total Revenue, Profile Booster with a non-ranking-guarantee info toggle), Reviews, Completed work / contract history, and a mock-only Portfolio with an empty state — all gated behind the `provider` role so a dual-role profile isn't duplicated, just extended
-- [x] "Browse" → "Discover" wording pass (Navbar, Discover subtitle, Dashboard empty state, Landing categories heading)
-
-### Product Change Phase 8 — Full Frontend QA + Consistency Pass (done)
-Whole-app audit before backend/API integration — terminology, navigation, UI/dark-theme/motion consistency, responsive/empty-state/architecture hygiene. Findings and fixes are in conversation history; the concrete changes made:
-- Unified the "create an ASK" entry point's label to **Create ASK** everywhere it's a literal nav element (sidebar button, mobile FAB, the `/app/asks/new` page's own `<h1>` — previously "+ New ASK" / "Post a new ASK" in three different places for the same destination). Narrative copy elsewhere ("Post an ASK" CTAs on Landing/Dashboard/Signup, "You posted…" activity feed text) was left as-is — that's consistent marketing/activity voice across itself, not a nav label, and rewriting it was judged out of scope for this pass.
-- Two leftover "browse" verbs in Help's copy (a provider-guide step, an FAQ answer) reworded to match the canonical **Discover** terminology, now that "Browse ASKs" is fully retired.
-- Extracted the duplicated "signal rail" markup/CSS (`Landing/FlowSection` and `Help/HowItWorksSection` had copy-pasted, near-identical implementations) into a shared `components/ui/SignalRail` atom — zero visual change, removes ~150 lines of duplication.
-- Confirmed clean via static audit (no code changes needed): no hardcoded hex/light-theme colors outside `tokens.css`, no broken `Link`/`navigate` targets, no pages importing `mocks/` directly, no dead page/component files, no unconditional fixed-width (≥300px) CSS that could force mobile overflow, no animation loops/scroll-linked parallax/3D tilt outside the intentional `Spinner`.
+### Latest bug fix — Profile "not found" for the current user (fixed)
+Reported symptom: opening `/app/profile` showed "Profile not found" for the logged-in user. Root cause:
+`authService.js`'s `users` array was a plain module-level import from `mocks/users.js`, holding only the 3 seeded
+accounts; `login()`/`signup()` pushed any other account into that array only in memory, so a page reload reset it
+back to the 3 seeded accounts while `AuthContext`'s separate `uask.auth.user` localStorage key still correctly
+remembered the user as logged in — `getUserById(currentUser.id)` then returned `null` for anyone who wasn't one of
+the 3 seeded accounts. Fixed by making `authService.js`'s `users` array itself localStorage-persistent (see
+"Architecture rules" and "Auth" above). The routing (`targetId = useParams().userId ?? currentUser.id`) was
+already correct and untouched. Verified: own profile resolves (including after refresh), viewing another user's
+profile is unaffected, a genuinely invalid id still shows "Profile not found," no user id is hardcoded, and
+`Profile/index.jsx` still only calls the service layer.
 
 ## Architecture rules to preserve
 
 - Pages/components must never import raw mocks directly — `services/` remains the only data boundary.
 - Preserve existing routes and product logic unless a task absolutely requires changing them.
 - No backend/API swap yet.
-- No real AI integration yet (AI Ask Assistant, AI Proposal Assistant, AI Matching are all UI-facing concepts only, unbuilt or mock).
+- No real AI integration yet (AI Ask Assistant, AI Proposal Assistant, AI Matching are all UI-facing concepts only, unbuilt or mock) — AI Ask Assistant is explicitly Phase 4 scope, not built yet.
 - No real payment gateway yet (Premium's "Upgrade" flow and all contract/milestone "payment" actions are mock/simulated).
-- Don't redo completed functionality unless explicitly asked.
+- Don't redo completed phases/functionality unless explicitly asked.
+- Don't reintroduce home-services/errands/chore-style categories or examples — see "Marketplace positioning" above.
 
 ## Workflow rules
 
 - Work **one phase (or sub-phase) at a time** — don't jump ahead or bundle multiple phases into one change.
-- **Run and test before continuing** (`npm run build`, then exercise the feature in a real browser — don't just eyeball the code).
 - **Don't redo completed phases** unless explicitly asked to.
-- **Stop after the requested phase/sub-phase** and report what changed — don't keep going into the next one unprompted.
-- **Backend/API integration has not started.** The frontend is still 100% mock-driven — Phase 10 (`services/http.js`, real API) is next but not yet requested. Don't begin it unprompted.
-- **Don't begin redesign work** on completed phases/screens, and don't modify app code, unless a specific task explicitly calls for it — preserve the current UASK brand system and existing functionality as-is. (This applies to the *implemented* dark editorial system; the approved-but-unbuilt "Open Call" light redesign is the one exception once its phases are actually requested — see "Current visual state" above.)
-- **Standing cadence:** implement → test locally → `git status` → commit → push → move to the next phase. Keep phases small; don't bundle large, unrelated changes into a single step.
+- **Stop after the requested phase/sub-phase** and report what changed — don't keep going into the next one unprompted. Phase 4 specifically requires explicit instruction before starting.
+- **Backend/API integration has not started.** The frontend is still 100% mock-driven — the real-API swap is not yet requested. Don't begin it unprompted.
+- **Don't begin redesign work** on already-redesigned phases/screens (Landing, app shell), and don't modify app code, unless a specific task explicitly calls for it.
+- **Standing cadence:** implement → the user manually tests in a real browser → `npm run build` → `npm run lint` → `git status` → commit → push → move to the next phase (only once explicitly requested). Keep phases small; don't bundle large, unrelated changes into a single step.
+- **Browser testing is the user's responsibility.** They test manually; don't rely on or attempt to use the Claude in Chrome extension for this project's verification unless explicitly asked to.
