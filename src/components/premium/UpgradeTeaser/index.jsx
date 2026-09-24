@@ -1,60 +1,31 @@
 import { motion } from 'framer-motion'
-import Button from '../../ui/Button'
-import { useAuth } from '../../../hooks/useAuth'
-import { useLocalStorage } from '../../../hooks/useLocalStorage'
-import { cardEntrance } from '../../../utils/motion'
 import styles from './UpgradeTeaser.module.css'
 
-export default function UpgradeTeaser({ onCompare }) {
-  const { user } = useAuth()
-  const [dismissed, setDismissed] = useLocalStorage(`uask.upgradeTeaser.dismissed.${user.id}`, false)
-  const [collapsed, setCollapsed] = useLocalStorage(`uask.upgradeTeaser.collapsed.${user.id}`, false)
+const ENTRANCE_TRANSITION = { type: 'spring', stiffness: 260, damping: 22, delay: 0.6 }
+const SLIDE_TRANSITION = { duration: 0.25, ease: 'easeOut' }
 
-  if (dismissed) return null
-
-  if (collapsed) {
-    return (
-      <button
-        type="button"
-        className={styles.collapsedTab}
-        onClick={() => setCollapsed(false)}
-        aria-label="Expand UASK Premium teaser"
-      >
-        <span className={styles.collapsedDot} aria-hidden="true" />
-        Premium
-      </button>
-    )
-  }
-
+// A small curiosity hook, not a persistent sales card: rests mostly off
+// the right edge of the viewport, slides fully into view on hover/focus,
+// and opens the full Basic vs Premium comparison in a PremiumDrawer on
+// click. Always visible for a non-Premium user — no dismiss/collapse
+// state, since being a quiet constant is the point.
+export default function UpgradeTeaser({ onOpen }) {
   return (
-    <motion.aside
+    <motion.button
+      type="button"
       className={styles.teaser}
-      initial="hidden"
-      animate="visible"
-      variants={cardEntrance}
-      aria-label="Upgrade to UASK Premium"
+      onClick={onOpen}
+      aria-label="Open UASK Premium — see plans and upgrade"
+      initial={{ x: '100%', y: '-50%', opacity: 0 }}
+      animate={{ x: '58%', y: '-50%', opacity: 1, transition: ENTRANCE_TRANSITION }}
+      whileHover={{ x: '0%', y: '-50%', transition: SLIDE_TRANSITION }}
+      whileFocus={{ x: '0%', y: '-50%', transition: SLIDE_TRANSITION }}
+      whileTap={{ scale: 0.96 }}
     >
-      <div className={styles.controls}>
-        <button type="button" className={styles.iconButton} onClick={() => setCollapsed(true)} aria-label="Collapse">
-          –
-        </button>
-        <button
-          type="button"
-          className={styles.iconButton}
-          onClick={() => setDismissed(true)}
-          aria-label="Dismiss upgrade teaser"
-        >
-          ✕
-        </button>
-      </div>
-
-      <span className={styles.kicker}>UASK Premium</span>
-      <h3 className={styles.title}>Unlock more with UASK Premium</h3>
-      <p className={styles.copy}>Unlimited AI tools, profile boosts and workflow features.</p>
-
-      <Button size="sm" fullWidth onClick={onCompare}>
-        Compare Plans
-      </Button>
-    </motion.aside>
+      <span className={styles.iconBadge} aria-hidden="true">
+        💎
+      </span>
+      <span className={styles.label}>Go Premium</span>
+    </motion.button>
   )
 }

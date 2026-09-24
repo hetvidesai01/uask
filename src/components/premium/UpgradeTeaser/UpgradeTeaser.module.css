@@ -1,108 +1,61 @@
+/* Right-edge "peek" tab. Positioned at a fixed viewport percentage
+   (rather than switching to a bottom-anchored offset on mobile) so a
+   single Framer Motion transform strategy works at every breakpoint —
+   56% down the viewport clears the mobile tab bar + FAB (~128px worth
+   of bottom chrome) on any viewport taller than ~400px, and reads as
+   "mid/lower-mid" on desktop. */
 .teaser {
-  position: relative;
-  margin-bottom: var(--sp-5);
-  padding: var(--sp-4);
-  border-radius: var(--r-lg);
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  box-shadow: var(--shadow-card);
-}
-
-.controls {
-  position: absolute;
-  top: var(--sp-2);
-  right: var(--sp-2);
+  position: fixed;
+  top: 56%;
+  right: 0;
+  z-index: 12;
   display: flex;
-  gap: 2px;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-red);
+  border-right: none;
+  box-shadow: var(--shadow-lift);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.iconButton {
+.teaser:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: -2px;
+}
+
+.iconBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--r-sm);
-  color: var(--c-text-faint);
-  font-size: var(--fs-sm);
-  line-height: 1;
-}
-
-.iconButton:hover {
-  background-color: var(--c-surface-3);
-  color: var(--c-text-mute);
-}
-
-.kicker {
-  display: inline-block;
-  margin-bottom: var(--sp-2);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--c-red-accent);
-}
-
-.title {
-  margin-bottom: var(--sp-1);
-  padding-right: var(--sp-6);
-  font-size: var(--fs-base);
-  font-weight: 700;
-  line-height: var(--lh-tight);
-  color: var(--c-text);
-}
-
-.copy {
-  margin-bottom: var(--sp-4);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-  color: var(--c-text-mute);
-}
-
-.collapsedTab {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-5);
-  padding: var(--sp-2) var(--sp-3);
+  width: 28px;
+  height: 28px;
   border-radius: var(--r-full);
-  background-color: var(--c-surface-2);
-  border: 1px solid var(--c-border);
-  font-size: var(--fs-xs);
+  background-color: var(--blush);
+  font-size: var(--fs-sm);
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--c-text-mute);
+  color: var(--c-red-deep);
 }
 
-.collapsedTab:hover {
-  color: var(--c-text);
-  border-color: var(--c-border-hover);
-}
-
-.collapsedDot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--r-full);
-  background: var(--grad-signal);
-  box-shadow: var(--glow-red-sm);
-}
-
-/* Desktop: float as a fixed panel clear of the container so it never
-   competes with a page's own layout/grid (e.g. DiscoverAsks' filter aside). */
-@media (min-width: 1200px) {
+@media (max-width: 639px) {
   .teaser {
-    position: fixed;
-    right: var(--sp-5);
-    bottom: var(--sp-6);
-    z-index: 12;
-    width: 260px;
-    margin-bottom: 0;
+    padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
   }
 
-  .collapsedTab {
-    position: fixed;
-    right: var(--sp-5);
-    bottom: var(--sp-6);
-    z-index: 12;
-    margin-bottom: 0;
+  .iconBadge {
+    width: 24px;
+    height: 24px;
+  }
+
+  .label {
+    font-size: var(--fs-xs);
   }
 }

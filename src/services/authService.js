@@ -1,6 +1,36 @@
-import { users } from '../mocks/users'
+import { users as seedUsers } from '../mocks/users'
 
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// Login/signup/profile edits mutate `users` at runtime (see login, signup,
+// updateUser below). Without persisting that array, it would silently
+// reset to the seed data on every reload — AuthContext's own localStorage
+// key (`uask.auth.user`) still remembers who's logged in, but a user
+// created via signup, or via logging in with an email that doesn't match
+// one of the 3 seeded accounts, would no longer exist in `users` after a
+// refresh. getUserById(currentUser.id) would then return null, and the
+// Profile page would show "Profile not found" for that user's own profile.
+const USERS_STORAGE_KEY = 'uask.mock.users'
+
+function loadUsers() {
+  try {
+    const stored = window.localStorage.getItem(USERS_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : [...seedUsers]
+  } catch {
+    return [...seedUsers]
+  }
+}
+
+function persistUsers() {
+  try {
+    window.localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
+  } catch {
+    // Storage unavailable (private mode, quota, etc.) — mutations still
+    // work for this session, they just won't survive a reload.
+  }
+}
+
+const users = loadUsers()
 
 function nameFromEmail(email) {
   const [handle] = email.split('@')
@@ -39,6 +69,7 @@ export async function login({ email }) {
     joinedAt: new Date().toISOString(),
   }
   users.push(newUser)
+  persistUsers()
   return newUser
 }
 
@@ -49,6 +80,7 @@ export async function updateUser(id, data) {
   if (!user) return null
 
   Object.assign(user, data)
+  persistUsers()
   return user
 }
 
@@ -69,5 +101,6 @@ export async function signup({ name, email, roles }) {
     joinedAt: new Date().toISOString(),
   }
   users.push(newUser)
+  persistUsers()
   return newUser
 }

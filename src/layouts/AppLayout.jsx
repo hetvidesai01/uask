@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import UpgradeTeaser from '../components/premium/UpgradeTeaser'
-import PremiumModal from '../components/premium/PremiumModal'
+import PremiumDrawer from '../components/premium/PremiumDrawer'
 import ProductTour from '../components/onboarding/ProductTour'
 import uaskLogo from '../assets/brand/uask.logo.png'
 import { useAuth } from '../hooks/useAuth'
@@ -265,14 +265,15 @@ export default function AppLayout() {
 
       <main className={styles.main}>
         <div className="container">
-          {subscription && subscription.plan !== 'premium' && (
-            <UpgradeTeaser onCompare={() => setPremiumOpen(true)} />
-          )}
           <Outlet />
         </div>
       </main>
 
-      <PremiumModal
+      {subscription && subscription.plan !== 'premium' && (
+        <UpgradeTeaser onOpen={() => setPremiumOpen(true)} />
+      )}
+
+      <PremiumDrawer
         open={premiumOpen}
         onClose={() => setPremiumOpen(false)}
         plan={subscription?.plan ?? 'basic'}

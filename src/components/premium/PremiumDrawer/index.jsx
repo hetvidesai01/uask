@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import Modal from '../../ui/Modal'
+import Drawer from '../../ui/Drawer'
 import Button from '../../ui/Button'
-import styles from './PremiumModal.module.css'
+import styles from './PremiumDrawer.module.css'
 
 const FEATURES = [
   ['Post ASKs', 'Unlimited', 'Unlimited'],
@@ -22,7 +22,7 @@ const FEATURES = [
   ['Compare Professionals', 'Unlimited', 'Unlimited'],
 ]
 
-export default function PremiumModal({ open, onClose, plan, onUpgrade }) {
+export default function PremiumDrawer({ open, onClose, plan, onUpgrade }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [submitting, setSubmitting] = useState(false)
   const [upgraded, setUpgraded] = useState(false)
@@ -45,7 +45,7 @@ export default function PremiumModal({ open, onClose, plan, onUpgrade }) {
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="UASK Premium" size="lg">
+    <Drawer open={open} onClose={handleClose} title="UASK Premium">
       {isPremium ? (
         <div className={styles.success}>
           <span className={styles.successIcon} aria-hidden="true">
@@ -135,6 +135,6 @@ export default function PremiumModal({ open, onClose, plan, onUpgrade }) {
           </Button>
         </>
       )}
-    </Modal>
+    </Drawer>
   )
 }
