@@ -1,4 +1,10 @@
-from app.schemas.ask import AskCreate, AskResponse, AskStatusUpdate, AskUpdate
+from app.schemas.ask import (
+    AskCreate,
+    AskResponse,
+    AskSort,
+    AskStatusUpdate,
+    AskUpdate,
+)
 from app.schemas.auth import AuthResponse, LoginRequest, RefreshResponse, SignupRequest
 from app.schemas.base import CamelModel
 from app.schemas.common import AttachmentRef, ErrorResponse, Page, PageMeta
@@ -14,6 +20,7 @@ from app.schemas.thread import (
 from app.schemas.user import (
     PasswordUpdate,
     UserCreate,
+    UserProfile,
     UserPublic,
     UserResponse,
     UserUpdate,
@@ -22,6 +29,7 @@ from app.schemas.user import (
 __all__ = [
     "AskCreate",
     "AskResponse",
+    "AskSort",
     "AskStatusUpdate",
     "AskUpdate",
     "AttachmentRef",
@@ -46,6 +54,7 @@ __all__ = [
     "ThreadResponse",
     "UserCreate",
     "UserPublic",
+    "UserProfile",
     "UserResponse",
     "UserUpdate",
 ]

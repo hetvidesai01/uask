@@ -2,10 +2,11 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_serializer, field_validator
 
 from app.core.enums import UserRole
 from app.schemas.base import CamelModel
+from app.utils.validators import normalize_categories
 
 
 class UserBase(CamelModel):
@@ -28,12 +29,37 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(CamelModel):
-    name: str | None = Field(default=None, min_length=2, max_length=80)
+    # Non-nullable columns use a non-Optional annotation with default=None:
+    # omitted fields are dropped via exclude_unset; explicit null → 422.
+    name: str = Field(default=None, min_length=2, max_length=80)
     avatar_url: str | None = None
     bio: str | None = Field(default=None, max_length=1000)
     location: str | None = Field(default=None, max_length=120)
-    categories: list[str] | None = Field(default=None, max_length=10)
-    roles: list[UserRole] | None = None
+    categories: list[str] = Field(default=None, max_length=10)
+    roles: list[UserRole] = Field(default=None, min_length=1)
+
+    @field_validator("name")
+    @classmethod
+    def name_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("name must not be blank.")
+        return v.strip()
+
+    @field_validator("categories")
+    @classmethod
+    def validate_categories(cls, v: list[str]) -> list[str]:
+        return normalize_categories(v)
+
+    @field_validator("roles")
+    @classmethod
+    def validate_roles(cls, v: list[UserRole]) -> list[UserRole]:
+        seen: set[UserRole] = set()
+        unique: list[UserRole] = []
+        for r in v:
+            if r not in seen:
+                seen.add(r)
+                unique.append(r)
+        return unique
 
 
 class PasswordUpdate(CamelModel):
@@ -48,6 +74,29 @@ class UserPublic(CamelModel):
     rating: Decimal = Decimal("0.0")
     review_count: int = 0
 
+    @field_serializer("rating")
+    def _serialize_rating(self, value: Decimal) -> float:
+        return float(value)
+
+
+class UserProfile(CamelModel):
+    """Public profile for GET /users/{id} — no email, no credentials."""
+
+    id: uuid.UUID
+    name: str
+    avatar_url: str | None = None
+    bio: str | None = None
+    location: str | None = None
+    categories: list[str] = []
+    roles: list[UserRole]
+    rating: Decimal = Decimal("0.0")
+    review_count: int = 0
+    joined_at: datetime
+
+    @field_serializer("rating")
+    def _serialize_rating(self, value: Decimal) -> float:
+        return float(value)
+
 
 class UserResponse(UserBase):
     id: uuid.UUID
@@ -57,3 +106,7 @@ class UserResponse(UserBase):
     is_active: bool = True
     joined_at: datetime
     updated_at: datetime
+
+    @field_serializer("rating")
+    def _serialize_rating(self, value: Decimal) -> float:
+        return float(value)
