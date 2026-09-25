@@ -29,7 +29,9 @@ from app.core.security import hash_password
 from app.db.session import SessionLocal, engine
 from app.models.ask import Ask
 from app.models.offer import Offer
+from app.models.thread import Message
 from app.models.user import User
+from app.services import thread_service
 
 SEED_PASSWORD = "password123"
 
@@ -352,6 +354,33 @@ def _seed(session: Session) -> None:
     # --- offers --------------------------------------------------------
     # ask_logo has 4 live offers (compare endpoint supports up to 4).
     # Both closed asks have an accepted offer and rejected competitors.
+    # The accepted offers drive the seeded messaging threads below.
+    photo_accept = _make_offer(
+        ask_photo,
+        carol,
+        price="600",
+        delivery_days=7,
+        pitch=(
+            "I specialize in food and product photography and can "
+            "shoot on location at your bakery next week."
+        ),
+        deliverables=("8 edited shots", "Retouching"),
+        status=OfferStatus.accepted,
+        days_after_ask=3,
+    )
+    tutor_accept = _make_offer(
+        ask_tutor,
+        erin,
+        price="120",
+        delivery_days=1,
+        pitch=(
+            "Certified math tutor with four years of experience — "
+            "the first session is a full diagnostic assessment."
+        ),
+        deliverables=("Weekly session", "Progress notes"),
+        status=OfferStatus.accepted,
+        days_after_ask=2,
+    )
     offers = [
         _make_offer(
             ask_logo,
@@ -457,19 +486,7 @@ def _seed(session: Session) -> None:
             status=OfferStatus.pending,
             days_after_ask=6,
         ),
-        _make_offer(
-            ask_photo,
-            carol,
-            price="600",
-            delivery_days=7,
-            pitch=(
-                "I specialize in food and product photography and can "
-                "shoot on location at your bakery next week."
-            ),
-            deliverables=("8 edited shots", "Retouching"),
-            status=OfferStatus.accepted,
-            days_after_ask=3,
-        ),
+        photo_accept,
         _make_offer(
             ask_photo,
             dave,
@@ -496,19 +513,7 @@ def _seed(session: Session) -> None:
             status=OfferStatus.rejected,
             days_after_ask=9,
         ),
-        _make_offer(
-            ask_tutor,
-            erin,
-            price="120",
-            delivery_days=1,
-            pitch=(
-                "Certified math tutor with four years of experience — "
-                "the first session is a full diagnostic assessment."
-            ),
-            deliverables=("Weekly session", "Progress notes"),
-            status=OfferStatus.accepted,
-            days_after_ask=2,
-        ),
+        tutor_accept,
         _make_offer(
             ask_tutor,
             carol,
@@ -554,6 +559,73 @@ def _seed(session: Session) -> None:
     session.add_all(asks)
     session.add_all(offers)
     session.flush()
+
+    # --- threads + messages (messaging opens only on acceptance) --------
+    photo_thread = thread_service.ensure_thread_for_accept(
+        session, ask=ask_photo, offer=photo_accept
+    )
+    photo_m1 = Message(
+        thread=photo_thread,
+        sender_id=alice.id,
+        body=(
+            "Hi Carol — congrats, the shoot is yours! Could we do the "
+            "hero shots first thing Thursday?"
+        ),
+        created_at=ask_photo.created_at + timedelta(days=3, hours=2),
+    )
+    photo_m2 = Message(
+        thread=photo_thread,
+        sender_id=carol.id,
+        body=(
+            "Absolutely — I'll bring the lighting kit and a styling "
+            "board. See you at 8am."
+        ),
+        created_at=ask_photo.created_at + timedelta(days=3, hours=5),
+    )
+    session.add_all([photo_m1, photo_m2])
+    session.flush()
+    photo_thread.created_at = photo_m1.created_at
+    photo_thread.last_message_id = photo_m2.id
+    photo_thread.updated_at = photo_m2.created_at
+    for row in photo_thread.participants:
+        row.joined_at = photo_thread.created_at
+        # Provider is all caught up; owner has one unread reply.
+        row.last_read_at = (
+            photo_m2.created_at if row.user_id == carol.id else photo_m1.created_at
+        )
+
+    tutor_thread = thread_service.ensure_thread_for_accept(
+        session, ask=ask_tutor, offer=tutor_accept
+    )
+    tutor_m1 = Message(
+        thread=tutor_thread,
+        sender_id=bob.id,
+        body=(
+            "Hi Erin — we'd love to have you. My daughter is free "
+            "Tuesday afternoons."
+        ),
+        created_at=ask_tutor.created_at + timedelta(days=2, hours=1),
+    )
+    tutor_m2 = Message(
+        thread=tutor_thread,
+        sender_id=erin.id,
+        body=(
+            "Tuesday works. I'll send a short diagnostic worksheet "
+            "before our first session."
+        ),
+        created_at=ask_tutor.created_at + timedelta(days=2, hours=4),
+    )
+    session.add_all([tutor_m1, tutor_m2])
+    session.flush()
+    tutor_thread.created_at = tutor_m1.created_at
+    tutor_thread.last_message_id = tutor_m2.id
+    tutor_thread.updated_at = tutor_m2.created_at
+    for row in tutor_thread.participants:
+        row.joined_at = tutor_thread.created_at
+        row.last_read_at = tutor_m2.created_at
+
+    threads = [photo_thread, tutor_thread]
+    messages = [photo_m1, photo_m2, tutor_m1, tutor_m2]
     session.commit()
 
     # --- summary -------------------------------------------------------
@@ -574,7 +646,10 @@ def _seed(session: Session) -> None:
     )
 
     print("Seeded development data:")
-    print(f"  users: {len(users)}   asks: {len(asks)}   offers: {len(offers)}")
+    print(
+        f"  users: {len(users)}   asks: {len(asks)}   offers: {len(offers)}   "
+        f"threads: {len(threads)}   messages: {len(messages)}"
+    )
     print(f"  ASK states: {breakdown}")
     print(f"Accounts (password for all: {SEED_PASSWORD}):")
     for user in users:

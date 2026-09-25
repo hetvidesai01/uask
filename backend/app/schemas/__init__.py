@@ -13,8 +13,9 @@ from app.schemas.offer import OfferCreate, OfferResponse, OfferStatusUpdate, Off
 from app.schemas.thread import (
     LastMessagePreview,
     MessageCreate,
+    MessagePage,
     MessageResponse,
-    ThreadCreate,
+    ThreadAskRef,
     ThreadResponse,
 )
 from app.schemas.user import (
@@ -39,6 +40,7 @@ __all__ = [
     "LastMessagePreview",
     "LoginRequest",
     "MessageCreate",
+    "MessagePage",
     "MessageResponse",
     "NotificationResponse",
     "OfferCreate",
@@ -50,7 +52,7 @@ __all__ = [
     "PasswordUpdate",
     "RefreshResponse",
     "SignupRequest",
-    "ThreadCreate",
+    "ThreadAskRef",
     "ThreadResponse",
     "UserCreate",
     "UserPublic",
