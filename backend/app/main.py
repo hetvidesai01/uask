@@ -2,11 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import v1_router
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.middleware import RequestIDMiddleware
+from app.storage import get_storage
+from app.storage.local import LocalDiskStorage
 
 settings = get_settings()
 
@@ -84,6 +87,14 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
             message="Something went wrong.",
             details=None,
         ),
+    )
+
+storage_backend = get_storage()
+if isinstance(storage_backend, LocalDiskStorage):
+    app.mount(
+        storage_backend.public_prefix,
+        StaticFiles(directory=str(storage_backend.directory)),
+        name="media",
     )
 
 app.include_router(v1_router, prefix=settings.API_V1_PREFIX)

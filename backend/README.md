@@ -75,6 +75,7 @@ backend/
 │   ├── schemas/          # Pydantic schemas (Phase 2)
 │   ├── repositories/     # Data access (Phase 2)
 │   ├── services/         # Business logic (Phase 2)
+│   ├── storage/          # Storage backend interface (local, later S3/Supabase)
 │   ├── utils/            # Utilities
 │   └── main.py           # FastAPI app
 ├── alembic/              # Database migrations

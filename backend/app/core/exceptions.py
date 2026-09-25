@@ -50,6 +50,12 @@ class ConflictError(AppError):
     message = "Conflict."
 
 
+class PayloadTooLargeError(AppError):
+    status_code = 413
+    code = "FILE_TOO_LARGE"
+    message = "File is too large."
+
+
 class InvalidTransitionError(ConflictError):
     code = "INVALID_STATUS_TRANSITION"
     message = "Invalid status transition."

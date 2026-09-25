@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 from collections.abc import Generator
 
 import pytest
@@ -12,6 +14,10 @@ os.environ["DATABASE_URL"] = (
 )
 os.environ["TEST_DATABASE_URL"] = (
     "postgresql+psycopg://uask:uask@localhost:5432/uask_test"
+)
+# Uploaded test files never touch the repo's dev uploads directory.
+os.environ["UPLOAD_DIR"] = os.path.join(
+    tempfile.gettempdir(), "uask-test-uploads"
 )
 
 from app.core.config import get_settings  # noqa: E402
@@ -59,6 +65,12 @@ def clean_db() -> Generator[None, None, None]:
     _truncate_all()
     yield
     _truncate_all()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clean_uploads() -> Generator[None, None, None]:
+    yield
+    shutil.rmtree(os.environ["UPLOAD_DIR"], ignore_errors=True)
 
 
 @pytest.fixture()

@@ -6,6 +6,7 @@ from app.api.v1.routes.health import router as health_router
 from app.api.v1.routes.notifications import router as notifications_router
 from app.api.v1.routes.offers import router as offers_router
 from app.api.v1.routes.threads import router as threads_router
+from app.api.v1.routes.uploads import router as uploads_router
 from app.api.v1.routes.users import router as users_router
 
 v1_router = APIRouter()
@@ -16,3 +17,4 @@ v1_router.include_router(asks_router)
 v1_router.include_router(offers_router)
 v1_router.include_router(threads_router)
 v1_router.include_router(notifications_router)
+v1_router.include_router(uploads_router)
