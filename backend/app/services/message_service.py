@@ -10,7 +10,7 @@ from app.models.user import User
 from app.repositories import message_repo
 from app.schemas.thread import MessageCreate, MessagePage, MessageResponse
 from app.schemas.user import UserPublic
-from app.services import thread_service
+from app.services import notification_service, thread_service
 
 DEFAULT_LIMIT = 50
 
@@ -98,6 +98,9 @@ def send_message(
     thread.updated_at = now
     mine.last_read_at = now
 
+    notification_service.notify_new_message(
+        db, thread=thread, sender=current_user, text=payload.body
+    )
     resp = _message_response(message, thread.participants)
     db.commit()
     return resp

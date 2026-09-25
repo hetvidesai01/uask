@@ -28,10 +28,11 @@ from app.core.enums import AskStatus, OfferStatus, UserRole
 from app.core.security import hash_password
 from app.db.session import SessionLocal, engine
 from app.models.ask import Ask
+from app.models.notification import Notification
 from app.models.offer import Offer
 from app.models.thread import Message
 from app.models.user import User
-from app.services import thread_service
+from app.services import notification_service, thread_service
 
 SEED_PASSWORD = "password123"
 
@@ -626,7 +627,33 @@ def _seed(session: Session) -> None:
 
     threads = [photo_thread, tutor_thread]
     messages = [photo_m1, photo_m2, tutor_m1, tutor_m2]
+
+    # --- notifications (same copy and links the services emit) ----------
+    ask_by_id = {ask.id: ask for ask in asks}
+    user_by_id = {user.id: user for user in users}
+    for offer in offers:
+        ask = ask_by_id[offer.ask_id]
+        notification_service.notify_new_offer(
+            session, ask=ask, provider=user_by_id[offer.provider_id]
+        )
+        notification_service.notify_offer_status(
+            session, ask=ask, offer=offer, status=offer.status
+        )
+    for thread, thread_messages in (
+        (photo_thread, [photo_m1, photo_m2]),
+        (tutor_thread, [tutor_m1, tutor_m2]),
+    ):
+        for message in thread_messages:
+            notification_service.notify_new_message(
+                session,
+                thread=thread,
+                sender=user_by_id[message.sender_id],
+                text=message.body,
+            )
     session.commit()
+    notification_count = (
+        session.scalar(select(func.count()).select_from(Notification)) or 0
+    )
 
     # --- summary -------------------------------------------------------
     status_order = (
@@ -648,7 +675,8 @@ def _seed(session: Session) -> None:
     print("Seeded development data:")
     print(
         f"  users: {len(users)}   asks: {len(asks)}   offers: {len(offers)}   "
-        f"threads: {len(threads)}   messages: {len(messages)}"
+        f"threads: {len(threads)}   messages: {len(messages)}   "
+        f"notifications: {notification_count}"
     )
     print(f"  ASK states: {breakdown}")
     print(f"Accounts (password for all: {SEED_PASSWORD}):")

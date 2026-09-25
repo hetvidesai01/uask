@@ -12,5 +12,5 @@ class NotificationResponse(CamelModel):
     title: str
     body: str | None = None
     link: str | None = None
-    read_at: datetime | None = None
+    read: bool
     created_at: datetime
