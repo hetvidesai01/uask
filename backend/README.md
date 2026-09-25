@@ -34,6 +34,35 @@
    GET http://localhost:8000/api/v1/health
    ```
 
+## Seed Development Data
+
+Generate realistic local data (6 users, 8 ASKs, 15 offers) after migrations:
+
+```bash
+python scripts/seed.py           # seed an empty development database
+python scripts/seed.py --reset   # wipe all tables, then seed fresh data
+```
+
+Without `--reset` the script refuses to touch a database that already
+contains data, so re-running it is always safe. It also refuses to run when
+`ENV` is not `development` or `test` — seeding never happens in production,
+and seed data lives only in `scripts/seed.py`, never in migrations.
+
+Seeded accounts (password for all: `password123`):
+
+| Email              | Roles             | Name          |
+| ------------------ | ----------------- | ------------- |
+| alice@uask.dev     | seeker            | Alice Rivera  |
+| bob@uask.dev       | seeker            | Bob Patel     |
+| carol@uask.dev     | provider          | Carol Nguyen  |
+| dave@uask.dev      | provider          | Dave Kim      |
+| erin@uask.dev      | provider          | Erin Sato     |
+| frank@uask.dev     | seeker,provider   | Frank Osei    |
+
+ASK states: 5 open (all 8 categories covered), 2 closed with accepted and
+rejected offers, 1 cancelled. `alice@uask.dev`'s logo ASK has 4 live offers
+for exercising the compare endpoint.
+
 ## Project Structure
 
 ```
