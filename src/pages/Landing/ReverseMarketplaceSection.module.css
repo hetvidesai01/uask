@@ -1,6 +1,16 @@
+.section {
+  padding-block: var(--sp-7);
+}
+
+@media (min-width: 900px) {
+  .section {
+    padding-block: var(--sp-8);
+  }
+}
+
 .heading {
   font-family: var(--font-display);
-  font-size: var(--fs-3xl);
+  font-size: var(--fs-4xl);
   text-align: center;
   max-width: 24ch;
   margin-inline: auto;
@@ -8,6 +18,7 @@
 
 .lead {
   margin-top: var(--sp-3);
+  font-size: var(--fs-lg);
   color: var(--c-text-mute);
   text-align: center;
 }

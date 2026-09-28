@@ -42,6 +42,9 @@ export async function getSubscription(userId) {
 }
 
 // Mock upgrade only — no payment gateway. billingCycle is 'monthly' | 'yearly'.
+// Not called from the Premium drawer's checkout flow anymore (see
+// createCheckoutSession below) — kept as the function a real backend would
+// call to finalize a subscription once a payment actually succeeds.
 export async function upgradeToPremium(userId, billingCycle = 'monthly') {
   await delay(700)
 
@@ -53,4 +56,28 @@ export async function upgradeToPremium(userId, billingCycle = 'monthly') {
   }
   writeOverride(userId, record)
   return record
+}
+
+const PRICE_BY_CYCLE = { monthly: 149, yearly: 999 }
+
+// Stands in for a real "create checkout session" backend call (e.g.
+// POST /api/checkout). It deliberately does NOT touch subscription state —
+// no payment gateway is wired up yet, so the frontend must not grant
+// Premium on its own. When a real backend endpoint exists, swap this
+// function's body for the actual request; callers (PremiumDrawer) already
+// call it with the same (userId, billingCycle) signature and only care
+// about the returned session shape.
+export async function createCheckoutSession(userId, billingCycle = 'monthly') {
+  await delay(600)
+
+  return {
+    id: `mock-checkout-${userId}-${Date.now()}`,
+    userId,
+    plan: 'premium',
+    billingCycle,
+    amount: PRICE_BY_CYCLE[billingCycle] ?? PRICE_BY_CYCLE.monthly,
+    currency: 'INR',
+    status: 'requires_backend', // no real payment gateway integrated yet
+    createdAt: new Date().toISOString(),
+  }
 }

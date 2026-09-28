@@ -20,6 +20,7 @@ import Contract from './pages/Contract'
 import Inbox from './pages/Inbox'
 import Thread from './pages/Inbox/Thread'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import Toast from './components/ui/Toast'
 import GrainOverlay from './components/ui/GrainOverlay'
@@ -71,6 +72,7 @@ function App() {
             <Route path="notifications" element={<Navigate to="/app/inbox?tab=notifications" replace />} />
             <Route path="profile" element={<Profile />} />
             <Route path="profile/:userId" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
 

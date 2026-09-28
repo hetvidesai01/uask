@@ -1,0 +1,138 @@
+.page {
+  padding-block: var(--sp-6) var(--sp-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: 680px;
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+}
+
+.subtitle {
+  color: var(--c-text-mute);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.sectionTitle {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.sectionCopy {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  align-self: flex-start;
+}
+
+.segmentOption {
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-full);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-faint);
+}
+
+.segmentOption:hover {
+  color: var(--c-text-mute);
+}
+
+.segmentActive {
+  background-color: var(--c-red-wash);
+  color: var(--c-red-deep);
+}
+
+.fieldList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.field:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.field dt {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.field dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.roleSwitch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.fieldLabel {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.comingSoon {
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.toggleRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-red);
+}

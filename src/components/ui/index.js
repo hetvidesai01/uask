@@ -1,3 +1,4 @@
+export { default as AnimatedBackground } from './AnimatedBackground'
 export { default as AnimatedCounter } from './AnimatedCounter'
 export { default as Avatar } from './Avatar'
 export { default as Badge } from './Badge'

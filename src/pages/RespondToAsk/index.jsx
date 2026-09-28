@@ -53,7 +53,7 @@ function validateStep(step, values) {
 export default function RespondToAsk() {
   const { askId } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, activeRole } = useAuth()
   const { showToast } = useToast()
 
   const [status, setStatus] = useState('loading')
@@ -80,6 +80,13 @@ export default function RespondToAsk() {
         return
       }
 
+      if (activeRole !== 'provider') {
+        setAsk(foundAsk)
+        setBlockReason('not_provider')
+        setStatus('blocked')
+        return
+      }
+
       if (foundAsk.status !== 'open') {
         setAsk(foundAsk)
         setBlockReason('not_open')
@@ -100,7 +107,7 @@ export default function RespondToAsk() {
     } catch {
       setStatus('error')
     }
-  }, [askId, user.id])
+  }, [askId, user.id, activeRole])
 
   useEffect(() => {
     load()
@@ -225,6 +232,11 @@ export default function RespondToAsk() {
         icon: '🚫',
         title: 'This is your ASK',
         message: "You can't submit a response to your own ASK.",
+      },
+      not_provider: {
+        icon: '🔄',
+        title: "You're in Seeker mode",
+        message: 'Switch to Provider mode to respond to ASKs — you can do this from the account menu.',
       },
       not_open: {
         icon: '🔒',

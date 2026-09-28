@@ -35,7 +35,7 @@ export default function CategoriesSection() {
   }, [])
 
   return (
-    <section className="section">
+    <section className={`section ${styles.section}`}>
       <div className="container">
         <h2 className={styles.heading}>Discover by category</h2>
         <p className={styles.subheading}>Whatever you need, there&apos;s probably an ASK for it.</p>

@@ -1,3 +1,8 @@
+.content {
+  position: relative;
+  isolation: isolate;
+}
+
 .intro {
   margin-bottom: var(--sp-5);
   font-size: var(--fs-sm);
@@ -27,6 +32,21 @@
   border-color: var(--c-red);
   background-color: var(--c-red-wash);
   box-shadow: var(--glow-red-sm);
+}
+
+.planCardBasic {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.planCardBasic:hover {
+  border-color: var(--c-border-hover);
+  background-color: var(--c-surface-2);
+}
+
+.planCardBasic:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: 2px;
 }
 
 .planName {
@@ -137,13 +157,83 @@
   background-color: var(--c-red-wash);
 }
 
-.success {
+.checkout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.checkoutSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+}
+
+.checkoutRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.checkoutTotal {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  color: var(--c-text);
+}
+
+.devNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--c-border-hover);
+  background-color: var(--c-surface-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.devNoticeIcon {
+  flex-shrink: 0;
+  font-size: var(--fs-lg);
+}
+
+.checkoutActions {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.checkoutActions > :last-child {
+  flex: 1;
+}
+
+.success,
+.confirmation {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--sp-3);
   padding-block: var(--sp-5);
   text-align: center;
+}
+
+.confirmationIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  border: 1px solid var(--c-border-hover);
+  font-size: var(--fs-xl);
 }
 
 .successIcon {

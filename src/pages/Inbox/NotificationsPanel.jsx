@@ -63,6 +63,21 @@ export default function NotificationsPanel({
     )
   }
 
+  if (notifications.length === 0) {
+    // Rendered outside the width-capped `.panel` (unlike the list below) so
+    // the empty state centers within the full content area, not just within
+    // the panel's max-width column.
+    return (
+      <div className={styles.centered}>
+        <EmptyState
+          icon="🔔"
+          title="You're all caught up"
+          message="New offers, messages, and ASK updates will show up here."
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.panel}>
       {unreadCount > 0 && (
@@ -73,28 +88,18 @@ export default function NotificationsPanel({
         </div>
       )}
 
-      {notifications.length === 0 ? (
-        <div className={styles.centered}>
-          <EmptyState
-            icon="🔔"
-            title="You're all caught up"
-            message="New offers, messages, and ASK updates will show up here."
-          />
-        </div>
-      ) : (
-        <div className={styles.groups}>
-          {groups.map(([label, items]) => (
-            <section key={label} className={styles.group}>
-              <h2 className={styles.groupTitle}>{label}</h2>
-              <ul className={styles.list}>
-                {items.map((notification) => (
-                  <NotificationItem key={notification.id} notification={notification} onMarkRead={onMarkRead} />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
+      <div className={styles.groups}>
+        {groups.map(([label, items]) => (
+          <section key={label} className={styles.group}>
+            <h2 className={styles.groupTitle}>{label}</h2>
+            <ul className={styles.list}>
+              {items.map((notification) => (
+                <NotificationItem key={notification.id} notification={notification} onMarkRead={onMarkRead} />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }

@@ -196,9 +196,6 @@ export default function DashboardOverview() {
           </p>
           <h1 className={styles.title}>Here's what's happening with your ASKs and offers.</h1>
         </div>
-        <Button as={Link} to="/app/asks/new">
-          + Post an ASK
-        </Button>
       </div>
 
       <div className={styles.stats}>

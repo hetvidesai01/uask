@@ -2,13 +2,13 @@
   position: relative;
   overflow: hidden;
   padding-top: calc(var(--topbar-h) + var(--sp-6));
-  padding-bottom: var(--sp-8);
+  padding-bottom: var(--sp-7);
 }
 
 @media (min-width: 900px) {
   .hero {
-    padding-top: calc(var(--topbar-h) + var(--sp-9));
-    padding-bottom: var(--sp-9);
+    padding-top: calc(var(--topbar-h) + var(--sp-8));
+    padding-bottom: var(--sp-8);
   }
 }
 
@@ -87,14 +87,14 @@
    --fs-* scale (page-specific flourish for the hero only). */
 .title {
   font-family: var(--font-display);
-  font-size: clamp(2.75rem, 5vw + 1.5rem, 5.5rem);
+  font-size: clamp(3.25rem, 6vw + 1.5rem, 5.75rem);
   line-height: 0.98;
   letter-spacing: -0.01em;
 }
 
 @media (min-width: 900px) {
   .title {
-    font-size: clamp(3.5rem, 4.5vw + 1.5rem, 5.75rem);
+    font-size: clamp(4.25rem, 5vw + 1.5rem, 6.5rem);
   }
 }
 
@@ -116,7 +116,8 @@
 }
 
 .subtitle {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-normal);
   color: var(--c-text-mute);
   max-width: 44ch;
 }

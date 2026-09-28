@@ -20,7 +20,7 @@ import styles from './AskDetails.module.css'
 
 export default function AskDetails() {
   const { askId } = useParams()
-  const { user } = useAuth()
+  const { user, activeRole } = useAuth()
 
   const [status, setStatus] = useState('loading')
   const [ask, setAsk] = useState(null)
@@ -169,7 +169,9 @@ export default function AskDetails() {
           <h2 className={styles.sectionTitle}>You already responded</h2>
           <OfferCard offer={myOffer} provider={user} />
         </Card>
-      ) : (
+      ) : activeRole === 'provider' ? (
+        // Responding is a Provider action — hidden while acting as a Seeker,
+        // and never shown for the requester's own ASK (handled by isOwner above).
         <Card className={styles.responseCta}>
           <div>
             <h2 className={styles.sectionTitle}>Interested in this ASK?</h2>
@@ -179,7 +181,7 @@ export default function AskDetails() {
             Submit a response
           </Button>
         </Card>
-      )}
+      ) : null}
     </div>
   )
 }

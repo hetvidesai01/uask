@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StepIndicator from '../../components/ui/StepIndicator'
+import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
@@ -179,6 +180,7 @@ export default function CreateAsk() {
 
   return (
     <div className={styles.page}>
+      <AnimatedBackground variant="minimal" />
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Create ASK</h1>

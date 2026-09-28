@@ -10,7 +10,7 @@ export default function ReverseMarketplaceSection() {
   const [ref, isInView] = useInView()
 
   return (
-    <section className="section">
+    <section className={`section ${styles.section}`}>
       <div className="container">
         <h2 className={styles.heading}>This isn&apos;t another listings board.</h2>
         <p className={styles.lead}>Most marketplaces make you go find people. UASK flips it.</p>

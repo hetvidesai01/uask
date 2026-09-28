@@ -1,4 +1,6 @@
 .page {
+  position: relative;
+  isolation: isolate;
   max-width: 720px;
   margin-inline: auto;
   padding-block: var(--sp-6) var(--sp-9);

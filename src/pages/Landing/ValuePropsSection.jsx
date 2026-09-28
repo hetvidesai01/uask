@@ -32,7 +32,7 @@ export default function ValuePropsSection() {
   const [ref, isInView] = useInView()
 
   return (
-    <section className="section">
+    <section className={`section ${styles.section}`}>
       <div className="container">
         <h2 className={styles.heading}>Built for both sides of the ask</h2>
 

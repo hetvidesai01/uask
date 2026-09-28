@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Avatar from '../../components/ui/Avatar'
+import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Tag from '../../components/ui/Tag'
 import Input from '../../components/ui/Input'
@@ -277,6 +278,7 @@ export default function Profile() {
 
   return (
     <div className={styles.page}>
+      <AnimatedBackground variant="quiet" />
       <Wrapper className={styles.form} {...wrapperProps}>
         <Card padding="lg" className={styles.header}>
           <div className={styles.headerTop}>

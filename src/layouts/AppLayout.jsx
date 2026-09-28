@@ -11,7 +11,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
 import { getThreads } from '../services/messageService'
-import { getSubscription, upgradeToPremium } from '../services/subscriptionService'
+import { getSubscription, createCheckoutSession } from '../services/subscriptionService'
 import { hoverLift } from '../utils/motion'
 import styles from './AppLayout.module.css'
 
@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   { to: '/app/profile', label: 'Profile', icon: '👤' },
 ]
 
-const ROLE_ORDER = ['seeker', 'provider']
+const ROLE_LABELS = { seeker: 'Seeker', provider: 'Provider' }
 
 function navLinkClass({ isActive }) {
   return [styles.navLink, isActive ? styles.active : ''].filter(Boolean).join(' ')
@@ -36,15 +36,20 @@ function tabLinkClass({ isActive }) {
 }
 
 export default function AppLayout() {
-  const { user, logout } = useAuth()
+  const { user, activeRole, setActiveRole, logout } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [subscription, setSubscription] = useState(null)
   const [premiumOpen, setPremiumOpen] = useState(false)
-  const menuRef = useRef(null)
+  const desktopMenuRef = useRef(null)
+  const mobileMenuRef = useRef(null)
+
+  const firstName = user.name?.split(' ')[0] ?? user.name
+  const hasBothRoles = (user.roles?.length ?? 0) > 1
 
   // Inbox badge = unread notifications + unread messages across all
   // threads, derived from the existing service data (not hardcoded).
@@ -72,13 +77,17 @@ export default function AppLayout() {
   }, [user.id])
 
   useEffect(() => {
-    if (!menuOpen) return
+    if (!desktopMenuOpen && !mobileMenuOpen) return
 
     function handlePointerDown(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setMenuOpen(false)
+      if (desktopMenuRef.current && !desktopMenuRef.current.contains(event.target)) setDesktopMenuOpen(false)
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) setMobileMenuOpen(false)
     }
     function handleKeyDown(event) {
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key === 'Escape') {
+        setDesktopMenuOpen(false)
+        setMobileMenuOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handlePointerDown)
@@ -87,7 +96,7 @@ export default function AppLayout() {
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [menuOpen])
+  }, [desktopMenuOpen, mobileMenuOpen])
 
   function handleSearchSubmit(event) {
     event.preventDefault()
@@ -95,11 +104,17 @@ export default function AppLayout() {
     navigate('/app/discover')
   }
 
-  async function handleUpgrade(billingCycle) {
-    const updated = await upgradeToPremium(user.id, billingCycle)
-    setSubscription(updated)
-    showToast("You're now on UASK Premium.")
-    return updated
+  function handleRoleSwitch(role) {
+    if (role === activeRole) return
+    setActiveRole(role)
+    showToast(`Switched to ${ROLE_LABELS[role] ?? role} mode.`)
+  }
+
+  // Starts a mock checkout session — does NOT grant Premium. See
+  // subscriptionService.createCheckoutSession for why: no payment gateway
+  // is wired up yet, so the frontend must not change subscription state.
+  async function handleCheckout(billingCycle) {
+    return createCheckoutSession(user.id, billingCycle)
   }
 
   return (
@@ -152,9 +167,63 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Compact account area, pinned to the bottom of the floating sidebar. */}
+        <div className={styles.sidebarFooter} ref={desktopMenuRef}>
+          <button
+            type="button"
+            className={styles.sidebarProfileTrigger}
+            onClick={() => setDesktopMenuOpen((open) => !open)}
+            aria-haspopup="menu"
+            aria-expanded={desktopMenuOpen}
+          >
+            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+            <span className={styles.sidebarProfileInfo}>
+              <span className={styles.sidebarProfileName}>{firstName}</span>
+              {activeRole && (
+                <span className={styles.sidebarProfileRole}>{ROLE_LABELS[activeRole] ?? activeRole}</span>
+              )}
+            </span>
+            <span className={styles.chevron} aria-hidden="true">
+              ▾
+            </span>
+          </button>
+
+          {desktopMenuOpen && (
+            <div className={[styles.dropdown, styles.sidebarDropdown].join(' ')} role="menu">
+              <Link
+                to="/app/profile"
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => setDesktopMenuOpen(false)}
+              >
+                View profile
+              </Link>
+              <Link
+                to="/app/settings"
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => setDesktopMenuOpen(false)}
+              >
+                Settings
+              </Link>
+              <button
+                type="button"
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => {
+                  setDesktopMenuOpen(false)
+                  logout()
+                }}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </motion.aside>
 
-      {/* Mobile top bar (logo + avatar, scrolls with the page) */}
+      {/* Mobile top bar (logo + account menu, scrolls with the page) */}
       <header className={styles.topbar}>
         <Link to="/app/dashboard" className={styles.logo}>
           <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
@@ -163,13 +232,55 @@ export default function AppLayout() {
           <Link to="/help" className={styles.helpButton} aria-label="Help">
             <span aria-hidden="true">❓</span>
           </Link>
-          <Link to="/app/profile" className={styles.topbarAvatar} aria-label="Your profile">
-            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-          </Link>
+
+          <div className={styles.mobileAccountMenu} ref={mobileMenuRef}>
+            <button
+              type="button"
+              className={styles.topbarAvatar}
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              aria-haspopup="menu"
+              aria-expanded={mobileMenuOpen}
+              aria-label="Your account"
+            >
+              <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+            </button>
+
+            {mobileMenuOpen && (
+              <div className={styles.dropdown} role="menu">
+                <Link
+                  to="/app/profile"
+                  className={styles.dropdownItem}
+                  role="menuitem"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  View profile
+                </Link>
+                <Link
+                  to="/app/settings"
+                  className={styles.dropdownItem}
+                  role="menuitem"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+                <button
+                  type="button"
+                  className={styles.dropdownItem}
+                  role="menuitem"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    logout()
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Desktop-only content top bar: search, role indicator, notifications, account menu */}
+      {/* Desktop-only content top bar: search, role switch, notifications */}
       <header className={styles.appTopBar}>
         <form className={styles.search} role="search" onSubmit={handleSearchSubmit}>
           <span className={styles.searchIcon} aria-hidden="true">
@@ -189,18 +300,23 @@ export default function AppLayout() {
         </form>
 
         <div className={styles.topBarActions}>
-          <div className={styles.roleIndicator} title="Your account roles">
-            {ROLE_ORDER.map((role) => (
-              <span
-                key={role}
-                className={[styles.rolePill, user.roles?.includes(role) ? styles.roleActive : '']
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {role}
-              </span>
-            ))}
-          </div>
+          {hasBothRoles && (
+            <div className={styles.roleIndicator} role="group" aria-label="Switch active role">
+              {user.roles.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  className={[styles.rolePill, activeRole === role ? styles.roleActive : '']
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-pressed={activeRole === role}
+                  onClick={() => handleRoleSwitch(role)}
+                >
+                  {ROLE_LABELS[role] ?? role}
+                </button>
+              ))}
+            </div>
+          )}
 
           <Link to="/help" className={styles.helpButton} aria-label="Help">
             <span aria-hidden="true">❓</span>
@@ -220,46 +336,6 @@ export default function AppLayout() {
               </motion.span>
             )}
           </Link>
-
-          <div className={styles.accountMenu} ref={menuRef}>
-            <button
-              type="button"
-              className={styles.accountTrigger}
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-              <span className={styles.accountName}>{user.name}</span>
-              <span className={styles.chevron} aria-hidden="true">
-                ▾
-              </span>
-            </button>
-
-            {menuOpen && (
-              <div className={styles.dropdown} role="menu">
-                <Link
-                  to="/app/profile"
-                  className={styles.dropdownItem}
-                  role="menuitem"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  View profile
-                </Link>
-                <button
-                  type="button"
-                  className={styles.dropdownItem}
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    logout()
-                  }}
-                >
-                  Log out
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </header>
 
@@ -277,7 +353,7 @@ export default function AppLayout() {
         open={premiumOpen}
         onClose={() => setPremiumOpen(false)}
         plan={subscription?.plan ?? 'basic'}
-        onUpgrade={handleUpgrade}
+        onCheckout={handleCheckout}
       />
 
       <ProductTour />

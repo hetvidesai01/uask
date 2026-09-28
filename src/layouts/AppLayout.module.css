@@ -21,7 +21,7 @@
 
 .logoImg {
   display: block;
-  height: 34px;
+  height: 44px;
   width: auto;
   object-fit: contain;
 }
@@ -31,12 +31,68 @@
    ever affects the sidebar logo in practice. */
 @media (min-width: 900px) {
   .logoImg {
-    height: 44px;
+    height: 60px;
   }
+}
+
+.mobileAccountMenu {
+  position: relative;
 }
 
 .topbarAvatar {
   display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--r-full);
+}
+
+.topbarAvatar:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: 2px;
+}
+
+/* Shared account-menu dropdown — used by both the mobile top-bar trigger
+   and the desktop sidebar footer trigger (positioned per-context below). */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--sp-2));
+  z-index: 16;
+  min-width: 180px;
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border);
+  background-color: var(--c-surface);
+  box-shadow: var(--shadow-lift);
+  animation: dropdownIn 0.15s ease;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.dropdownItem:hover {
+  background-color: var(--c-surface-2);
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .topbarActions {
@@ -335,11 +391,20 @@
 
   .rolePill {
     padding: var(--sp-1) var(--sp-3);
+    border: none;
     border-radius: var(--r-full);
+    font: inherit;
     font-size: var(--fs-xs);
     font-weight: 600;
     text-transform: capitalize;
     color: var(--c-text-faint);
+    background: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .rolePill:hover {
+    color: var(--c-text-mute);
   }
 
   .roleActive {
@@ -381,24 +446,44 @@
     box-shadow: var(--glow-red-sm);
   }
 
-  .accountMenu {
-    position: relative;
+  .chevron {
+    font-size: 10px;
+    color: var(--c-text-faint);
+    flex-shrink: 0;
   }
 
-  .accountTrigger {
+  /* Account area pinned to the bottom of the sidebar (see "Move user
+     profile to bottom-left sidebar"). margin-top: auto pushes it down
+     within the sidebar's flex column, below the nav links. */
+  .sidebarFooter {
+    position: relative;
+    margin-top: auto;
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .sidebarProfileTrigger {
     display: flex;
     align-items: center;
     gap: var(--sp-2);
-    padding: var(--sp-1) var(--sp-2);
-    border-radius: var(--r-full);
-    max-width: 180px;
+    width: 100%;
+    padding: var(--sp-2);
+    border-radius: var(--r-md);
+    text-align: left;
   }
 
-  .accountTrigger:hover {
+  .sidebarProfileTrigger:hover {
     background-color: var(--c-surface-2);
   }
 
-  .accountName {
+  .sidebarProfileInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebarProfileName {
     font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--c-text);
@@ -407,48 +492,18 @@
     white-space: nowrap;
   }
 
-  .chevron {
-    font-size: 10px;
+  .sidebarProfileRole {
+    font-size: var(--fs-xs);
     color: var(--c-text-faint);
   }
 
-  .dropdown {
-    position: absolute;
-    right: 0;
-    top: calc(100% + var(--sp-2));
-    z-index: 16;
-    min-width: 180px;
-    padding: var(--sp-2);
-    border-radius: var(--r-md);
-    border: 1px solid var(--c-border);
-    background-color: var(--c-surface);
-    box-shadow: var(--shadow-lift);
-    animation: dropdownIn 0.15s ease;
-  }
-
-  .dropdownItem {
-    display: block;
+  /* Opens upward — the trigger sits at the bottom of the sidebar, so a
+     downward dropdown would run off the viewport. */
+  .sidebarDropdown {
+    top: auto;
+    bottom: calc(100% + var(--sp-2));
+    right: auto;
+    left: 0;
     width: 100%;
-    text-align: left;
-    padding: var(--sp-2) var(--sp-3);
-    border-radius: var(--r-sm);
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--c-text);
-  }
-
-  .dropdownItem:hover {
-    background-color: var(--c-surface-2);
-  }
-
-  @keyframes dropdownIn {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 }

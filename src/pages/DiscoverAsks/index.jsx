@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
+import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Select from '../../components/ui/Select'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
@@ -79,26 +80,24 @@ export default function DiscoverAsks() {
 
   return (
     <div className={styles.page}>
+      <AnimatedBackground variant="quiet" />
       <div className={styles.header}>
         <h1 className={styles.title}>Discover ASKs</h1>
         <p className={styles.subtitle}>Discover open requests from seekers and find one to respond to.</p>
       </div>
 
-      <div className={styles.layout}>
-        <aside className={styles.sidebar}>
-          <AskFilters
-            categories={categories}
-            filters={filters}
-            onFilterChange={updateFilter}
-            onReset={resetFilters}
-          />
-        </aside>
-
-        <div className={styles.results}>
-          <div className={styles.resultsHeader}>
-            <span className={styles.count}>
-              {status === 'done' ? `${asks.length} ${asks.length === 1 ? 'ASK' : 'ASKs'} found` : ' '}
-            </span>
+      <div className={styles.results}>
+        <div className={styles.resultsHeader}>
+          <span className={styles.count}>
+            {status === 'done' ? `${asks.length} ${asks.length === 1 ? 'ASK' : 'ASKs'} found` : ' '}
+          </span>
+          <div className={styles.controls}>
+            <AskFilters
+              categories={categories}
+              filters={filters}
+              onFilterChange={updateFilter}
+              onReset={resetFilters}
+            />
             <Select
               className={styles.sort}
               label="Sort by"
@@ -107,60 +106,60 @@ export default function DiscoverAsks() {
               onChange={(e) => updateFilter('sort', e.target.value)}
             />
           </div>
-
-          {status === 'loading' && (
-            <div className={styles.centered}>
-              <Spinner size="lg" />
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className={styles.centered}>
-              <EmptyState
-                icon="⚠️"
-                title="Couldn't load ASKs"
-                message="Something went wrong loading results. Please try again."
-                action={
-                  <Button variant="secondary" onClick={() => setSearchParams(new URLSearchParams(searchParams))}>
-                    Retry
-                  </Button>
-                }
-              />
-            </div>
-          )}
-
-          {status === 'done' && asks.length === 0 && (
-            <div className={styles.centered}>
-              <EmptyState
-                icon="🔍"
-                title="No ASKs match your filters"
-                message="Try widening your search or clearing a few filters."
-                action={
-                  <Button variant="secondary" onClick={resetFilters}>
-                    Clear all filters
-                  </Button>
-                }
-              />
-            </div>
-          )}
-
-          <AnimatePresence mode="wait">
-            {status === 'done' && asks.length > 0 && (
-              <motion.div
-                key={searchParams.toString()}
-                className={styles.grid}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                {asks.map((ask) => (
-                  <AskCard key={ask.id} ask={ask} />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+
+        {status === 'loading' && (
+          <div className={styles.centered}>
+            <Spinner size="lg" />
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className={styles.centered}>
+            <EmptyState
+              icon="⚠️"
+              title="Couldn't load ASKs"
+              message="Something went wrong loading results. Please try again."
+              action={
+                <Button variant="secondary" onClick={() => setSearchParams(new URLSearchParams(searchParams))}>
+                  Retry
+                </Button>
+              }
+            />
+          </div>
+        )}
+
+        {status === 'done' && asks.length === 0 && (
+          <div className={styles.centered}>
+            <EmptyState
+              icon="🔍"
+              title="No ASKs match your filters"
+              message="Try widening your search or clearing a few filters."
+              action={
+                <Button variant="secondary" onClick={resetFilters}>
+                  Clear all filters
+                </Button>
+              }
+            />
+          </div>
+        )}
+
+        <AnimatePresence mode="wait">
+          {status === 'done' && asks.length > 0 && (
+            <motion.div
+              key={searchParams.toString()}
+              className={styles.grid}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {asks.map((ask) => (
+                <AskCard key={ask.id} ask={ask} />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

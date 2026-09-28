@@ -118,3 +118,36 @@
   --topbar-h: 64px;
   --sidebar-w: 240px;
 }
+
+/* ============================================================
+ * Dark appearance — Settings > Appearance.
+ * Only the neutral tokens are overridden here; every --c-* alias
+ * above is itself defined in terms of these bare tokens (var(--canvas),
+ * var(--ink), etc.), so this one block re-cascades through the whole
+ * app automatically — no page-by-page dark styling needed. Brand reds
+ * and the glow/shadow tints are left as-is; they already read fine on
+ * a dark neutral surface. `data-theme` is set on <html> by ThemeContext
+ * (resolving "system" to 'light'/'dark' via prefers-color-scheme
+ * before applying it, so this selector only ever sees a resolved value).
+ * ============================================================ */
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas:     #1A1210;
+  --surface:    #241A17;
+  --blush:      #3A211D;
+  --blush-deep: #4A2822;
+
+  --ink:       #F5EAE6;
+  --ink-mute:  #C9B6B0;
+  --ink-faint: #8F7A73;
+
+  --border:        #3D2925;
+  --border-strong: #4F332C;
+
+  --c-surface-2: #2E211D;
+
+  --c-success: #4CAF7D;
+  --c-warning: #D9A441;
+  --c-info:    #5B9BD9;
+}
