@@ -21,22 +21,14 @@ import { getAskById, getCategories } from '../../services/askService'
 import { getThreads } from '../../services/messageService'
 import { getCompletedContractsForProvider, getProviderReputation } from '../../services/contractService'
 import { getPortfolioForUser } from '../../services/profileService'
+import { getConnectionCount } from '../../services/connectionService'
+import ConnectButton from '../../components/people/ConnectButton'
 import { isRequired } from '../../utils/validators'
 import { formatAbsoluteDate } from '../../utils/formatDate'
+import { getProfileHeadline } from '../../utils/profileHeadline'
 import styles from './Profile.module.css'
 
 const ROLE_LABELS = { seeker: 'Seeker', provider: 'Provider' }
-
-// Derived, read-only "headline" — no new editable field on the user model
-// for this phase, just a short professional-role line built from data the
-// profile already has (roles + primary category).
-function getHeadline(profileUser) {
-  const primaryCategory = profileUser.categories?.[0]
-  if (profileUser.roles.includes('provider')) {
-    return primaryCategory ? `${primaryCategory} Provider` : 'Provider'
-  }
-  return 'Seeker'
-}
 
 // Joins a raw completed contract with its ask/client details for the
 // Completed Work and Reviews sections (reviews are just the subset with a
@@ -76,6 +68,7 @@ export default function Profile() {
   const [portfolio, setPortfolio] = useState([])
   const [messageThreadId, setMessageThreadId] = useState(null)
   const [categoryOptions, setCategoryOptions] = useState([])
+  const [connectionCount, setConnectionCount] = useState(0)
 
   const [editing, setEditing] = useState(false)
   const [editValues, setEditValues] = useState(null)
@@ -137,6 +130,8 @@ export default function Profile() {
       } else {
         setMessageThreadId(null)
       }
+
+      tasks.push(getConnectionCount(found.id).then(setConnectionCount))
 
       await Promise.all(tasks)
 
@@ -301,7 +296,7 @@ export default function Profile() {
                 <h1 className={styles.name}>{profileUser.name}</h1>
               )}
 
-              {!editing && <p className={styles.headline}>{getHeadline(profileUser)}</p>}
+              {!editing && <p className={styles.headline}>{getProfileHeadline(profileUser)}</p>}
 
               <div className={styles.roles}>
                 {profileUser.roles.map((role) => (
@@ -474,6 +469,32 @@ export default function Profile() {
           </Card>
         </>
       )}
+
+      {/* Deliberately last and modest — a professional trust signal, not a
+          social-network centerpiece. Rating/reviews/Profile Booster above
+          stay the prominent signals. */}
+      <Card padding="lg" className={styles.section}>
+        <div className={styles.connectionsHeader}>
+          <div>
+            <h2 className={styles.sectionTitle}>Connections</h2>
+            <p className={styles.connectionsCount}>
+              {connectionCount} {connectionCount === 1 ? 'connection' : 'connections'}
+            </p>
+          </div>
+          {isOwnProfile ? (
+            <Button as={Link} to="/app/connections" variant="ghost" size="sm">
+              View all
+            </Button>
+          ) : (
+            <ConnectButton
+              currentUserId={currentUser.id}
+              targetUserId={profileUser.id}
+              showRemove
+              onChange={() => getConnectionCount(profileUser.id).then(setConnectionCount)}
+            />
+          )}
+        </div>
+      </Card>
     </div>
   )
 }

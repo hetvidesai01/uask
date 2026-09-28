@@ -336,46 +336,6 @@
     border-bottom: 1px solid var(--c-border);
   }
 
-  .search {
-    position: relative;
-    display: flex;
-    align-items: center;
-    /* Compact and intentional rather than stretching to fill the topbar —
-       a fixed target width that's free to shrink on narrower "tablet"
-       desktop-shell widths (the ≥900px range this topbar lives in). */
-    flex: 0 1 340px;
-    min-width: 200px;
-  }
-
-  .searchIcon {
-    position: absolute;
-    left: var(--sp-4);
-    font-size: var(--fs-sm);
-    color: var(--c-text-faint);
-  }
-
-  .searchInput {
-    width: 100%;
-    padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-7);
-    font-size: var(--fs-sm);
-    font-family: var(--font-body);
-    color: var(--c-text);
-    background-color: var(--c-surface-2);
-    border: 1px solid transparent;
-    border-radius: var(--r-full);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-  }
-
-  .searchInput:hover {
-    background-color: var(--blush);
-  }
-
-  .searchInput:focus-visible {
-    background-color: var(--c-surface);
-    border-color: var(--c-red);
-    outline: none;
-  }
-
   .topBarActions {
     display: flex;
     align-items: center;

@@ -56,6 +56,13 @@ export async function getUserById(id) {
   return users.find((user) => user.id === id) ?? null
 }
 
+// Full user list — backs People search/Discover People. Returns a copy so
+// callers can't mutate the live `users` array directly.
+export async function getAllUsers() {
+  await delay(150)
+  return [...users]
+}
+
 // Mock login: no backend, so any password is accepted. If the email
 // matches one of the seeded mock users, that profile is returned;
 // otherwise a minimal profile is fabricated from the email.

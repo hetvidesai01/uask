@@ -1,0 +1,65 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  height: 100%;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: inherit;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+  font-size: var(--fs-base);
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headline {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.rating {
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.dot {
+  color: var(--c-border);
+}
+
+.action {
+  margin-top: auto;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+}

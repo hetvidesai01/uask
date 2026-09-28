@@ -148,6 +148,19 @@
   font-size: var(--fs-lg);
 }
 
+.connectionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.connectionsCount {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
 .sectionSubtitle {
   margin-top: calc(var(--sp-3) * -1);
   font-size: var(--fs-sm);

@@ -21,6 +21,8 @@ import Inbox from './pages/Inbox'
 import Thread from './pages/Inbox/Thread'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import SearchResults from './pages/SearchResults'
+import Connections from './pages/Connections'
 import NotFound from './pages/NotFound'
 import Toast from './components/ui/Toast'
 import GrainOverlay from './components/ui/GrainOverlay'
@@ -59,6 +61,8 @@ function App() {
             </Route>
             <Route path="asks/new" element={<CreateAsk />} />
             <Route path="discover" element={<DiscoverAsks />} />
+            <Route path="search" element={<SearchResults />} />
+            <Route path="connections" element={<Connections />} />
             <Route path="asks/:askId" element={<AskDetails />} />
             <Route path="asks/:askId/respond" element={<RespondToAsk />} />
             <Route path="asks/:askId/compare" element={<CompareResponses />} />

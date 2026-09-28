@@ -1,0 +1,22 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.removeLink {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.removeLink:hover {
+  color: var(--c-red-accent);
+}
+
+.removeLink:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

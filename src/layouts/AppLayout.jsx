@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import GlobalSearch from '../components/search/GlobalSearch'
 import UpgradeTeaser from '../components/premium/UpgradeTeaser'
 import PremiumDrawer from '../components/premium/PremiumDrawer'
 import ProductTour from '../components/onboarding/ProductTour'
@@ -38,11 +39,9 @@ function tabLinkClass({ isActive }) {
 export default function AppLayout() {
   const { user, activeRole, setActiveRole, logout } = useAuth()
   const { showToast } = useToast()
-  const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const [subscription, setSubscription] = useState(null)
   const [premiumOpen, setPremiumOpen] = useState(false)
   const desktopMenuRef = useRef(null)
@@ -97,12 +96,6 @@ export default function AppLayout() {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [desktopMenuOpen, mobileMenuOpen])
-
-  function handleSearchSubmit(event) {
-    event.preventDefault()
-    setSearch('')
-    navigate('/app/discover')
-  }
 
   function handleRoleSwitch(role) {
     if (role === activeRole) return
@@ -200,6 +193,14 @@ export default function AppLayout() {
                 View profile
               </Link>
               <Link
+                to="/app/connections"
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => setDesktopMenuOpen(false)}
+              >
+                Connections
+              </Link>
+              <Link
                 to="/app/settings"
                 className={styles.dropdownItem}
                 role="menuitem"
@@ -256,6 +257,14 @@ export default function AppLayout() {
                   View profile
                 </Link>
                 <Link
+                  to="/app/connections"
+                  className={styles.dropdownItem}
+                  role="menuitem"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Connections
+                </Link>
+                <Link
                   to="/app/settings"
                   className={styles.dropdownItem}
                   role="menuitem"
@@ -282,22 +291,7 @@ export default function AppLayout() {
 
       {/* Desktop-only content top bar: search, role switch, notifications */}
       <header className={styles.appTopBar}>
-        <form className={styles.search} role="search" onSubmit={handleSearchSubmit}>
-          <span className={styles.searchIcon} aria-hidden="true">
-            🔍
-          </span>
-          <label htmlFor="app-search" className="sr-only">
-            Search ASKs
-          </label>
-          <input
-            id="app-search"
-            type="search"
-            className={styles.searchInput}
-            placeholder="Search ASKs"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </form>
+        <GlobalSearch />
 
         <div className={styles.topBarActions}>
           {hasBothRoles && (
