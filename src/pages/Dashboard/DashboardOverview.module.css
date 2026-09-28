@@ -24,14 +24,15 @@
   }
 }
 
+/* A greeting sentence (with the user's name in it) reads as shouting in
+   full uppercase, unlike the app's short eyebrow/kicker labels — so this
+   stays sentence case, just small and muted like one. */
 .greeting {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   font-size: var(--fs-sm);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--c-text-mute);
   margin: 0 0 var(--sp-2);
 }

@@ -32,9 +32,19 @@ function persistUsers() {
 
 const users = loadUsers()
 
+// Builds a human-readable display name from an email's local part for a
+// mock login that doesn't match a seeded user (see login() below). Splits
+// on any run of non-letter characters (dots, underscores, digits, etc.) so
+// "jane.doe99@x.com" becomes "Jane Doe" instead of a raw, digit-laden
+// handle like "Janedoe99".
 function nameFromEmail(email) {
   const [handle] = email.split('@')
-  return handle.charAt(0).toUpperCase() + handle.slice(1)
+  const words = handle
+    .split(/[^a-zA-Z]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+
+  return words.length > 0 ? words.join(' ') : 'UASK User'
 }
 
 function findByEmail(email) {

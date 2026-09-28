@@ -340,8 +340,11 @@
     position: relative;
     display: flex;
     align-items: center;
-    max-width: 320px;
-    width: 100%;
+    /* Compact and intentional rather than stretching to fill the topbar —
+       a fixed target width that's free to shrink on narrower "tablet"
+       desktop-shell widths (the ≥900px range this topbar lives in). */
+    flex: 0 1 340px;
+    min-width: 200px;
   }
 
   .searchIcon {
