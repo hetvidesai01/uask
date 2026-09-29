@@ -19,18 +19,18 @@ import styles from './AppLayout.module.css'
 const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
 const DOT_SPRING = { type: 'spring', stiffness: 420, damping: 28 }
 
-// Primary nav is role-shaped, not a fixed list: Seekers post/manage
-// ASKs so they get Create ASK; Providers discover/respond to ASKs so they
-// get Discover ASKs instead. Discover ASKs stays reachable for Seekers
-// too (route + global search are untouched) — it's just not a primary
-// workflow item for that role. Full list is what the desktop sidebar
-// shows; the mobile tab bar derives a shorter subset from it (see
+// Primary nav is role-shaped, not a fixed list: Providers discover/respond
+// to ASKs so they get Discover ASKs; Seekers get Create ASK covered
+// separately by the standalone "+ Create ASK" button/FAB (see isRequester
+// below), not as a nav list item. Discover ASKs stays reachable for
+// Seekers too (route + global search are untouched) — it's just not a
+// primary workflow item for that role. Full list is what the desktop
+// sidebar shows; the mobile tab bar derives a shorter subset from it (see
 // mobileNavItems below) since Connections/Settings stay one tap away in
 // the existing account-menu dropdown on that surface.
 const REQUESTER_NAV_ITEMS = [
   { to: '/', label: 'Home', icon: '🌐', end: true },
   { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
-  { to: '/app/asks/new', label: 'Create ASK', icon: '➕' },
   { to: '/app/inbox', label: 'Inbox', icon: '📥' },
   { to: '/app/connections', label: 'Connections', icon: '🤝' },
   { to: '/app/profile', label: 'Profile', icon: '👤' },
