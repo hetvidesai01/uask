@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import Button from '../../ui/Button'
-import {
-  getConnectionStatus,
-  sendConnectionRequest,
-  acceptConnectionRequest,
-  removeConnection,
-} from '../../../services/connectionService'
+import { getConnectionStatus, connectWithUser, removeConnection } from '../../../services/connectionService'
 import styles from './ConnectButton.module.css'
 
-// A small, self-contained Connect / Pending / Accept / Connected control —
-// deliberately not a social "follow" button: no counts of its own, no
-// confirmation modals, just the professional-connection states from the
-// spec. `showRemove` opts in to an inline "Remove connection" action for
+// Connect -> Connected happens immediately on click — UASK's connection
+// model has no request/approval step (see services/connectionService.js).
+// `showRemove` opts in to an inline "Remove connection" action for
 // contexts (Profile, Connections page) where that makes sense; compact
 // contexts (search results, Discover People cards) leave it off.
 export default function ConnectButton({ currentUserId, targetUserId, size = 'sm', showRemove = false, onChange }) {
@@ -73,36 +67,8 @@ export default function ConnectButton({ currentUserId, targetUserId, size = 'sm'
     )
   }
 
-  if (status === 'pending_incoming') {
-    return (
-      <div className={styles.wrap}>
-        <Button size={size} loading={busy} onClick={() => runAction(() => acceptConnectionRequest(connectionId))}>
-          Accept
-        </Button>
-        {showRemove && (
-          <button
-            type="button"
-            className={styles.removeLink}
-            disabled={busy}
-            onClick={() => runAction(() => removeConnection(connectionId))}
-          >
-            Decline
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  if (status === 'pending_outgoing') {
-    return (
-      <Button size={size} variant="secondary" disabled>
-        Pending
-      </Button>
-    )
-  }
-
   return (
-    <Button size={size} loading={busy} onClick={() => runAction(() => sendConnectionRequest(currentUserId, targetUserId))}>
+    <Button size={size} loading={busy} onClick={() => runAction(() => connectWithUser(currentUserId, targetUserId))}>
       Connect
     </Button>
   )

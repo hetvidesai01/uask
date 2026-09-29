@@ -168,6 +168,26 @@
   background-color: var(--c-red-wash);
 }
 
+.summaryTag {
+  display: inline-flex;
+  align-items: center;
+  margin-top: var(--sp-2);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  background-color: var(--c-red-wash);
+  color: var(--c-red-deep);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.matchReasoning {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
 /* Mobile stacked cards */
 .mobileList {
   display: flex;

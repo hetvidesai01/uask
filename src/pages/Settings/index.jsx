@@ -101,6 +101,16 @@ export default function Settings() {
 
       <Card padding="lg" className={styles.section}>
         <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Payment details</h2>
+          <p className={styles.sectionCopy}>
+            No payment method is connected yet — Payments &amp; Milestones remains mock-only for now.
+          </p>
+        </div>
+        <p className={styles.comingSoon}>Adding a payment method and payout details isn't available yet.</p>
+      </Card>
+
+      <Card padding="lg" className={styles.section}>
+        <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Notifications</h2>
           <p className={styles.sectionCopy}>
             Placeholder preferences — UASK doesn't send real emails yet, but this remembers your choice.

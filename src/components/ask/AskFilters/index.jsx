@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import Select from '../../ui/Select'
 import Input from '../../ui/Input'
 import Button from '../../ui/Button'
 import Tag from '../../ui/Tag'
 import styles from './AskFilters.module.css'
+
+const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Any status' },
@@ -80,7 +83,17 @@ export default function AskFilters({ categories, filters, onFilterChange, onRese
         aria-expanded={open}
       >
         Filter
-        {activeEntries.length > 0 && <span className={styles.count}>{activeEntries.length}</span>}
+        {activeEntries.length > 0 && (
+          <motion.span
+            key={activeEntries.length}
+            className={styles.count}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={BADGE_SPRING}
+          >
+            {activeEntries.length}
+          </motion.span>
+        )}
         <span className={styles.chevron} aria-hidden="true">
           ▾
         </span>

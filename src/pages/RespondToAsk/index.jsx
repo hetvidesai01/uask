@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import StepIndicator from '../../components/ui/StepIndicator'
+import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -268,6 +270,7 @@ export default function RespondToAsk() {
 
   return (
     <div className={styles.page}>
+      <AnimatedBackground variant="minimal" />
       <div className={styles.header}>
         <h1 className={styles.title}>Respond to this ASK</h1>
         <p className={styles.subtitle}>{ask.title}</p>
@@ -276,9 +279,19 @@ export default function RespondToAsk() {
       <StepIndicator steps={STEPS} current={step} />
 
       <Card padding="lg" className={styles.card}>
-        {step === 1 && <OfferFormStep1 values={values} errors={errors} onChange={updateValues} />}
-        {step === 2 && <OfferFormStep2 values={values} errors={errors} onChange={updateValues} />}
-        {step === 3 && <OfferFormStep3 values={values} onEdit={goToStep} />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            {step === 1 && <OfferFormStep1 values={values} errors={errors} onChange={updateValues} />}
+            {step === 2 && <OfferFormStep2 values={values} errors={errors} onChange={updateValues} />}
+            {step === 3 && <OfferFormStep3 values={values} onEdit={goToStep} />}
+          </motion.div>
+        </AnimatePresence>
 
         <div className={styles.controls}>
           <Button variant="ghost" onClick={handleBack} disabled={step === 1}>

@@ -14,6 +14,15 @@ export default function PersonCard({ user, rating, completedContractCount, curre
   const skills = (user.categories ?? []).slice(0, 3)
   const isProvider = user.roles?.includes('provider')
 
+  // Compact reasoning line built from data already on the card — not a real
+  // AI/matching output yet (see the product's AI Matching Engine, not started).
+  const primaryCategory = user.categories?.[0]
+  const matchReasoning = primaryCategory
+    ? `Matched: ${primaryCategory}${rating != null ? ` · ${rating.toFixed(1)}★` : ''} · ${completedContractCount} completed ${
+        completedContractCount === 1 ? 'project' : 'projects'
+      }`
+    : null
+
   return (
     <Card hoverable padding="lg" className={styles.card}>
       <Link to={`/app/profile/${user.id}`} className={styles.identity}>
@@ -23,6 +32,8 @@ export default function PersonCard({ user, rating, completedContractCount, curre
           <span className={styles.headline}>{headline}</span>
         </div>
       </Link>
+
+      {matchReasoning && <p className={styles.matchReasoning}>{matchReasoning}</p>}
 
       {skills.length > 0 && (
         <div className={styles.skills}>

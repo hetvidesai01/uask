@@ -42,6 +42,25 @@ a {
   outline-offset: 2px;
 }
 
+/* Native date input — styling it directly rather than adding a date-picker
+   dependency. Layout/border/background already inherit from the shared
+   Input atom's .input class; this just brings the browser-drawn calendar
+   glyph in line with the rest of the control instead of leaving it as a
+   stark black icon. Deliberately no `color-scheme` override here — the
+   native picker popup already inherits light/dark from <html data-theme>. */
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  border-radius: var(--r-sm);
+  padding: 2px;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+  background-color: var(--c-surface-2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

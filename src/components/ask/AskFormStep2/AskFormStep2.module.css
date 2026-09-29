@@ -1,7 +1,24 @@
 .fields {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-6);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+}
+
+.groupLabel {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-text-mute);
 }
 
 .budgetRow {
@@ -19,4 +36,10 @@
   .budgetRow > :last-child {
     min-width: 140px;
   }
+}
+
+.logisticsFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }

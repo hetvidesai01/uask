@@ -2,7 +2,7 @@
   display: flex;
   align-items: flex-start;
   overflow-x: auto;
-  padding-bottom: var(--sp-1);
+  padding-block: var(--sp-2);
 }
 
 .node {
@@ -12,7 +12,16 @@
   align-items: center;
   gap: var(--sp-2);
   flex: 1;
-  min-width: 64px;
+  min-width: 68px;
+}
+
+.markerSlot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
 }
 
 .dot {
@@ -21,7 +30,6 @@
   border-radius: var(--r-full);
   background-color: var(--c-surface-3);
   border: 1px solid var(--c-border-hover);
-  z-index: 1;
 }
 
 .dot.done {
@@ -30,17 +38,27 @@
   box-shadow: var(--glow-red-sm);
 }
 
-.connector {
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  right: -50%;
-  height: 1px;
-  background-color: var(--c-border-hover);
+.currentMark {
+  margin-top: -1px;
 }
 
-.connector.done {
+.connector {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background-color: var(--c-border-hover);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.connectorFill {
+  display: block;
+  width: 100%;
+  height: 100%;
   background-color: var(--c-red);
+  transform-origin: left;
 }
 
 .label {

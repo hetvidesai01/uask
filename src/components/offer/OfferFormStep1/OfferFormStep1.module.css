@@ -1,7 +1,24 @@
 .fields {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-6);
+}
+
+.priceGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+}
+
+.groupLabel {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-text-mute);
 }
 
 .priceRow {
@@ -19,6 +36,21 @@
   .priceRow > :nth-child(2) {
     min-width: 140px;
   }
+}
+
+/* Price is the single most important number on this form — give it clear
+   visual weight (targets the shared Input atom's native <input> by element
+   type, so the atom itself stays untouched). */
+.priceField :global(input) {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--c-red-deep);
+}
+
+.deliveryField :global(input) {
+  font-family: var(--font-mono);
+  font-weight: 600;
 }
 
 .deliverablesField {

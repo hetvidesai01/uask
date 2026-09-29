@@ -23,6 +23,7 @@ import { getCompletedContractsForProvider, getProviderReputation } from '../../s
 import { getPortfolioForUser } from '../../services/profileService'
 import { getConnectionCount } from '../../services/connectionService'
 import ConnectButton from '../../components/people/ConnectButton'
+import SaveButton from '../../components/people/SaveButton'
 import { isRequired } from '../../utils/validators'
 import { formatAbsoluteDate } from '../../utils/formatDate'
 import { getProfileHeadline } from '../../utils/profileHeadline'
@@ -361,11 +362,16 @@ export default function Profile() {
                   </Button>
                 )
               ) : (
-                messageThreadId && (
-                  <Button as={Link} to={`/app/inbox/messages/${messageThreadId}`} size="sm">
-                    Message
-                  </Button>
-                )
+                <>
+                  {profileUser.roles.includes('provider') && (
+                    <SaveButton currentUserId={currentUser.id} providerId={profileUser.id} />
+                  )}
+                  {messageThreadId && (
+                    <Button as={Link} to={`/app/inbox/messages/${messageThreadId}`} size="sm">
+                      Message
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -16,8 +16,7 @@
   position: relative;
 }
 
-.item:not(:first-child)::before {
-  content: '';
+.connector {
   position: absolute;
   top: 16px;
   right: 50%;
@@ -25,10 +24,15 @@
   height: 2px;
   background-color: var(--c-border);
   z-index: 0;
+  overflow: hidden;
 }
 
-.item[data-state='done']:not(:first-child)::before {
+.connectorFill {
+  display: block;
+  width: 100%;
+  height: 100%;
   background-color: var(--c-red-deep);
+  transform-origin: left;
 }
 
 .circle {
@@ -45,6 +49,7 @@
   background-color: var(--c-surface);
   border: 2px solid var(--c-border);
   color: var(--c-text-mute);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .item[data-state='active'] .circle {

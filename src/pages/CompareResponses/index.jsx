@@ -12,6 +12,8 @@ import { useToast } from '../../hooks/useToast'
 import { getAskById, updateAskStatus } from '../../services/askService'
 import { getOffersForAsk, updateOfferStatus } from '../../services/offerService'
 import { getUserById } from '../../services/authService'
+import { createContract } from '../../services/contractService'
+import { getPortfolioForUser } from '../../services/profileService'
 import { formatCurrency } from '../../utils/formatCurrency'
 import styles from './CompareResponses.module.css'
 
@@ -41,6 +43,7 @@ export default function CompareResponses() {
   const [ask, setAsk] = useState(null)
   const [offers, setOffers] = useState([])
   const [providersById, setProvidersById] = useState({})
+  const [portfolioCountByProvider, setPortfolioCountByProvider] = useState({})
   const [selectedIds, setSelectedIds] = useState([])
   const [actioningId, setActioningId] = useState(null)
 
@@ -62,14 +65,24 @@ export default function CompareResponses() {
       foundOffers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
       const providerIds = [...new Set(foundOffers.map((offer) => offer.providerId))]
-      const providers = await Promise.all(providerIds.map((id) => getUserById(id)))
+      const [providers, portfolios] = await Promise.all([
+        Promise.all(providerIds.map((id) => getUserById(id))),
+        Promise.all(providerIds.map((id) => getPortfolioForUser(id))),
+      ])
       const providerMap = Object.fromEntries(
         providers.filter(Boolean).map((provider) => [provider.id, provider])
+      )
+      const portfolioCounts = Object.fromEntries(
+        providerIds.map((id, index) => [
+          id,
+          portfolios[index].filter((item) => item.category === foundAsk.category).length,
+        ])
       )
 
       setAsk(foundAsk)
       setOffers(foundOffers)
       setProvidersById(providerMap)
+      setPortfolioCountByProvider(portfolioCounts)
       setSelectedIds(foundOffers.slice(0, MAX_COMPARE).map((offer) => offer.id))
       setStatus('ready')
     } catch {
@@ -123,7 +136,21 @@ export default function CompareResponses() {
         setOffers((current) => current.map((item) => (item.id === updated.id ? updated : item)))
         const updatedAsk = await updateAskStatus(askId, 'accepted')
         if (updatedAsk) setAsk(updatedAsk)
-        showToast('Offer accepted.')
+        // Frontend/mock state transition only — creates the contract record
+        // so the Contract page is populated immediately, no real payment
+        // processing happens here.
+        await createContract({
+          askId,
+          offerId: updated.id,
+          seekerId: user.id,
+          providerId: updated.providerId,
+          agreedPrice: updated.price,
+          currency: updated.currency,
+          deliverables: updated.deliverables,
+          deliveryDays: updated.deliveryDays,
+        })
+        showToast('Offer accepted — contract started.')
+        navigate(`/app/asks/${askId}/contract`)
       }
     } finally {
       setActioningId(null)
@@ -159,7 +186,7 @@ export default function CompareResponses() {
           loading={busy}
           onClick={() => handleAccept(offer)}
         >
-          {isAccepted ? 'Accepted ✓' : 'Accept'}
+          {isAccepted ? 'Accepted ✓' : 'Accept & Start'}
         </Button>
       </>
     )
@@ -251,6 +278,38 @@ export default function CompareResponses() {
     selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.price)) : null
   const bestDelivery =
     selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.deliveryDays)) : null
+  const bestRating =
+    selectedOffers.length > 1
+      ? Math.max(...selectedOffers.map((offer) => providersById[offer.providerId]?.rating ?? 0))
+      : null
+
+  // One mock "smart summary" tag per response — not presented as AI-generated.
+  // Priority order (value, then speed, then rating) keeps exactly one badge
+  // per offer even when a provider would otherwise qualify for more than one.
+  function getSummaryTag(offer) {
+    if (selectedOffers.length < 2) return null
+    const rating = providersById[offer.providerId]?.rating ?? 0
+    if (offer.price === bestPrice) return 'Best value'
+    if (offer.deliveryDays === bestDelivery) return 'Fastest delivery'
+    if (rating > 0 && rating === bestRating) return 'Strongest rating'
+    return null
+  }
+
+  // Compact "Matched: ..." reasoning line — built from data already on the
+  // page (the ask's category, the provider's seeded rating, and how many
+  // portfolio pieces they have in that same category). Not a real
+  // AI/matching output yet.
+  function getMatchReasoning(offer) {
+    const provider = providersById[offer.providerId]
+    if (!provider || !provider.categories?.includes(ask.category)) return null
+
+    const count = portfolioCountByProvider[offer.providerId] ?? 0
+    const ratingPart = provider.rating != null ? `${provider.rating.toFixed(1)}★` : null
+    const parts = [ask.category, ratingPart, `${count} similar ${count === 1 ? 'project' : 'projects'}`].filter(
+      Boolean
+    )
+    return `Matched: ${parts.join(' · ')}`
+  }
 
   const rows = [
     {
@@ -259,6 +318,12 @@ export default function CompareResponses() {
         const provider = providersById[offer.providerId]
         return provider?.rating != null ? `★ ${provider.rating.toFixed(1)} (${provider.reviewCount})` : '—'
       },
+    },
+    {
+      label: 'Matched',
+      render: (offer) => (
+        <span className={styles.matchReasoning}>{getMatchReasoning(offer) || 'Not category-matched'}</span>
+      ),
     },
     {
       label: 'Price',
@@ -353,6 +418,7 @@ export default function CompareResponses() {
               {selectedOffers.map((offer) => (
                 <th scope="col" key={offer.id}>
                   <UserMiniCard user={providersById[offer.providerId]} />
+                  {getSummaryTag(offer) && <span className={styles.summaryTag}>{getSummaryTag(offer)}</span>}
                 </th>
               ))}
             </tr>
@@ -397,6 +463,8 @@ export default function CompareResponses() {
             offer={offer}
             provider={providersById[offer.providerId]}
             actions={renderActions(offer)}
+            tag={getSummaryTag(offer)}
+            matchReasoning={getMatchReasoning(offer)}
           />
         ))}
       </div>

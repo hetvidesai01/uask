@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import StepIndicator from '../../components/ui/StepIndicator'
 import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
@@ -9,11 +10,13 @@ import AskFormStep1 from '../../components/ask/AskFormStep1'
 import AskFormStep2 from '../../components/ask/AskFormStep2'
 import AskFormStep3 from '../../components/ask/AskFormStep3'
 import AskFormStep4 from '../../components/ask/AskFormStep4'
+import AiAskAssistant from '../../components/ask/AiAskAssistant'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getCategories, createAsk } from '../../services/askService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
+import { fadeRise } from '../../utils/motion'
 import styles from './CreateAsk.module.css'
 
 const DRAFT_KEY = 'uask.draft.createAsk'
@@ -113,6 +116,25 @@ export default function CreateAsk() {
     setErrors((current) => ({ ...current, [field]: undefined }))
   }
 
+  // The Assistant only ever reaches the draft through this — Accept/Edit
+  // are the sole write paths, nothing there auto-applies on its own.
+  function handleAiAccept(field, value) {
+    if (field === 'budgetTimeline') {
+      setDraft((current) => ({
+        ...current,
+        values: {
+          ...current.values,
+          budgetMin: value.budgetMin,
+          budgetMax: value.budgetMax,
+          deadline: value.deadline,
+        },
+      }))
+      setErrors((current) => ({ ...current, budgetMin: undefined, budgetMax: undefined, deadline: undefined }))
+      return
+    }
+    updateValues(field, value)
+  }
+
   function goToStep(nextStep) {
     setErrors({})
     setDraft((current) => ({ ...current, step: nextStep }))
@@ -195,13 +217,29 @@ export default function CreateAsk() {
 
       <StepIndicator steps={STEPS} current={step} />
 
+      {step === 1 && (
+        <motion.div initial="hidden" animate="visible" variants={fadeRise}>
+          <AiAskAssistant values={values} onAccept={handleAiAccept} />
+        </motion.div>
+      )}
+
       <Card padding="lg" className={styles.card}>
-        {step === 1 && (
-          <AskFormStep1 values={values} errors={errors} categories={categories} onChange={updateValues} />
-        )}
-        {step === 2 && <AskFormStep2 values={values} errors={errors} onChange={updateValues} />}
-        {step === 3 && <AskFormStep3 values={values} onChange={updateValues} />}
-        {step === 4 && <AskFormStep4 values={values} onEdit={goToStep} />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            {step === 1 && (
+              <AskFormStep1 values={values} errors={errors} categories={categories} onChange={updateValues} />
+            )}
+            {step === 2 && <AskFormStep2 values={values} errors={errors} onChange={updateValues} />}
+            {step === 3 && <AskFormStep3 values={values} onChange={updateValues} />}
+            {step === 4 && <AskFormStep4 values={values} onEdit={goToStep} />}
+          </motion.div>
+        </AnimatePresence>
 
         <div className={styles.controls}>
           <Button variant="ghost" onClick={handleBack} disabled={step === 1}>

@@ -1,0 +1,182 @@
+/* A soft "studio" panel — visually distinct from the surrounding white
+   form card so it never reads as just another field group. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  padding: var(--sp-5);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(165deg, var(--blush) 0%, var(--c-surface) 70%);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sparkle {
+  font-size: var(--fs-lg);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  color: var(--c-red-deep);
+}
+
+.subtitle {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.strengthRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.strengthLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strengthTitle {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-text-mute);
+}
+
+.strengthTone {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.strengthTone.weak {
+  color: var(--c-warning);
+}
+
+.strengthTone.good {
+  color: var(--c-info);
+}
+
+.strengthTone.strong {
+  color: var(--c-success);
+}
+
+.strengthBarTrack {
+  height: 8px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  overflow: hidden;
+}
+
+.strengthBarFill {
+  height: 100%;
+  border-radius: var(--r-full);
+}
+
+.strengthBarFill.weak {
+  background-color: var(--c-warning);
+}
+
+.strengthBarFill.good {
+  background-color: var(--c-info);
+}
+
+.strengthBarFill.strong {
+  background-color: var(--c-success);
+}
+
+.strengthScore {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--c-text);
+  min-width: 3.5ch;
+  text-align: right;
+}
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+}
+
+.status {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  padding-block: var(--sp-2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+}
+
+@media (min-width: 640px) {
+  .suggestion {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.suggestionBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.suggestionLabel {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+}
+
+.suggestionDescription {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+.suggestionValue {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+  white-space: pre-line;
+}
+
+.editField {
+  margin-top: var(--sp-1);
+}
+
+.suggestionActions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}

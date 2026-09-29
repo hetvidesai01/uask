@@ -141,8 +141,8 @@ export default function DesignPreview() {
       <section className={styles.section}>
         <h2 className={styles.h2}>Typography</h2>
         <p className={styles.sectionNote}>
-          Instrument Serif for editorial headings, Instrument Sans for UI/body, EB Garamond kept
-          selectively for expressive moments, JetBrains Mono selectively for data/numerals.
+          Helvetica for headings/display type (hierarchy via size/weight/spacing, not a serif face),
+          Instrument Sans for UI/body, JetBrains Mono selectively for data/numerals.
         </p>
         <p className={styles.displaySample}>Ask for what you need.</p>
         <p className={styles.bodySample}>

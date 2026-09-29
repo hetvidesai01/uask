@@ -81,15 +81,28 @@
   --c-info:    #2B6CB0;
   --c-danger:  var(--red);
 
+  /* Category tag color — Discover ASK cards use this small set to give
+     each category a distinct, scannable color instead of every category
+     rendering the same red-accent text. --c-category-plum is the one
+     genuinely new hue added for this; everything else reuses tokens
+     already defined above. */
+  --c-category-plum: #8B5A7C;
+
   /* Type
-   * Instrument Serif — major editorial headings
+   * Helvetica        — major headings/display type (hierarchy comes from
+   *                    size/weight/spacing now, not a serif face — see
+   *                    the "Global typography change" product decision)
    * Instrument Sans  — UI, body, buttons, forms
-   * EB Garamond      — occasional expressive/heritage moments (selective)
    * JetBrains Mono   — prices, statistics, timestamps, small data labels (selective)
+   *
+   * --font-heritage kept as its own token (still consumed by a handful of
+   * expressive/italic moments) but now resolves to the same Helvetica
+   * stack as --font-display — Instrument Serif and EB Garamond are no
+   * longer loaded (see index.html) or referenced anywhere.
    */
-  --font-display:  'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-display:  'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-body:     'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-heritage: 'EB Garamond', Garamond, Georgia, serif;
+  --font-heritage: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono:     'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   --fs-xs: 0.75rem;  --fs-sm: 0.875rem; --fs-base: 1rem;

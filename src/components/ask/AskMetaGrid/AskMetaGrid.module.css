@@ -38,3 +38,9 @@
   font-weight: 600;
   font-size: var(--fs-base);
 }
+
+.item:first-child .value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  color: var(--c-red-deep);
+}

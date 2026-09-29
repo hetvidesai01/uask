@@ -37,31 +37,36 @@ export default function OfferFormStep1({ values, errors, onChange }) {
 
   return (
     <div className={styles.fields}>
-      <div className={styles.priceRow}>
-        <Input
-          label="Price"
-          type="number"
-          min="0"
-          placeholder="$0"
-          value={values.price}
-          onChange={(e) => onChange('price', e.target.value)}
-          error={errors.price}
-        />
-        <Select
-          label="Currency"
-          options={CURRENCY_OPTIONS}
-          value={values.currency}
-          onChange={(e) => onChange('currency', e.target.value)}
-        />
-        <Input
-          label="Delivery (days)"
-          type="number"
-          min="1"
-          placeholder="e.g. 5"
-          value={values.deliveryDays}
-          onChange={(e) => onChange('deliveryDays', e.target.value)}
-          error={errors.deliveryDays}
-        />
+      <div className={styles.priceGroup}>
+        <span className={styles.groupLabel}>What you&apos;re proposing</span>
+        <div className={styles.priceRow}>
+          <Input
+            label="Price"
+            type="number"
+            min="0"
+            placeholder="$0"
+            value={values.price}
+            onChange={(e) => onChange('price', e.target.value)}
+            error={errors.price}
+            className={styles.priceField}
+          />
+          <Select
+            label="Currency"
+            options={CURRENCY_OPTIONS}
+            value={values.currency}
+            onChange={(e) => onChange('currency', e.target.value)}
+          />
+          <Input
+            label="Delivery (days)"
+            type="number"
+            min="1"
+            placeholder="e.g. 5"
+            value={values.deliveryDays}
+            onChange={(e) => onChange('deliveryDays', e.target.value)}
+            error={errors.deliveryDays}
+            className={styles.deliveryField}
+          />
+        </div>
       </div>
 
       <div className={styles.deliverablesField}>

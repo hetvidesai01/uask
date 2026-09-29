@@ -34,24 +34,27 @@ export default function ReputationMetrics({
       <div className={styles.tile}>
         <div className={styles.boosterHeader}>
           <span className={styles.label}>Profile Booster</span>
-          <button
-            type="button"
-            className={styles.infoButton}
-            aria-expanded={infoOpen}
-            aria-controls="profile-booster-info"
-            onClick={() => setInfoOpen((open) => !open)}
-          >
-            <span aria-hidden="true">ⓘ</span>
-            <span className="sr-only">How Profile Booster works</span>
-          </button>
+          <span className={styles.tooltipWrap}>
+            <button
+              type="button"
+              className={styles.infoButton}
+              aria-expanded={infoOpen}
+              aria-describedby="profile-booster-info"
+              onClick={() => setInfoOpen((open) => !open)}
+            >
+              <span aria-hidden="true">ⓘ</span>
+              <span className="sr-only">How Profile Booster works</span>
+            </button>
+            <span
+              role="tooltip"
+              id="profile-booster-info"
+              className={[styles.tooltip, infoOpen ? styles.tooltipVisible : ''].filter(Boolean).join(' ')}
+            >
+              Complete milestones, contracts and earn strong ratings to strengthen your UASK profile.
+            </span>
+          </span>
         </div>
         <span className={styles.value}>+{profileBoosterPct}%</span>
-        {infoOpen && (
-          <p id="profile-booster-info" className={styles.boosterInfo}>
-            Profile Booster reflects reputation signals — completed milestones, completed contracts and positive
-            ratings. It doesn't guarantee marketplace ranking or visibility.
-          </p>
-        )}
       </div>
     </div>
   )

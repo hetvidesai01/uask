@@ -199,10 +199,10 @@ export default function DashboardOverview() {
       </div>
 
       <div className={styles.stats}>
-        <StatCard label="Active ASKs" value={activeAsksCount} />
-        <StatCard label="Responses received" value={responsesReceivedCount} />
-        <StatCard label="Active offers" value={activeOffersCount} />
-        <StatCard label="Shortlisted / accepted" value={wonOffersCount} />
+        <StatCard icon="🗂️" label="Active ASKs" value={activeAsksCount} />
+        <StatCard icon="📨" label="Responses received" value={responsesReceivedCount} />
+        <StatCard icon="📤" label="Active offers" value={activeOffersCount} />
+        <StatCard icon="⭐" label="Shortlisted / accepted" value={wonOffersCount} />
       </div>
 
       <div className={styles.tabsSection}>

@@ -61,9 +61,35 @@
   color: var(--c-red-accent);
 }
 
-.boosterInfo {
-  margin-top: var(--sp-1);
+.tooltipWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + var(--sp-2));
+  right: 0;
+  z-index: 5;
+  width: 220px;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background-color: var(--ink);
+  color: var(--surface);
   font-size: var(--fs-xs);
   line-height: var(--lh-normal);
-  color: var(--c-text-mute);
+  font-weight: 400;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.tooltipWrap:hover .tooltip,
+.tooltipWrap:focus-within .tooltip,
+.tooltip.tooltipVisible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
