@@ -1,3 +1,37 @@
+/* ============================================================
+ * Self-hosted typefaces — centralized here (not per-page) so every
+ * consumer of --font-display/--font-heritage/--font-body picks these up
+ * automatically. Font files live in src/assets/fonts/.
+ *   - Apple Garamond Light: headline/display type only (see --font-display
+ *     / --font-heritage below) — never used for dense UI text.
+ *   - Gambarino Regular: body copy, forms, nav, buttons, filters, stats
+ *     and other general UI text (see --font-body) — free/self-hostable,
+ *     Indian Type Foundry via Fontshare (ITF Free Font License).
+ * ============================================================ */
+@font-face {
+  font-family: 'Apple Garamond Light';
+  src: url('../assets/fonts/AppleGaramond-Light.ttf') format('truetype');
+  /* A wide weight range (not just 300) so existing headings that set a
+     heavier font-weight alongside --font-display still resolve to this
+     one static file instead of the browser synthesizing a fake bold. */
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gambarino-Regular';
+  src:
+    url('../assets/fonts/Gambarino-Regular.woff2') format('woff2'),
+    url('../assets/fonts/Gambarino-Regular.woff') format('woff');
+  /* Same reasoning as Apple Garamond Light above — one static file, wide
+     range so existing UI text (buttons/labels often set font-weight: 600)
+     resolves here instead of a synthesized fake bold. */
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* ============================================================
    * UASK "Open Call" — light editorial design foundation.
@@ -89,20 +123,26 @@
   --c-category-plum: #8B5A7C;
 
   /* Type
-   * Helvetica        — major headings/display type (hierarchy comes from
-   *                    size/weight/spacing now, not a serif face — see
-   *                    the "Global typography change" product decision)
-   * Instrument Sans  — UI, body, buttons, forms
-   * JetBrains Mono   — prices, statistics, timestamps, small data labels (selective)
+   * Apple Garamond Light — major headlines/display type only (Landing
+   *                        hero, section headings, Dashboard greeting,
+   *                        ASK/Contract/Compare/Profile/Premium/Help
+   *                        headings). Never used for dense UI text —
+   *                        hierarchy there still comes from size/weight/
+   *                        spacing, not a serif face.
+   * Gambarino Regular    — body copy, forms, nav, buttons, filters, stats
+   *                        and general UI text (replaces Instrument Sans
+   *                        as the primary body face; kept as a fallback).
+   * JetBrains Mono       — prices, statistics, timestamps, small data
+   *                        labels (selective).
    *
-   * --font-heritage kept as its own token (still consumed by a handful of
-   * expressive/italic moments) but now resolves to the same Helvetica
-   * stack as --font-display — Instrument Serif and EB Garamond are no
-   * longer loaded (see index.html) or referenced anywhere.
+   * --font-heritage resolves to the same Apple Garamond Light stack as
+   * --font-display — both are self-hosted, see the @font-face block
+   * above. Instrument Serif and EB Garamond are no longer loaded (see
+   * index.html) or referenced anywhere.
    */
-  --font-display:  'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-body:     'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-heritage: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display:  'Apple Garamond Light', Georgia, 'Times New Roman', serif;
+  --font-body:     'Gambarino-Regular', 'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-heritage: 'Apple Garamond Light', Georgia, 'Times New Roman', serif;
   --font-mono:     'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   --fs-xs: 0.75rem;  --fs-sm: 0.875rem; --fs-base: 1rem;

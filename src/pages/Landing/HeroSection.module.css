@@ -1,14 +1,14 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding-top: calc(var(--topbar-h) + var(--sp-6));
-  padding-bottom: var(--sp-7);
+  padding-top: calc(var(--topbar-h) + var(--sp-5));
+  padding-bottom: var(--sp-6);
 }
 
 @media (min-width: 900px) {
   .hero {
-    padding-top: calc(var(--topbar-h) + var(--sp-8));
-    padding-bottom: var(--sp-8);
+    padding-top: calc(var(--topbar-h) + var(--sp-7));
+    padding-bottom: var(--sp-7);
   }
 }
 
@@ -83,18 +83,19 @@
   box-shadow: var(--glow-red-sm);
 }
 
-/* Oversized editorial display type — deliberately beyond the standard
-   --fs-* scale (page-specific flourish for the hero only). */
+/* Editorial display type — page-specific flourish for the hero only.
+   Sized down from the earlier poster-scale treatment: mobile lands
+   ~38–48px, desktop ~52–82px (per the product's hero-sizing decision). */
 .title {
   font-family: var(--font-display);
-  font-size: clamp(3.25rem, 6vw + 1.5rem, 5.75rem);
-  line-height: 0.98;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.375rem, 5vw + 1.5rem, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
 }
 
 @media (min-width: 900px) {
   .title {
-    font-size: clamp(4.25rem, 5vw + 1.5rem, 6.5rem);
+    font-size: clamp(3.25rem, 6vw, 5.125rem);
   }
 }
 
