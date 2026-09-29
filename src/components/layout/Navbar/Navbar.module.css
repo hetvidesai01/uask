@@ -56,21 +56,23 @@
   }
 }
 
-/* Landing-only brand treatment — the Home page header gets a much more
-   prominent mark, similar in spirit to the logged-in sidebar's larger
-   logo. Scoped to isLanding via the compound selector (beats the plain
-   .logoImg rules above regardless of source order) so Login/Signup/Help,
-   which share this same Navbar, keep their smaller header logo. Width
-   stays auto, so this only scales the unmodified logo file up
-   proportionally. Sized well within the hero's own top padding (96px
-   desktop / 88px mobile) so nothing overlaps the hero content below. */
+/* Landing-only brand treatment — the Home page header makes the mark (and
+   its baked-in tagline) a genuinely prominent brand element rather than a
+   small corner logo. Scoped to isLanding via the compound selector (beats
+   the plain .logoImg rules above regardless of source order) so
+   Login/Signup/Help, which share this same Navbar, keep their smaller
+   header logo untouched. Width stays auto, so this only scales the
+   unmodified logo file up proportionally. The breakpoint here matches
+   HeroSection's own 900px breakpoint (not this file's usual 640px) so the
+   logo and the hero's compensating top padding — see HeroSection.module.css
+   — step up together and nothing overlaps in between. */
 .logoImg.logoImgLanding {
-  height: 56px;
+  height: 72px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 900px) {
   .logoImg.logoImgLanding {
-    height: 80px;
+    height: 128px;
   }
 }
 
@@ -82,6 +84,21 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--c-text-mute);
+}
+
+/* Landing-only: Help / Discover ASKs read as more prominent primary nav
+   next to the much larger Landing logo treatment above. Same isLanding
+   compound-selector scoping as .logoImgLanding, so Login/Signup/Help keep
+   the smaller default .links size. Color, weight, letter-spacing and the
+   red hover-underline are all inherited unchanged — only size grows. */
+.links.linksLanding {
+  font-size: var(--fs-lg);
+}
+
+@media (min-width: 900px) {
+  .links.linksLanding {
+    font-size: var(--fs-xl);
+  }
 }
 
 .links a {

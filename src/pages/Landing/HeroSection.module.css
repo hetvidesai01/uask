@@ -1,13 +1,17 @@
+/* padding-top clears the Navbar's landing-only logo treatment (see
+   Navbar.module.css's .logoImgLanding — 72px mobile / 128px desktop),
+   which is taller than the shared --topbar-h other pages use, so the
+   fixed-position header never overlaps the hero content below. */
 .hero {
   position: relative;
   overflow: hidden;
-  padding-top: calc(var(--topbar-h) + var(--sp-5));
+  padding-top: calc(var(--sp-9) + var(--sp-4));
   padding-bottom: var(--sp-5);
 }
 
 @media (min-width: 900px) {
   .hero {
-    padding-top: calc(var(--topbar-h) + var(--sp-6));
+    padding-top: calc(var(--sp-9) + var(--sp-8));
     padding-bottom: var(--sp-6);
   }
 }
@@ -69,7 +73,7 @@
   border-radius: var(--r-full);
   background-color: var(--c-red-wash);
   color: var(--c-red-deep);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;

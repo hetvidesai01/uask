@@ -3,6 +3,20 @@
   isolation: isolate;
 }
 
+/* Replaces the drawer's default plain-text title (see headerContent on
+   Drawer) with the official brand mark — the wordmark already says
+   "Uask", so a separate "UASK Premium" label would just repeat it; the
+   dialog's accessible name still carries the full "UASK Premium" text via
+   Drawer's title/aria-label prop, unchanged. Sized to sit level with the
+   close button's 32px footprint; width is auto so the untouched logo file
+   only scales, never stretches. */
+.headerLogo {
+  display: block;
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
 .intro {
   margin-bottom: var(--sp-5);
   font-size: var(--fs-sm);

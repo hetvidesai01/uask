@@ -69,7 +69,7 @@
 
 .loginLink {
   color: var(--c-red-deep);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;

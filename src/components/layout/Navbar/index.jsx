@@ -36,7 +36,10 @@ export default function Navbar() {
           />
         </Link>
 
-        <nav className={styles.links} aria-label="Primary">
+        <nav
+          className={[styles.links, isLanding ? styles.linksLanding : ''].filter(Boolean).join(' ')}
+          aria-label="Primary"
+        >
           <Link to="/help">Help</Link>
           <Link to="/app/discover">Discover ASKs</Link>
         </nav>

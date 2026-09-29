@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Drawer from '../../ui/Drawer'
 import Button from '../../ui/Button'
 import AnimatedBackground from '../../ui/AnimatedBackground'
+import uaskLogo from '../../../assets/brand/uask.logo.png'
 import styles from './PremiumDrawer.module.css'
 
 const FEATURES = [
@@ -61,7 +62,12 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
   }
 
   return (
-    <Drawer open={open} onClose={handleClose} title="UASK Premium">
+    <Drawer
+      open={open}
+      onClose={handleClose}
+      title="UASK Premium"
+      headerContent={<img src={uaskLogo} alt="UASK" className={styles.headerLogo} />}
+    >
       <div className={styles.content}>
         <AnimatedBackground variant="rich" />
         {isPremium ? (

@@ -59,7 +59,7 @@
 }
 
 .panelLabel {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -89,7 +89,7 @@
   border: 1px solid var(--c-border);
   background-color: var(--c-surface);
   color: var(--c-text-mute);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: 600;
 }
 
@@ -98,7 +98,7 @@
   border-radius: var(--r-full);
   background-color: var(--c-red);
   color: white;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: 700;
 }
 
