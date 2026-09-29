@@ -1,0 +1,30 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-3);
+  border-radius: var(--r-full);
+  background-color: var(--c-red-wash);
+  border: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--c-red-deep);
+}
+
+.label {
+  font-weight: 600;
+  color: var(--c-red-deep);
+}
+
+.md {
+  font-size: var(--fs-sm);
+}
+
+.sm {
+  padding: 2px var(--sp-2);
+  font-size: var(--fs-xs);
+}

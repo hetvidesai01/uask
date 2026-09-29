@@ -3,12 +3,15 @@ import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
+import RecommendedAskCard from '../../components/matching/RecommendedAskCard'
 import Select from '../../components/ui/Select'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
 import Button from '../../components/ui/Button'
+import { useAuth } from '../../hooks/useAuth'
 import { getAsks, getCategories } from '../../services/askService'
 import { getUserById } from '../../services/authService'
+import { getRecommendedAsksForProvider } from '../../services/matchingService'
 import styles from './DiscoverAsks.module.css'
 
 const FILTER_KEYS = ['category', 'status', 'isRemote', 'location', 'budgetMin', 'budgetMax', 'postedWithin']
@@ -26,11 +29,14 @@ const SORT_OPTIONS = [
 const MAX_STAGGER_STEPS = 8
 
 export default function DiscoverAsksTab() {
+  const { user, activeRole } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const [categories, setCategories] = useState([])
   const [asks, setAsks] = useState([])
   const [requestersById, setRequestersById] = useState({})
   const [status, setStatus] = useState('loading')
+  const [recommended, setRecommended] = useState([])
+  const [recommendedStatus, setRecommendedStatus] = useState('idle')
 
   const filters = Object.fromEntries(FILTER_KEYS.map((key) => [key, searchParams.get(key) || '']))
   const sort = searchParams.get('sort') || 'newest'
@@ -38,6 +44,33 @@ export default function DiscoverAsksTab() {
   useEffect(() => {
     getCategories().then(setCategories)
   }, [])
+
+  // Provider-only, independent of filters/sort below — "Recommended for
+  // you" is a separate ranked shortlist, not a replacement for Discover's
+  // own filtering. See services/matchingService.js.
+  useEffect(() => {
+    if (activeRole !== 'provider') {
+      setRecommended([])
+      setRecommendedStatus('idle')
+      return
+    }
+
+    let cancelled = false
+    setRecommendedStatus('loading')
+    getRecommendedAsksForProvider(user.id, { limit: 4 })
+      .then((results) => {
+        if (cancelled) return
+        setRecommended(results)
+        setRecommendedStatus('done')
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendedStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeRole, user.id])
 
   useEffect(() => {
     let cancelled = false
@@ -89,6 +122,22 @@ export default function DiscoverAsksTab() {
 
   return (
     <div className={styles.results}>
+      {activeRole === 'provider' && recommendedStatus === 'done' && recommended.length > 0 && (
+        <section className={styles.recommended}>
+          <div className={styles.recommendedHeader}>
+            <h2 className={styles.recommendedTitle}>Recommended for you</h2>
+            <p className={styles.recommendedSubtitle}>
+              Ranked by fit to your skills, rating and track record — not a guarantee, just a starting point.
+            </p>
+          </div>
+          <div className={styles.recommendedGrid}>
+            {recommended.map((match) => (
+              <RecommendedAskCard key={match.ask.id} match={match} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className={styles.resultsHeader}>
         <span className={styles.count}>
           {status === 'done' ? `${asks.length} ${asks.length === 1 ? 'ASK' : 'ASKs'} found` : ' '}

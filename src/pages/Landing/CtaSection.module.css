@@ -1,14 +1,14 @@
 .cta {
   position: relative;
   overflow: hidden;
-  padding-block: var(--sp-7);
+  padding-block: var(--sp-6);
   background: linear-gradient(180deg, var(--blush) 0%, var(--canvas) 100%);
   text-align: center;
 }
 
 @media (min-width: 900px) {
   .cta {
-    padding-block: var(--sp-8);
+    padding-block: var(--sp-7);
   }
 }
 
@@ -36,7 +36,7 @@
 
 .logo {
   display: block;
-  height: 44px;
+  height: 52px;
   width: auto;
   object-fit: contain;
   margin-bottom: var(--sp-2);
@@ -44,7 +44,7 @@
 
 .heading {
   font-family: var(--font-display);
-  font-size: var(--fs-4xl);
+  font-size: var(--fs-5xl);
   line-height: var(--lh-tight);
   color: var(--c-text);
 }
@@ -56,7 +56,7 @@
 
 .subtitle {
   color: var(--c-text-mute);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-xl);
 }
 
 .actions {

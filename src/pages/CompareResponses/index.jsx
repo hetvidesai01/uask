@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import UserMiniCard from '../../components/ask/UserMiniCard'
 import OfferCard from '../../components/offer/OfferCard'
 import OfferStatusBadge from '../../components/offer/OfferStatusBadge'
+import MatchBadge from '../../components/matching/MatchBadge'
+import WhyThisMatch from '../../components/matching/WhyThisMatch'
 import Tag from '../../components/ui/Tag'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -13,7 +15,7 @@ import { getAskById, updateAskStatus } from '../../services/askService'
 import { getOffersForAsk, updateOfferStatus } from '../../services/offerService'
 import { getUserById } from '../../services/authService'
 import { createContract } from '../../services/contractService'
-import { getPortfolioForUser } from '../../services/profileService'
+import { rankResponses } from '../../services/matchingService'
 import { formatCurrency } from '../../utils/formatCurrency'
 import styles from './CompareResponses.module.css'
 
@@ -41,9 +43,10 @@ export default function CompareResponses() {
 
   const [status, setStatus] = useState('loading')
   const [ask, setAsk] = useState(null)
-  const [offers, setOffers] = useState([])
-  const [providersById, setProvidersById] = useState({})
-  const [portfolioCountByProvider, setPortfolioCountByProvider] = useState({})
+  // The primary matching intelligence for this prototype: responses to
+  // THIS ask, ranked by fit — see services/matchingService.js. Sorted by
+  // score descending, so "ranked by default" falls out of load order.
+  const [rankedResults, setRankedResults] = useState([])
   const [selectedIds, setSelectedIds] = useState([])
   const [actioningId, setActioningId] = useState(null)
 
@@ -62,28 +65,16 @@ export default function CompareResponses() {
       }
 
       const foundOffers = await getOffersForAsk(askId)
-      foundOffers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-
       const providerIds = [...new Set(foundOffers.map((offer) => offer.providerId))]
-      const [providers, portfolios] = await Promise.all([
-        Promise.all(providerIds.map((id) => getUserById(id))),
-        Promise.all(providerIds.map((id) => getPortfolioForUser(id))),
-      ])
-      const providerMap = Object.fromEntries(
-        providers.filter(Boolean).map((provider) => [provider.id, provider])
-      )
-      const portfolioCounts = Object.fromEntries(
-        providerIds.map((id, index) => [
-          id,
-          portfolios[index].filter((item) => item.category === foundAsk.category).length,
-        ])
-      )
+      const providers = await Promise.all(providerIds.map((id) => getUserById(id)))
+
+      const results = await rankResponses(foundAsk, foundOffers, providers)
 
       setAsk(foundAsk)
-      setOffers(foundOffers)
-      setProvidersById(providerMap)
-      setPortfolioCountByProvider(portfolioCounts)
-      setSelectedIds(foundOffers.slice(0, MAX_COMPARE).map((offer) => offer.id))
+      setRankedResults(results)
+      // Ranked by match score by default — the seeker can still change
+      // which ones are selected below (see toggleSelect).
+      setSelectedIds(results.slice(0, MAX_COMPARE).map((result) => result.offer.id))
       setStatus('ready')
     } catch {
       setStatus('error')
@@ -102,7 +93,13 @@ export default function CompareResponses() {
     })
   }
 
-  const anyAccepted = offers.some((offer) => offer.status === 'accepted')
+  function updateOfferInResults(updatedOffer) {
+    setRankedResults((current) =>
+      current.map((result) => (result.offer.id === updatedOffer.id ? { ...result, offer: updatedOffer } : result))
+    )
+  }
+
+  const anyAccepted = rankedResults.some((result) => result.offer.status === 'accepted')
 
   function getActionState(offer) {
     const isAccepted = offer.status === 'accepted'
@@ -120,7 +117,7 @@ export default function CompareResponses() {
     try {
       const updated = await updateOfferStatus(offer.id, 'shortlisted')
       if (updated) {
-        setOffers((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+        updateOfferInResults(updated)
         showToast('Offer shortlisted.')
       }
     } finally {
@@ -133,7 +130,7 @@ export default function CompareResponses() {
     try {
       const updated = await updateOfferStatus(offer.id, 'accepted')
       if (updated) {
-        setOffers((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+        updateOfferInResults(updated)
         const updatedAsk = await updateAskStatus(askId, 'accepted')
         if (updatedAsk) setAsk(updatedAsk)
         // Frontend/mock state transition only — creates the contract record
@@ -251,7 +248,7 @@ export default function CompareResponses() {
     )
   }
 
-  if (offers.length === 0) {
+  if (rankedResults.length === 0) {
     return (
       <div className={styles.page}>
         <div className={styles.header}>
@@ -272,92 +269,56 @@ export default function CompareResponses() {
     )
   }
 
-  const selectedOffers = offers.filter((offer) => selectedIds.includes(offer.id))
+  const selectedResults = rankedResults.filter((result) => selectedIds.includes(result.offer.id))
 
   const bestPrice =
-    selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.price)) : null
+    selectedResults.length > 1 ? Math.min(...selectedResults.map((result) => result.offer.price)) : null
   const bestDelivery =
-    selectedOffers.length > 1 ? Math.min(...selectedOffers.map((offer) => offer.deliveryDays)) : null
-  const bestRating =
-    selectedOffers.length > 1
-      ? Math.max(...selectedOffers.map((offer) => providersById[offer.providerId]?.rating ?? 0))
-      : null
-
-  // One mock "smart summary" tag per response — not presented as AI-generated.
-  // Priority order (value, then speed, then rating) keeps exactly one badge
-  // per offer even when a provider would otherwise qualify for more than one.
-  function getSummaryTag(offer) {
-    if (selectedOffers.length < 2) return null
-    const rating = providersById[offer.providerId]?.rating ?? 0
-    if (offer.price === bestPrice) return 'Best value'
-    if (offer.deliveryDays === bestDelivery) return 'Fastest delivery'
-    if (rating > 0 && rating === bestRating) return 'Strongest rating'
-    return null
-  }
-
-  // Compact "Matched: ..." reasoning line — built from data already on the
-  // page (the ask's category, the provider's seeded rating, and how many
-  // portfolio pieces they have in that same category). Not a real
-  // AI/matching output yet.
-  function getMatchReasoning(offer) {
-    const provider = providersById[offer.providerId]
-    if (!provider || !provider.categories?.includes(ask.category)) return null
-
-    const count = portfolioCountByProvider[offer.providerId] ?? 0
-    const ratingPart = provider.rating != null ? `${provider.rating.toFixed(1)}★` : null
-    const parts = [ask.category, ratingPart, `${count} similar ${count === 1 ? 'project' : 'projects'}`].filter(
-      Boolean
-    )
-    return `Matched: ${parts.join(' · ')}`
-  }
+    selectedResults.length > 1 ? Math.min(...selectedResults.map((result) => result.offer.deliveryDays)) : null
 
   const rows = [
     {
       label: 'Rating',
-      render: (offer) => {
-        const provider = providersById[offer.providerId]
+      render: (result) => {
+        const provider = result.provider
         return provider?.rating != null ? `★ ${provider.rating.toFixed(1)} (${provider.reviewCount})` : '—'
       },
     },
     {
-      label: 'Matched',
-      render: (offer) => (
-        <span className={styles.matchReasoning}>{getMatchReasoning(offer) || 'Not category-matched'}</span>
+      label: 'Match Score',
+      render: (result) => (
+        <div className={styles.matchCell}>
+          <MatchBadge score={result.score} label={result.label} size="sm" />
+          {result.strength && <span className={styles.summaryTag}>{result.strength}</span>}
+          <WhyThisMatch reasons={result.reasons} />
+        </div>
       ),
     },
     {
       label: 'Price',
-      render: (offer) => (
-        <>
-          <span className={offer.price === bestPrice ? styles.bestValue : undefined}>
-            {formatCurrency(offer.price, offer.currency)}
-          </span>
-          {offer.price === bestPrice && <span className={styles.bestValueTag}>Lowest price</span>}
-        </>
+      render: (result) => (
+        <span className={result.offer.price === bestPrice ? styles.bestValue : undefined}>
+          {formatCurrency(result.offer.price, result.offer.currency)}
+        </span>
       ),
     },
     {
       label: 'Delivery',
-      render: (offer) => (
-        <>
-          <span className={offer.deliveryDays === bestDelivery ? styles.bestValue : undefined}>
-            {offer.deliveryDays}-day delivery
-          </span>
-          {offer.deliveryDays === bestDelivery && (
-            <span className={styles.bestValueTag}>Fastest</span>
-          )}
-        </>
+      render: (result) => (
+        <span className={result.offer.deliveryDays === bestDelivery ? styles.bestValue : undefined}>
+          {result.offer.deliveryDays}-day delivery
+        </span>
       ),
     },
     {
       label: 'Pitch',
-      render: (offer) => <p className={styles.cellText}>{splitPitch(offer.pitch).mainPitch}</p>,
+      render: (result) => <p className={styles.cellText}>{splitPitch(result.offer.pitch).mainPitch}</p>,
     },
     {
       label: "What's included",
-      render: (offer) => (
+      render: (result) => (
         <div className={styles.chips}>
-          {offer.deliverables.map((item) => (
+          {result.offer.deliverables.map((item) => (
             <Tag key={item}>{item}</Tag>
           ))}
         </div>
@@ -365,42 +326,43 @@ export default function CompareResponses() {
     },
     {
       label: 'Experience',
-      render: (offer) => splitPitch(offer.pitch).experience || 'Not provided',
+      render: (result) => splitPitch(result.offer.pitch).experience || 'Not provided',
     },
     { label: 'Availability', render: () => 'Not specified' },
-    { label: 'Status', render: (offer) => <OfferStatusBadge status={offer.status} /> },
+    { label: 'Status', render: (result) => <OfferStatusBadge status={result.offer.status} /> },
   ]
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Compare responses</h1>
-        <p className={styles.subtitle}>{ask.title}</p>
+        <p className={styles.subtitle}>
+          {ask.title} — ranked by match score. This is a starting point, not a decision made for you.
+        </p>
       </div>
 
-      {offers.length > MAX_COMPARE && (
+      {rankedResults.length > MAX_COMPARE && (
         <div className={styles.picker}>
           <p className={styles.pickerLabel}>
-            Comparing {selectedIds.length} of {offers.length} responses — choose up to {MAX_COMPARE}:
+            Comparing {selectedIds.length} of {rankedResults.length} responses — choose up to {MAX_COMPARE}:
           </p>
           <div className={styles.pickerChips}>
-            {offers.map((offer) => {
-              const provider = providersById[offer.providerId]
-              const isSelected = selectedIds.includes(offer.id)
+            {rankedResults.map((result) => {
+              const isSelected = selectedIds.includes(result.offer.id)
               const disablePick = !isSelected && selectedIds.length >= MAX_COMPARE
 
               return (
                 <button
-                  key={offer.id}
+                  key={result.offer.id}
                   type="button"
                   className={[styles.pickerChip, isSelected ? styles.pickerChipSelected : '']
                     .filter(Boolean)
                     .join(' ')}
                   aria-pressed={isSelected}
                   disabled={disablePick}
-                  onClick={() => toggleSelect(offer.id)}
+                  onClick={() => toggleSelect(result.offer.id)}
                 >
-                  {provider?.name || 'Provider'} · {formatCurrency(offer.price, offer.currency)}
+                  {result.provider?.name || 'Provider'} · {result.score}% · {formatCurrency(result.offer.price, result.offer.currency)}
                 </button>
               )
             })}
@@ -415,10 +377,9 @@ export default function CompareResponses() {
               <th scope="col" className={styles.rowLabelHeader}>
                 <span className="sr-only">Criteria</span>
               </th>
-              {selectedOffers.map((offer) => (
-                <th scope="col" key={offer.id}>
-                  <UserMiniCard user={providersById[offer.providerId]} />
-                  {getSummaryTag(offer) && <span className={styles.summaryTag}>{getSummaryTag(offer)}</span>}
+              {selectedResults.map((result) => (
+                <th scope="col" key={result.offer.id}>
+                  <UserMiniCard user={result.provider} />
                 </th>
               ))}
             </tr>
@@ -429,12 +390,12 @@ export default function CompareResponses() {
                 <th scope="row" className={styles.rowLabel}>
                   {row.label}
                 </th>
-                {selectedOffers.map((offer) => (
+                {selectedResults.map((result) => (
                   <td
-                    key={offer.id}
-                    className={offer.status === 'accepted' ? styles.acceptedCell : undefined}
+                    key={result.offer.id}
+                    className={result.offer.status === 'accepted' ? styles.acceptedCell : undefined}
                   >
-                    {row.render(offer)}
+                    {row.render(result)}
                   </td>
                 ))}
               </tr>
@@ -443,12 +404,12 @@ export default function CompareResponses() {
               <th scope="row" className={styles.rowLabel}>
                 Actions
               </th>
-              {selectedOffers.map((offer) => (
+              {selectedResults.map((result) => (
                 <td
-                  key={offer.id}
-                  className={offer.status === 'accepted' ? styles.acceptedCell : undefined}
+                  key={result.offer.id}
+                  className={result.offer.status === 'accepted' ? styles.acceptedCell : undefined}
                 >
-                  <div className={styles.actionButtons}>{renderActions(offer)}</div>
+                  <div className={styles.actionButtons}>{renderActions(result.offer)}</div>
                 </td>
               ))}
             </tr>
@@ -457,14 +418,14 @@ export default function CompareResponses() {
       </div>
 
       <div className={styles.mobileList}>
-        {selectedOffers.map((offer) => (
+        {selectedResults.map((result) => (
           <OfferCard
-            key={offer.id}
-            offer={offer}
-            provider={providersById[offer.providerId]}
-            actions={renderActions(offer)}
-            tag={getSummaryTag(offer)}
-            matchReasoning={getMatchReasoning(offer)}
+            key={result.offer.id}
+            offer={result.offer}
+            provider={result.provider}
+            actions={renderActions(result.offer)}
+            tag={result.strength}
+            matchReasoning={`${result.score}% · ${result.label} — ${result.reasons.slice(0, 2).join(', ')}`}
           />
         ))}
       </div>

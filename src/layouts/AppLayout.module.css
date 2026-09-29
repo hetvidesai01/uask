@@ -28,10 +28,14 @@
 
 /* Only the sidebar instance of .logo is visible at this width (the mobile
    .topbar is hidden here — see the ≥900px block below), so this bump only
-   ever affects the sidebar logo in practice. */
+   ever affects the sidebar logo in practice. Sized to fill most of the
+   sidebar's inner width (240px sidebar minus its own padding) so the
+   brand mark reads as prominent rather than small and adrift in the
+   top-left corner — width is auto, so this only scales the (unmodified)
+   logo file up proportionally. */
 @media (min-width: 900px) {
   .logoImg {
-    height: 60px;
+    height: 104px;
   }
 }
 

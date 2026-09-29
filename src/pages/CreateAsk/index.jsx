@@ -10,13 +10,11 @@ import AskFormStep1 from '../../components/ask/AskFormStep1'
 import AskFormStep2 from '../../components/ask/AskFormStep2'
 import AskFormStep3 from '../../components/ask/AskFormStep3'
 import AskFormStep4 from '../../components/ask/AskFormStep4'
-import AiAskAssistant from '../../components/ask/AiAskAssistant'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getCategories, createAsk } from '../../services/askService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
-import { fadeRise } from '../../utils/motion'
 import styles from './CreateAsk.module.css'
 
 const DRAFT_KEY = 'uask.draft.createAsk'
@@ -116,25 +114,6 @@ export default function CreateAsk() {
     setErrors((current) => ({ ...current, [field]: undefined }))
   }
 
-  // The Assistant only ever reaches the draft through this — Accept/Edit
-  // are the sole write paths, nothing there auto-applies on its own.
-  function handleAiAccept(field, value) {
-    if (field === 'budgetTimeline') {
-      setDraft((current) => ({
-        ...current,
-        values: {
-          ...current.values,
-          budgetMin: value.budgetMin,
-          budgetMax: value.budgetMax,
-          deadline: value.deadline,
-        },
-      }))
-      setErrors((current) => ({ ...current, budgetMin: undefined, budgetMax: undefined, deadline: undefined }))
-      return
-    }
-    updateValues(field, value)
-  }
-
   function goToStep(nextStep) {
     setErrors({})
     setDraft((current) => ({ ...current, step: nextStep }))
@@ -216,12 +195,6 @@ export default function CreateAsk() {
       </div>
 
       <StepIndicator steps={STEPS} current={step} />
-
-      {step === 1 && (
-        <motion.div initial="hidden" animate="visible" variants={fadeRise}>
-          <AiAskAssistant values={values} onAccept={handleAiAccept} />
-        </motion.div>
-      )}
 
       <Card padding="lg" className={styles.card}>
         <AnimatePresence mode="wait">

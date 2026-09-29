@@ -155,16 +155,6 @@
   font-weight: 700;
 }
 
-.bestValueTag {
-  display: block;
-  margin-top: 2px;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--c-success);
-}
-
 .acceptedCell {
   background-color: var(--c-red-wash);
 }
@@ -184,9 +174,11 @@
   white-space: nowrap;
 }
 
-.matchReasoning {
-  font-size: var(--fs-xs);
-  color: var(--c-text-mute);
+.matchCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
 }
 
 /* Mobile stacked cards */

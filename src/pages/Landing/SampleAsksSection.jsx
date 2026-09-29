@@ -141,7 +141,7 @@ function TiltCard({ children }) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <Card hoverable padding="md" className={styles.card}>
+      <Card hoverable padding="lg" className={styles.card}>
         {children}
       </Card>
     </motion.div>

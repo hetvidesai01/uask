@@ -14,7 +14,7 @@
 
 .logoImg {
   display: block;
-  height: 36px;
+  height: 40px;
   width: auto;
   /* .top is a column flex container with no align-items set, so its
      default `stretch` was forcing this img to full container width

@@ -29,7 +29,11 @@ export default function Navbar() {
     <header className={classes}>
       <div className={`container ${styles.inner}`}>
         <Link to="/" className={styles.logo}>
-          <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
+          <img
+            src={uaskLogo}
+            alt="UASK"
+            className={[styles.logoImg, isLanding ? styles.logoImgLanding : ''].filter(Boolean).join(' ')}
+          />
         </Link>
 
         <nav className={styles.links} aria-label="Primary">

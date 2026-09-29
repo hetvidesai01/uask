@@ -56,6 +56,24 @@
   }
 }
 
+/* Landing-only brand treatment — the Home page header gets a much more
+   prominent mark, similar in spirit to the logged-in sidebar's larger
+   logo. Scoped to isLanding via the compound selector (beats the plain
+   .logoImg rules above regardless of source order) so Login/Signup/Help,
+   which share this same Navbar, keep their smaller header logo. Width
+   stays auto, so this only scales the unmodified logo file up
+   proportionally. Sized well within the hero's own top padding (96px
+   desktop / 88px mobile) so nothing overlaps the hero content below. */
+.logoImg.logoImgLanding {
+  height: 56px;
+}
+
+@media (min-width: 640px) {
+  .logoImg.logoImgLanding {
+    height: 80px;
+  }
+}
+
 .links {
   display: none;
   align-items: center;

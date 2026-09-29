@@ -6,6 +6,12 @@
   margin-inline: auto;
 }
 
+@media (min-width: 900px) {
+  .wrap {
+    max-width: 460px;
+  }
+}
+
 .svg {
   position: absolute;
   inset: 0;

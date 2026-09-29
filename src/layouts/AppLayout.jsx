@@ -19,12 +19,35 @@ import styles from './AppLayout.module.css'
 const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
 const DOT_SPRING = { type: 'spring', stiffness: 420, damping: 28 }
 
-const NAV_ITEMS = [
+// Primary nav is role-shaped, not a fixed list: Seekers post/manage
+// ASKs so they get Create ASK; Providers discover/respond to ASKs so they
+// get Discover ASKs instead. Discover ASKs stays reachable for Seekers
+// too (route + global search are untouched) — it's just not a primary
+// workflow item for that role. Full list is what the desktop sidebar
+// shows; the mobile tab bar derives a shorter subset from it (see
+// mobileNavItems below) since Connections/Settings stay one tap away in
+// the existing account-menu dropdown on that surface.
+const REQUESTER_NAV_ITEMS = [
+  { to: '/', label: 'Home', icon: '🌐', end: true },
+  { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
+  { to: '/app/asks/new', label: 'Create ASK', icon: '➕' },
+  { to: '/app/inbox', label: 'Inbox', icon: '📥' },
+  { to: '/app/connections', label: 'Connections', icon: '🤝' },
+  { to: '/app/profile', label: 'Profile', icon: '👤' },
+  { to: '/app/settings', label: 'Settings', icon: '⚙️' },
+]
+
+const PROVIDER_NAV_ITEMS = [
+  { to: '/', label: 'Home', icon: '🌐', end: true },
   { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
   { to: '/app/discover', label: 'Discover', icon: '🔍' },
   { to: '/app/inbox', label: 'Inbox', icon: '📥' },
+  { to: '/app/connections', label: 'Connections', icon: '🤝' },
   { to: '/app/profile', label: 'Profile', icon: '👤' },
+  { to: '/app/settings', label: 'Settings', icon: '⚙️' },
 ]
+
+const MOBILE_HIDDEN_PATHS = new Set(['/app/connections', '/app/settings'])
 
 const ROLE_LABELS = { seeker: 'Seeker', provider: 'Provider' }
 
@@ -49,6 +72,14 @@ export default function AppLayout() {
 
   const firstName = user.name?.split(' ')[0] ?? user.name
   const hasBothRoles = (user.roles?.length ?? 0) > 1
+  const isRequester = activeRole !== 'provider'
+  const navItems = isRequester ? REQUESTER_NAV_ITEMS : PROVIDER_NAV_ITEMS
+  // Profile stays out of the desktop sidebar's main list — it's reachable
+  // only via the bottom-left profile trigger's dropdown (View profile),
+  // to avoid showing it twice. The mobile tab bar keeps its own Profile
+  // icon since that surface has no equivalent bottom-left trigger.
+  const sidebarNavItems = navItems.filter((item) => item.to !== '/app/profile')
+  const mobileNavItems = navItems.filter((item) => !MOBILE_HIDDEN_PATHS.has(item.to))
 
   // Inbox badge = unread notifications + unread messages across all
   // threads, derived from the existing service data (not hardcoded).
@@ -122,15 +153,17 @@ export default function AppLayout() {
           <img src={uaskLogo} alt="UASK" className={styles.logoImg} />
         </Link>
 
-        <motion.div initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} variants={hoverLift}>
-          <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
-            + Create ASK
-          </Button>
-        </motion.div>
+        {isRequester && (
+          <motion.div initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} variants={hoverLift}>
+            <Button as={Link} to="/app/asks/new" fullWidth className={styles.newAskButton}>
+              + Create ASK
+            </Button>
+          </motion.div>
+        )}
 
         <nav className={styles.nav} aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} to={item.to} className={navLinkClass}>
+          {sidebarNavItems.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
               {({ isActive }) => (
                 <>
                   <motion.span
@@ -353,8 +386,8 @@ export default function AppLayout() {
       <ProductTour />
 
       <nav className={styles.tabBar} aria-label="Primary">
-        {NAV_ITEMS.map((item) => (
-          <NavLink key={item.to} to={item.to} className={tabLinkClass}>
+        {mobileNavItems.map((item) => (
+          <NavLink key={item.to} to={item.to} end={item.end} className={tabLinkClass}>
             <span className={styles.tabIconWrap}>
               <span aria-hidden="true">{item.icon}</span>
               {item.to === '/app/inbox' && unreadCount > 0 && (
@@ -372,9 +405,11 @@ export default function AppLayout() {
         ))}
       </nav>
 
-      <Link to="/app/asks/new" className={styles.fab} aria-label="Create ASK">
-        <span aria-hidden="true">+</span>
-      </Link>
+      {isRequester && (
+        <Link to="/app/asks/new" className={styles.fab} aria-label="Create ASK">
+          <span aria-hidden="true">+</span>
+        </Link>
+      )}
     </div>
   )
 }
