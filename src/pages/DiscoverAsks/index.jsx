@@ -3,7 +3,6 @@ import Tabs from '../../components/ui/Tabs'
 import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import DiscoverAsksTab from './DiscoverAsksTab'
 import DiscoverPeopleTab from './DiscoverPeopleTab'
-import { useAuth } from '../../hooks/useAuth'
 import styles from './DiscoverAsks.module.css'
 
 const TAB_ITEMS = [
@@ -14,14 +13,12 @@ const TAB_ITEMS = [
 // Discover ASKs and Discover People live in one shell (tabs), per the
 // product decision to extend Discover rather than add an unrelated section.
 export default function Discover() {
-  const { activeRole } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const requestedTab = searchParams.get('type')
-  // Provider mode naturally emphasizes ASKs, Seeker mode emphasizes People —
-  // only as the default landing tab; both stay one click away either way.
-  const defaultTab = activeRole === 'seeker' ? 'people' : 'asks'
-  const activeTab = requestedTab === 'people' || requestedTab === 'asks' ? requestedTab : defaultTab
+  // ASKs is always the default landing tab — People stays one click away
+  // as the secondary tab, reachable via the ?type=people query param.
+  const activeTab = requestedTab === 'people' || requestedTab === 'asks' ? requestedTab : 'asks'
 
   function handleTabChange(tabId) {
     const next = new URLSearchParams(searchParams)

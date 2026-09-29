@@ -225,22 +225,6 @@ export default function AppLayout() {
               >
                 View profile
               </Link>
-              <Link
-                to="/app/connections"
-                className={styles.dropdownItem}
-                role="menuitem"
-                onClick={() => setDesktopMenuOpen(false)}
-              >
-                Connections
-              </Link>
-              <Link
-                to="/app/settings"
-                className={styles.dropdownItem}
-                role="menuitem"
-                onClick={() => setDesktopMenuOpen(false)}
-              >
-                Settings
-              </Link>
               <button
                 type="button"
                 className={styles.dropdownItem}
