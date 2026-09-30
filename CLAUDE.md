@@ -2,6 +2,17 @@
 
 Full spec lives in `UASK_FRONTEND_BLUEPRINT.md`. Read that first for anything not covered here — this file is the quick-context summary, that file is the source of truth for detailed *structural* specs (route map shape, component prop tables, build order). **Note:** the blueprint's own §5 "Design system" section describes the *original light-mode* palette from the very first build — that was superseded by a dark editorial/cinematic redesign, which has since itself been superseded by the current **"Open Call"** light system (see "Design system — source of truth" below, which reflects the actual current code). Treat the blueprint as historical/structural reference only for anything visual.
 
+## Frontend freeze checkpoint
+
+- **Frontend visual design is frozen.**
+- **Frontend mock product flow is frozen.**
+- Future changes should be **bug fixes or explicitly requested changes** only.
+- If any frontend data shape changes (service return values, record fields, enums), **`API_CONTRACT.md` must be
+  updated** in the same change. It documents exactly what the frontend expects from a backend.
+- **Next major phase: backend integration** (`services/http.js` swap — service signatures stay the same).
+- This supersedes the "Light redesign phases" plan below for scheduling purposes: don't start Phase 4+ redesign
+  work unless explicitly requested.
+
 ## What UASK is
 
 A **reverse marketplace**: users post what they need (an "ASK") and relevant providers respond with offers, instead of searching a catalog of listings.
@@ -98,11 +109,93 @@ hover/press motion instead; build a magnetic primitive first if that's explicitl
 7. Profile + Premium + Help
 8. Motion polish + full QA
 
-**Do not assume any page beyond Landing and the app shell chrome (Navbar/Footer/AppLayout) has been visually
-redesigned.** Dashboard, Discover, ASK Details, Create ASK, Respond to ASK, Compare Responses, Contract, Inbox,
-Profile, Help, and the Premium comparison content all still use dark-editorial-era layout/motion — they only look
-different from before because the global tokens are 100% inherited from Phase 1's light palette, not because their
-layout, spacing, motion, or copy has been touched.
+**Status update (supersedes the older "nothing beyond Landing/shell is redesigned" note):** Phase 4's *structural*
+redesign and the AI Ask Assistant are still not done — but every logged-in screen has since had a **motion pass**,
+a **typography pass**, and (where relevant) currency, contact/chat and Premium changes, and the public pages have
+been extended (About, Collaborators, Help, Login/Signup, navbar). See **"Passes completed since Phase 3"** below
+for the full list. Page *structure/layout* of Discover, ASK Details, Create ASK, Respond, Compare, Contract, Inbox,
+Profile and Settings is otherwise unchanged from before those passes.
+
+## Passes completed since Phase 3
+
+All frontend-only, mock-data, verified with `npm run build` + `npm run lint` (0 errors; only pre-existing
+`set-state-in-effect` / `only-export-components` warnings). Committed and pushed to `main`.
+
+### Currency (INR default + conversion)
+- **INR is canonical.** All mock ASK/offer/contract/notification amounts are INR (old USD mocks were ×80). Stored
+  values are never rewritten; display is converted at render time.
+- Single source of truth: `utils/formatCurrency.js`. Exports `CANONICAL_CURRENCY`/`DEFAULT_CURRENCY` (`'INR'`),
+  `EXCHANGE_RATES` (units per ₹1: INR 1, USD 0.012, EUR 0.011, GBP 0.0095 — static demo rates, no FX API),
+  `CURRENCY_OPTIONS` (form selectors: INR, USD, EUR, GBP — INR first), `PREFERENCE_CURRENCY_OPTIONS` (Settings: INR,
+  USD, EUR), `getPreferredCurrency`/`setPreferredCurrency`, `convertCurrency`, `formatCurrency` (converts item
+  currency → preferred, en-IN grouping for INR), `formatCurrencyAs` (no conversion — used on Create ASK / Respond
+  review steps), `formatBudgetRange`, `formatSampleAmount` (placeholders).
+- **Preference** stored in localStorage key `uask.settings.currency` (JSON string), default INR. Settings has a
+  "Default currency" select. `hooks/useCurrencyPreference.js` (useSyncExternalStore) drives `AppLayout`, which wraps
+  `<Outlet />` in `<Fragment key={currency}>` so every price re-renders on change (entrance animations replay once).
+- Create ASK / Respond default their currency selector to the preference (`getDefaultDraft()` — drafts saved earlier
+  keep their old currency). Discover budget filter is entered in the preferred currency and converted to INR before
+  querying. Not converted: Premium pricing (₹149/₹999), hardcoded ₹ strings in Landing demo cards and 3 notification
+  bodies; revenue totals still sum raw contract amounts as INR.
+
+### Logged-in motion system (Framer Motion, no new libs)
+- Reuses/extends `utils/motion.js`: `SOFT_SPRING`, `SNAPPY_SPRING`, `revealGroup/revealItem`, calm variants
+  (`revealGroupCalm/revealItemCalm`), `routeEntrance`, `listItem`, `menuPop`.
+- New atoms: `ui/Reveal` (`RevealGroup` with `calm` + `each` props, `Reveal`), `ui/MotionCard` (hover lift),
+  `ui/SpringFill` (scaleX progress), `ui/AppBackdrop` (one fixed ambient layer mounted in `AppLayout`; variant by
+  route: `shell` default, `minimal` for Create ASK/Respond/Settings, `restrained` for Contract). `AnimatedBackground`
+  gained a `shell` variant and an `--amp` drift multiplier; page-level `AnimatedBackground`s were removed from
+  logged-in pages.
+- Upgraded atoms: `Tabs` (spring underline, `overflow-y: hidden` to avoid a tiny scrollbar), `Tag`, `StatCard`,
+  `EmptyState`, `MatchBadge` (count-up), `ContractStatusBadge`, `Button` (hover lift, press scale 0.98), Input/Select/
+  Textarea focus halo. Per-screen: Dashboard (+Payments), Discover, Compare, Contract (vertical timeline path),
+  Inbox (only *new* bubbles animate), Profile, Connections, Settings (sliding segmented pill, CSS switch toggles),
+  Global Search, Premium, nav pill (`layoutId`) in sidebar + mobile tab bar, animated account menus.
+- All ambient loops are CSS keyframes gated by `prefers-reduced-motion: no-preference`; Framer motion respects
+  `MotionConfig reducedMotion="user"`.
+
+### Logged-in shell & typography
+- **Sidebar** (desktop): Home, Dashboard, **Discover (both roles)**, Inbox, Connections, Settings; Profile is in the
+  bottom-left dropdown. Dropdown order: **About Us → View profile → Log out**. Active-label bug (label hidden under
+  the blush pill) was a bare text node behind an absolutely-positioned pill — label is now wrapped in a `<span>`.
+- **Typography:** `AppLayout` sets `data-shell="app"` on `<html>`; `styles/tokens.css` has a
+  `:root[data-shell='app']` block with a larger `--fs-*` scale (xs 14, sm 16, base 17, lg 20, xl 24, 2xl 28,
+  3xl 32–46 fluid, 4xl 36–48 fluid). Public pages never get the attribute, so they keep the base scale. Portals
+  (Drawer, Modal, Toast) inherit it. Section titles raised on AskDetails/Contract (28px) and Profile (24px).
+- **Premium:** `UpgradeTeaser` is now a vertical red "GO PREMIUM" tab flush to the right edge (slides out 8px on
+  hover). `PremiumDrawer` shows a large **COMING SOON** headline + "Premium features are currently in development."
+  with the plans/pricing/table/Upgrade button rendered **blurred + `inert`** (checkout code unchanged but unreachable
+  from the drawer). Drawer got a `showTitle` prop; the drawer header has no logo (compact, X only).
+- **Discover:** Sort by is a Filter-styled trigger with an invisible native `<select>` on top (same sort logic);
+  filter panel no longer has an internal scrollbar (removed `max-height` + `overflow-y`).
+
+### Chat + Contact & Socials
+- `messageService.getOrCreateThread(a, b)` reuses any thread between two users, else creates an empty direct thread
+  (`askId: null`); runtime-created threads/messages persist under localStorage `uask.messages.extra`.
+- `components/people/MessageUserButton` opens `/app/inbox/messages/<thread>`; used in the profile Contact card and on
+  each Connections card. Inbox thread header shows headline; empty thread shows a hello note.
+- Optional user fields `linkedin`, `instagram`, `contactEmail` (edited in a "Contact & Socials" card while editing
+  your own profile; email format-checked only if filled). `profileService.getContactDetails(viewer, target)` returns
+  data **only when Connected (or own profile)**; Profile shows `ContactCard` only when Connected. No requests,
+  followers, calls or sockets.
+
+### Public pages & navbar
+- **One shared `Navbar`** for every public page (Home, Help, About, Collaborators, Login, Signup): large logo, large
+  Apple Garamond Light links (with a hairline `-webkit-text-stroke` for weight — the font has one weight), transparent
+  bar that frosts on scroll (fixed on Home, sticky elsewhere), items Home / Help / Discover ASKs / Collaborators /
+  About Us, animated active underline (`NavLink` + `layoutId`), Log in text link and a red pill Sign up.
+- The public **Footer was removed** (`PublicLayout` renders only `Navbar` + page; `components/layout/Footer` deleted).
+- **Routes added:** `/about` (hero, Why UASK + flow chips, Our Vision, mock-functional Contact form — no socials,
+  no team, no feature grid, large type) and `/collaborators` (reusable `CollaboratorCard`, 6 clearly-placeholder
+  cards, 3/2/1 column grid).
+- **Home:** demo testimonials section (labelled demo; between How UASK Works and "This isn't another listings
+  board"; `TiltCard` got an optional `maxTilt` + hover-capable guard); INR demo prices; provider-notification captions
+  enlarged; How UASK Works has ambient side graphics; shared `ui/BackToTop` button (used on Home **and** Help).
+- **Help:** larger typography, scroll-reveal headers, animated FAQ accordion (AnimatePresence height), guide-card
+  hover lift, `AnimatedBackground` `shell` ambient layer, pill quick-link hover.
+- **Login/Signup:** shared `components/auth/AuthLayout` (form card + desktop-only ASK→RESPOND→COMPARE→CONNECT story
+  panel with slow floating cards, ambient background). Headings "Welcome back" / "Start with an ASK"; fields,
+  validation and auth logic untouched.
 
 ## Scope
 
@@ -162,8 +255,10 @@ Global utility classes (`src/styles/utilities.css`): `.container`, `.stack`, `.r
 logic explicitly rather than rely on `MotionConfig` — anywhere using Framer's *imperative* APIs (`animate()`,
 `useMotionValue`/`useSpring`/`useTransform`) rather than the declarative `motion.*` props, e.g. `useCountUp`,
 `AnimatedCounter`, and Landing's cursor-tilt `TiltCard`. Rule established during the redesign and still in force:
-**motion communicates state/hierarchy, it doesn't decorate** — no infinite/looping animation anywhere (the one
-sanctioned exception is `Spinner`'s loading rotation), no scroll-linked parallax, no constant/idle-nudge
+**motion communicates state/hierarchy, it doesn't decorate** — no infinite/looping animation anywhere (sanctioned
+exceptions: `Spinner`'s loading rotation, and the slow 10–24s CSS ambient loops in `AnimatedBackground`, the
+Landing testimonials/How-UASK-Works graphics and the Login/Signup story cards — all gated by
+`prefers-reduced-motion: no-preference`), no scroll-linked parallax, no constant/idle-nudge
 animations (considered for the Premium teaser, deliberately left out for this reason).
 
 **Reusable atoms added during the light redesign** (`components/ui/`): `SignalMark` (broadcast-mark primitive —
@@ -202,7 +297,7 @@ plain text — only standalone brand-mark lockups get the image.
 - **Pages/components never import from `mocks/`.** Only files in `src/services/` may import from `src/mocks/`. Pages call `services/*Service.js` functions, which internally read/filter the mock arrays (and later, will call a real API) with the same function signature either way.
 - **Components don't import from `pages/`.** Data flows one direction: `pages/` → `services/` → `mocks/` (mock era) or `services/` → `http.js` → API (post-Phase-10).
 - Reusable UI atoms live in `components/ui/` — the original 13 (Button, Input, Textarea, Select, Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard) plus the light-redesign additions listed under "Design system" above.
-- Public-site chrome lives in `components/layout/` (Navbar, Footer) — Navbar is scroll-aware (transparent-over-hero on the landing route only, solid elsewhere) and renders the logo image; Footer renders the logo image too.
+- Public-site chrome lives in `components/layout/Navbar` — one shared navbar for every public page (see "Public pages & navbar" above); the public Footer no longer exists.
 - App-shell chrome (`layouts/AppLayout.jsx`): a floating light sidebar panel (desktop, inset with rounded corners + soft shadow, not a full-bleed rail), a sticky desktop top bar (search, read-only role indicator, notification bell with combined unread badge, account dropdown menu), and a separate mobile shell (top bar + bottom tab bar + FAB). A standalone `PageHeader` component is still the one piece of the original blueprint shell not built.
 - Domain components live in `components/ask/`, `components/offer/`, `components/messages/`, `components/notifications/`, `components/contract/` (currently just `ContractStatusBadge`), and `components/premium/` (`UpgradeTeaser` — the edge-peek teaser, `PremiumDrawer` — the slide-over comparison, built on `components/ui/Drawer`).
 - The Premium/Upgrade flow is a **drawer, not a route** (`AppLayout` owns the `subscription`/`premiumOpen` state and renders `PremiumDrawer` once, globally) — same reasoning as before: integrates with the shell without touching `App.jsx`'s route tree or any individual page. `subscriptionService.js` follows the same mock-service pattern as the rest of `services/` (delay + localStorage-backed persistence, same call signature a real API would use later).
@@ -240,7 +335,11 @@ src/
 │  │                   Card, Badge, Avatar, Spinner, EmptyState, Modal, Tabs, Tag, StatCard) plus GrainOverlay,
 │  │                   GradientMesh, SignalMark, SignalRail, FloatingCard, StaggerReveal, AnimatedCounter,
 │  │                   HandUnderline, Drawer
-│  ├─ layout/          Navbar (scroll-aware, renders the logo image), Footer (renders the logo image)
+│  ├─ layout/          Navbar (shared by all public pages; Footer was removed)
+│  ├─ auth/            AuthLayout (Login/Signup frame + story panel)
+│  ├─ people/          PersonCard, ConnectButton, SaveButton, MessageUserButton
+│  ├─ matching/        MatchBadge, RecommendedAskCard, WhyThisMatch
+│  ├─ search/          GlobalSearch (topbar dropdown)
 │  ├─ ask/              AskCard, AskFilters, AskFormStep1-4, AskMetaGrid, AskStatusBadge, UserMiniCard
 │  ├─ offer/            OfferCard, OfferFormStep1-3, OfferList, OfferStatusBadge
 │  ├─ messages/         ThreadList, ThreadListItem, MessageBubble, MessageComposer
@@ -264,6 +363,8 @@ src/
 ```
 /                              Landing
 /help                          Help center — How UASK Works, guides, FAQs, Restart Product Tour
+/about                         About Us (public) — hero, Why UASK, Our Vision, mock Contact form
+/collaborators                 Collaborators (public) — placeholder partner cards
 /login, /signup
 /design-preview                temporary, dev-only
 
@@ -280,7 +381,10 @@ src/
 /app/inbox/messages/:threadId  Inbox — Messages tab, thread open
 /app/inbox?tab=notifications   Inbox — Notifications tab
 /app/profile                   Own profile — resolves via the authenticated user's id (see "Auth" below)
-/app/profile/:userId           Another user's profile
+/app/profile/:userId           Another user's profile (Contact card only when Connected)
+/app/connections               Connections list (Message + Remove per card)
+/app/search                    Full search results (All / ASKs / People)
+/app/settings                  Settings — appearance, default currency, account, notifications
 
 /app/messages, /app/messages/:threadId, /app/notifications   → redirect to the /app/inbox equivalents (back-compat only)
 ```
@@ -375,4 +479,10 @@ profile is unaffected, a genuinely invalid id still shows "Profile not found," n
 - **Backend/API integration has not started.** The frontend is still 100% mock-driven — the real-API swap is not yet requested. Don't begin it unprompted.
 - **Don't begin redesign work** on already-redesigned phases/screens (Landing, app shell), and don't modify app code, unless a specific task explicitly calls for it.
 - **Standing cadence:** implement → the user manually tests in a real browser → `npm run build` → `npm run lint` → `git status` → commit → push → move to the next phase (only once explicitly requested). Keep phases small; don't bundle large, unrelated changes into a single step.
+- **Services may import each other** (e.g. `profileService` → `authService`/`connectionService`) and `utils/`; the rule
+  is only that pages/components never import `mocks/`.
+- **Fonts:** display/nav = Apple Garamond Light (`--font-display`, one weight, local TTF); body/UI = Gambarino
+  (`--font-body`). Don't request bold weights on Garamond — it synthesises badly.
+- **Scope discipline:** the user gives surgical prompts ("Fix ONLY …", "Stop after …"). Change only what's named; list
+  changed files; run build + lint; don't commit/push unless asked (the user runs `git add . / commit / push`).
 - **Browser testing is the user's responsibility.** They test manually; don't rely on or attempt to use the Claude in Chrome extension for this project's verification unless explicitly asked to.
