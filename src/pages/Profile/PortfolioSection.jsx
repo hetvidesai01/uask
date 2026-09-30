@@ -1,10 +1,18 @@
+import { motion } from 'framer-motion'
+import { revealGroup, revealItem, SOFT_SPRING } from '../../utils/motion'
 import styles from './PortfolioSection.module.css'
 
 export default function PortfolioSection({ items }) {
   return (
-    <div className={styles.grid}>
+    <motion.div className={styles.grid} initial="hidden" animate="visible" variants={revealGroup}>
       {items.map((item) => (
-        <div key={item.id} className={styles.card}>
+        <motion.div
+          key={item.id}
+          className={styles.card}
+          variants={revealItem}
+          whileHover={{ y: -4 }}
+          transition={SOFT_SPRING}
+        >
           <div className={styles.thumb}>
             {item.thumbnail ? (
               <img src={item.thumbnail} alt="" className={styles.thumbImg} />
@@ -19,8 +27,8 @@ export default function PortfolioSection({ items }) {
             <p className={styles.title}>{item.title}</p>
             <p className={styles.description}>{item.description}</p>
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

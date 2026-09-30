@@ -159,6 +159,12 @@
   background-color: var(--c-red-wash);
 }
 
+/* Subtle emphasis for the top-ranked response's column header. */
+.table thead th.topMatchHead {
+  border-bottom-color: var(--c-red);
+  box-shadow: inset 0 3px 0 var(--c-red);
+}
+
 .summaryTag {
   display: inline-flex;
   align-items: center;

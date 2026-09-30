@@ -1,5 +1,6 @@
 import Textarea from '../../ui/Textarea'
 import Tag from '../../ui/Tag'
+import { RevealGroup } from '../../ui/Reveal'
 import styles from './OfferFormStep2.module.css'
 
 export default function OfferFormStep2({ values, errors, onChange }) {
@@ -24,7 +25,7 @@ export default function OfferFormStep2({ values, errors, onChange }) {
   }
 
   return (
-    <div className={styles.fields}>
+    <RevealGroup each calm className={styles.fields}>
       <Textarea
         label="Your pitch"
         placeholder="Why should the seeker pick you? What's your approach?"
@@ -76,6 +77,6 @@ export default function OfferFormStep2({ values, errors, onChange }) {
           </div>
         )}
       </div>
-    </div>
+    </RevealGroup>
   )
 }

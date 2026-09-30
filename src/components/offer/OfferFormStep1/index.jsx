@@ -4,6 +4,7 @@ import Select from '../../ui/Select'
 import Button from '../../ui/Button'
 import Tag from '../../ui/Tag'
 import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
+import { RevealGroup } from '../../ui/Reveal'
 import styles from './OfferFormStep1.module.css'
 
 export default function OfferFormStep1({ values, errors, onChange }) {
@@ -31,7 +32,7 @@ export default function OfferFormStep1({ values, errors, onChange }) {
   }
 
   return (
-    <div className={styles.fields}>
+    <RevealGroup each calm className={styles.fields}>
       <div className={styles.priceGroup}>
         <span className={styles.groupLabel}>What you&apos;re proposing</span>
         <div className={styles.priceRow}>
@@ -92,6 +93,6 @@ export default function OfferFormStep1({ values, errors, onChange }) {
           </div>
         )}
       </div>
-    </div>
+    </RevealGroup>
   )
 }

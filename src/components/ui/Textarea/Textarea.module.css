@@ -21,11 +21,14 @@
   border-radius: var(--r-md);
   resize: vertical;
   min-height: 96px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .textarea:focus-visible {
   outline: 2px solid var(--c-red);
   outline-offset: 1px;
+  border-color: var(--c-red);
+  box-shadow: 0 0 0 4px var(--c-red-wash);
 }
 
 .textarea:disabled {

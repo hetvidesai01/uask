@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import EmptyState from '../../components/ui/EmptyState'
 import { formatRelativeDate } from '../../utils/formatDate'
+import { revealGroup, revealItem } from '../../utils/motion'
 import styles from './ActivityFeed.module.css'
 
 export default function ActivityFeed({ items }) {
@@ -15,9 +17,9 @@ export default function ActivityFeed({ items }) {
   }
 
   return (
-    <ul className={styles.feed}>
+    <motion.ul className={styles.feed} initial="hidden" animate="visible" variants={revealGroup}>
       {items.map((item) => (
-        <li key={item.id} className={styles.item}>
+        <motion.li key={item.id} className={styles.item} variants={revealItem}>
           <span className={styles.icon} aria-hidden="true">
             {item.icon}
           </span>
@@ -28,8 +30,8 @@ export default function ActivityFeed({ items }) {
             </Link>
           </span>
           <span className={styles.time}>{formatRelativeDate(item.date)}</span>
-        </li>
+        </motion.li>
       ))}
-    </ul>
+    </motion.ul>
   )
 }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Card from '../../ui/Card'
+import MotionCard from '../../ui/MotionCard'
 import MatchBadge from '../MatchBadge'
 import { formatBudgetRange } from '../../../utils/formatCurrency'
 import styles from './RecommendedAskCard.module.css'
@@ -11,6 +12,7 @@ export default function RecommendedAskCard({ match }) {
   const { ask, score, label, reasons } = match
 
   return (
+    <MotionCard as="div" lift={3}>
     <Link to={`/app/asks/${ask.id}`} className={styles.link}>
       <Card hoverable padding="md" className={styles.card}>
         <div className={styles.top}>
@@ -25,5 +27,6 @@ export default function RecommendedAskCard({ match }) {
         {reasons.length > 0 && <p className={styles.reasons}>{reasons.join(' · ')}</p>}
       </Card>
     </Link>
+    </MotionCard>
   )
 }

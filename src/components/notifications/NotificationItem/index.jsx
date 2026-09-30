@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { revealItem, SNAPPY_SPRING } from '../../../utils/motion'
 import { formatRelativeDate } from '../../../utils/formatDate'
 import styles from './NotificationItem.module.css'
 
@@ -27,7 +29,7 @@ export default function NotificationItem({ notification, onMarkRead }) {
   )
 
   return (
-    <li className={classes}>
+    <motion.li className={classes} variants={revealItem} whileHover={{ y: -1 }} transition={SNAPPY_SPRING}>
       <span className={styles.icon} aria-hidden="true">
         {icon}
       </span>
@@ -43,14 +45,19 @@ export default function NotificationItem({ notification, onMarkRead }) {
       {notification.read ? (
         <span className={styles.dotSpacer} aria-hidden="true" />
       ) : (
-        <button
+        <motion.button
           type="button"
           className={styles.dot}
           onClick={() => onMarkRead(notification.id)}
           aria-label="Mark as read"
           title="Mark as read"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0 }}
+          whileHover={{ scale: 1.25 }}
+          transition={SNAPPY_SPRING}
         />
       )}
-    </li>
+    </motion.li>
   )
 }

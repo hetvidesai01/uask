@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { SNAPPY_SPRING } from '../../../utils/motion'
 import Avatar from '../../ui/Avatar'
 import { formatRelativeDate } from '../../../utils/formatDate'
 import styles from './ThreadListItem.module.css'
@@ -11,7 +13,16 @@ export default function ThreadListItem({ thread, participant, ask, isActive }) {
     .join(' ')
 
   return (
+    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.99 }} transition={SNAPPY_SPRING}>
     <Link to={`/app/inbox/messages/${thread.id}`} className={classes} aria-current={isActive ? 'true' : undefined}>
+      {isActive && (
+        <motion.span
+          layoutId="thread-active-bg"
+          className={styles.activePill}
+          transition={SNAPPY_SPRING}
+          aria-hidden="true"
+        />
+      )}
       <Avatar src={participant?.avatarUrl} name={participant?.name ?? '?'} size="md" />
 
       <div className={styles.body}>
@@ -25,11 +36,22 @@ export default function ThreadListItem({ thread, participant, ask, isActive }) {
         <p className={styles.preview}>{thread.lastMessage}</p>
       </div>
 
-      {hasUnread && (
-        <span className={styles.badge} aria-label={`${thread.unreadCount} unread messages`}>
-          {thread.unreadCount}
-        </span>
-      )}
+      <AnimatePresence>
+        {hasUnread && (
+          <motion.span
+            key={thread.unreadCount}
+            className={styles.badge}
+            aria-label={`${thread.unreadCount} unread messages`}
+            initial={{ scale: 0 }}
+            animate={{ scale: [0, 1.25, 1] }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            {thread.unreadCount}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </Link>
+    </motion.div>
   )
 }

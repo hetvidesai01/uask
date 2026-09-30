@@ -56,3 +56,55 @@ export const hoverLift = {
   rest: { y: 0 },
   hover: { y: -4, transition: { duration: 0.2, ease: 'easeOut' } },
 }
+
+// ── Logged-in motion pass ────────────────────────────────────────────────
+// Short (150–300ms), transform/opacity only. Used by <Reveal>/<RevealGroup>
+// for the post-login screens; MotionConfig handles reduced motion.
+
+export const SOFT_SPRING = { type: 'spring', stiffness: 380, damping: 30 }
+export const SNAPPY_SPRING = { type: 'spring', stiffness: 500, damping: 32 }
+
+// Container: staggers direct <Reveal> children.
+export const revealGroup = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+}
+
+export const revealItem = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+}
+
+// Route-level entrance, wraps <Outlet /> in AppLayout.
+export const routeEntrance = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: EASE_OUT } },
+}
+
+// List items that come and go (results, messages): enter + exit.
+export const listItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (index = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.26, ease: EASE_OUT, delay: Math.min(index, 8) * 0.035 },
+  }),
+  exit: { opacity: 0, scale: 0.98, transition: { duration: 0.15 } },
+}
+
+export const menuPop = {
+  initial: { opacity: 0, y: -6, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.16, ease: EASE_OUT } },
+  exit: { opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } },
+}
+
+// Calmer variants for form / settings / contract screens (~220ms, tiny rise).
+export const revealGroupCalm = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05, delayChildren: 0.02 } },
+}
+
+export const revealItemCalm = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE_OUT } },
+}

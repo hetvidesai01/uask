@@ -8,8 +8,20 @@
   border-radius: var(--r-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.15s ease;
   white-space: nowrap;
+}
+
+/* Tactile hover/press for every CTA — transform only, instant under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .button:hover:not(:disabled):not([aria-disabled='true']) {
+    transform: translateY(-1px);
+  }
+
+  .button:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(0.98);
+  }
 }
 
 .button:disabled {

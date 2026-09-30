@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
+import MotionCard from '../../components/ui/MotionCard'
 import AskCard from '../../components/ask/AskCard'
 import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import OfferCard from '../../components/offer/OfferCard'
@@ -187,8 +190,8 @@ export default function DashboardOverview() {
   const firstName = user?.name?.split(' ')[0] ?? 'there'
 
   return (
-    <div className={styles.overview}>
-      <div className={styles.welcome}>
+    <RevealGroup className={styles.overview}>
+      <Reveal className={styles.welcome}>
         <div>
           <p className={styles.greeting}>
             <span className={styles.greetingRule} aria-hidden="true" />
@@ -196,19 +199,25 @@ export default function DashboardOverview() {
           </p>
           <h1 className={styles.title}>Here's what's happening with your ASKs and offers.</h1>
         </div>
-      </div>
+      </Reveal>
 
-      <div className={styles.stats}>
+      <RevealGroup className={styles.stats}>
         <StatCard icon="🗂️" label="Active ASKs" value={activeAsksCount} />
         <StatCard icon="📨" label="Responses received" value={responsesReceivedCount} />
         <StatCard icon="📤" label="Active offers" value={activeOffersCount} />
         <StatCard icon="⭐" label="Shortlisted / accepted" value={wonOffersCount} />
-      </div>
+      </RevealGroup>
 
-      <div className={styles.tabsSection}>
+      <Reveal className={styles.tabsSection}>
         <Tabs items={TAB_ITEMS} active={activeTab} onChange={setActiveTab} />
 
-        <div className={styles.panel}>
+        <motion.div
+          key={activeTab}
+          className={styles.panel}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           {activeTab === 'asks' &&
             (myAsks.length === 0 ? (
               <EmptyState
@@ -222,11 +231,15 @@ export default function DashboardOverview() {
                 }
               />
             ) : (
-              <div className={styles.askGrid}>
+              <RevealGroup className={styles.askGrid}>
                 {myAsks.map((ask) => (
-                  <AskCard key={ask.id} ask={ask} />
+                  <Reveal key={ask.id}>
+                    <MotionCard lift={2}>
+                      <AskCard ask={ask} />
+                    </MotionCard>
+                  </Reveal>
                 ))}
-              </div>
+              </RevealGroup>
             ))}
 
           {activeTab === 'offers' &&
@@ -242,25 +255,25 @@ export default function DashboardOverview() {
                 }
               />
             ) : (
-              <div className={styles.offerGrid}>
+              <RevealGroup className={styles.offerGrid}>
                 {myOffers.map((offer) => {
                   const ask = askTitlesById[offer.askId]
                   return (
-                    <div key={offer.id} className={styles.offerGroup}>
+                    <Reveal key={offer.id} className={styles.offerGroup}>
                       <Link to={`/app/asks/${offer.askId}`} className={styles.offerAskLink}>
                         <span className={styles.offerAskTitle}>{ask?.title ?? 'View ASK'}</span>
                         {ask && <AskStatusBadge status={ask.status} />}
                       </Link>
                       <OfferCard offer={offer} provider={user} />
-                    </div>
+                    </Reveal>
                   )
                 })}
-              </div>
+              </RevealGroup>
             ))}
 
           {activeTab === 'activity' && <ActivityFeed items={activity} />}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </Reveal>
+    </RevealGroup>
   )
 }

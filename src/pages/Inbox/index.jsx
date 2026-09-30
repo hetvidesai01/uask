@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, Outlet, useMatch, useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import ThreadList from '../../components/messages/ThreadList'
 import Tabs from '../../components/ui/Tabs'
 import Button from '../../components/ui/Button'
@@ -146,6 +147,12 @@ export default function Inbox() {
 
       <Tabs items={TAB_ITEMS} active={activeTab} onChange={handleTabChange} />
 
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      >
       {activeTab === 'messages' ? (
         <MessagesTabPanel
           status={messagesStatus}
@@ -175,6 +182,7 @@ export default function Inbox() {
           onRetry={loadNotifications}
         />
       )}
+      </motion.div>
     </div>
   )
 }

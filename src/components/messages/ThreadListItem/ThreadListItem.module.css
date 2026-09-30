@@ -1,4 +1,6 @@
 .item {
+  position: relative;
+  transition: background-color 0.15s ease;
   display: flex;
   align-items: flex-start;
   gap: var(--sp-3);
@@ -12,7 +14,18 @@
 }
 
 .item.active {
+  background-color: transparent;
+}
+
+/* Slides between threads as the selection changes. */
+.activePill {
+  position: absolute;
+  inset: 0;
   background-color: var(--c-pink);
+}
+
+.item > :not(.activePill) {
+  position: relative;
 }
 
 .body {

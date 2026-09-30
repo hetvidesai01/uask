@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { menuPop } from '../../../utils/motion'
 import Avatar from '../../ui/Avatar'
 import { useAuth } from '../../../hooks/useAuth'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
@@ -10,6 +12,18 @@ import styles from './GlobalSearch.module.css'
 
 const GROUP_LABELS = { asks: 'ASKs', people: 'People' }
 const RESULT_LIMIT = 4
+
+const MotionLink = motion.create(Link)
+
+// Staggered row entrance; rows keyed by id, so rows already on screen don't
+// replay while the user keeps typing.
+function rowIn(index) {
+  return {
+    initial: { opacity: 0, y: 6 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.2, delay: Math.min(index, 8) * 0.03 },
+  }
+}
 
 // Compact topbar search — ASKs, people and skills/categories in one field.
 // Frontend/mock only (see services/searchService.js); no external search
@@ -149,8 +163,9 @@ export default function GlobalSearch() {
         autoComplete="off"
       />
 
+      <AnimatePresence>
       {open && term && (
-        <div id="global-search-results" className={styles.dropdown} role="listbox">
+        <motion.div id="global-search-results" className={styles.dropdown} role="listbox" {...menuPop}>
           {loading ? (
             <p className={styles.status}>Searching…</p>
           ) : hasResults ? (
@@ -167,8 +182,9 @@ export default function GlobalSearch() {
 
                     if (type === 'asks') {
                       return (
-                        <Link
+                        <MotionLink
                           key={item.id}
+                          {...rowIn(runningIndex)}
                           to={`/app/asks/${item.id}`}
                           role="option"
                           aria-selected={isHighlighted}
@@ -183,13 +199,14 @@ export default function GlobalSearch() {
                                 ` · ${formatBudgetRange(item.budgetMin, item.budgetMax, item.currency)}`}
                             </span>
                           </div>
-                        </Link>
+                        </MotionLink>
                       )
                     }
 
                     return (
-                      <Link
+                      <MotionLink
                         key={item.id}
+                        {...rowIn(runningIndex)}
                         to={`/app/profile/${item.id}`}
                         role="option"
                         aria-selected={isHighlighted}
@@ -205,7 +222,7 @@ export default function GlobalSearch() {
                             {item.rating != null && ` · ★ ${item.rating.toFixed(1)}`}
                           </span>
                         </div>
-                      </Link>
+                      </MotionLink>
                     )
                   })}
                 </div>
@@ -218,8 +235,9 @@ export default function GlobalSearch() {
           <button type="button" className={styles.viewAll} onClick={goToFullResults}>
             View all results for &quot;{term}&quot;
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

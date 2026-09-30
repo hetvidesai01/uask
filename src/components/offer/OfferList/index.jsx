@@ -1,4 +1,6 @@
+import { RevealGroup, Reveal } from '../../ui/Reveal'
 import EmptyState from '../../ui/EmptyState'
+import MotionCard from '../../ui/MotionCard'
 import OfferCard from '../OfferCard'
 import styles from './OfferList.module.css'
 
@@ -14,10 +16,14 @@ export default function OfferList({ offers, providersById }) {
   }
 
   return (
-    <div className={styles.list}>
+    <RevealGroup className={styles.list}>
       {offers.map((offer) => (
-        <OfferCard key={offer.id} offer={offer} provider={providersById[offer.providerId]} />
+        <Reveal key={offer.id}>
+          <MotionCard lift={2}>
+            <OfferCard offer={offer} provider={providersById[offer.providerId]} />
+          </MotionCard>
+        </Reveal>
       ))}
-    </div>
+    </RevealGroup>
   )
 }

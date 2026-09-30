@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Avatar from '../../components/ui/Avatar'
 import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import Button from '../../components/ui/Button'
@@ -23,6 +24,7 @@ export default function Thread() {
   const [status, setStatus] = useState('loading')
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
+  const [freshIds, setFreshIds] = useState(() => new Set())
   const scrollRef = useRef(null)
   const markedRef = useRef(new Set())
 
@@ -63,6 +65,7 @@ export default function Thread() {
     setSending(true)
     try {
       const newMessage = await sendMessage({ threadId, senderId: currentUser.id, body })
+      setFreshIds((current) => new Set(current).add(newMessage.id))
       setMessages((current) => [...current, newMessage])
       onMessageSent(threadId, newMessage.body)
     } catch {
@@ -119,7 +122,13 @@ export default function Thread() {
   const ask = thread.askId ? askTitlesById[thread.askId] : null
 
   return (
-    <div className={styles.thread}>
+    <motion.div
+      key={threadId}
+      className={styles.thread}
+      initial={{ opacity: 0, x: 14 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    >
       <div className={styles.header}>
         <Link to="/app/inbox" className={styles.back} aria-label="Back to conversations">
           ←
@@ -154,12 +163,13 @@ export default function Thread() {
               isOwn={message.senderId === currentUser.id}
               grouped={grouped}
               showTime={showTime}
+              isNew={freshIds.has(message.id)}
             />
           )
         })}
       </div>
 
       <MessageComposer onSend={handleSend} sending={sending} />
-    </div>
+    </motion.div>
   )
 }

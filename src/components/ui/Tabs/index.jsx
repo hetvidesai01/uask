@@ -1,8 +1,11 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { SNAPPY_SPRING } from '../../../utils/motion'
 import styles from './Tabs.module.css'
 
 export default function Tabs({ items = [], active, onChange }) {
   const tabRefs = useRef([])
+  const groupId = useId()
 
   const focusTab = (index) => {
     const wrapped = (index + items.length) % items.length
@@ -52,6 +55,14 @@ export default function Tabs({ items = [], active, onChange }) {
             onKeyDown={(event) => handleKeyDown(event, index)}
           >
             {item.label}
+            {isActive && (
+              <motion.span
+                layoutId={`tab-underline-${groupId}`}
+                className={styles.underline}
+                transition={SNAPPY_SPRING}
+                aria-hidden="true"
+              />
+            )}
           </button>
         )
       })}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
 import RecommendedAskCard from '../../components/matching/RecommendedAskCard'
@@ -130,18 +131,26 @@ export default function DiscoverAsksTab() {
               Ranked by fit to your skills, rating and track record — not a guarantee, just a starting point.
             </p>
           </div>
-          <div className={styles.recommendedGrid}>
+          <RevealGroup className={styles.recommendedGrid}>
             {recommended.map((match) => (
-              <RecommendedAskCard key={match.ask.id} match={match} />
+              <Reveal key={match.ask.id}>
+                <RecommendedAskCard match={match} />
+              </Reveal>
             ))}
-          </div>
+          </RevealGroup>
         </section>
       )}
 
       <div className={styles.resultsHeader}>
-        <span className={styles.count}>
+        <motion.span
+          key={status === 'done' ? asks.length : 'loading'}
+          className={styles.count}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           {status === 'done' ? `${asks.length} ${asks.length === 1 ? 'ASK' : 'ASKs'} found` : ' '}
-        </span>
+        </motion.span>
         <div className={styles.controls}>
           <AskFilters
             categories={categories}
@@ -202,12 +211,12 @@ export default function DiscoverAsksTab() {
               <motion.div
                 key={ask.id}
                 layout
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, y: 26, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{
-                  duration: 0.3,
-                  delay: Math.min(index, MAX_STAGGER_STEPS) * 0.04,
+                  duration: 0.45,
+                  delay: Math.min(index, MAX_STAGGER_STEPS) * 0.07,
                   ease: [0.16, 1, 0.3, 1],
                 }}
               >

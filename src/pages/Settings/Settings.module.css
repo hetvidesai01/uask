@@ -56,11 +56,25 @@
 }
 
 .segmentOption {
+  position: relative;
   padding: var(--sp-2) var(--sp-4);
   border-radius: var(--r-full);
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--c-text-faint);
+  transition: color 0.18s ease;
+}
+
+.segmentLabel {
+  position: relative;
+}
+
+/* Sliding pill shared between options (spring), replaces the static fill. */
+.segmentPill {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-full);
+  background-color: var(--c-red-wash);
 }
 
 .segmentOption:hover {
@@ -68,7 +82,6 @@
 }
 
 .segmentActive {
-  background-color: var(--c-red-wash);
   color: var(--c-red-deep);
 }
 
@@ -131,8 +144,41 @@
   color: var(--c-text);
 }
 
+/* Same checkbox input, drawn as a switch so the state change animates. */
 .toggleRow input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--c-red);
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border-radius: var(--r-full);
+  background-color: var(--c-border-strong);
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.toggleRow input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--c-surface);
+  transition: transform 0.18s ease;
+}
+
+.toggleRow input:checked {
+  background-color: var(--c-red);
+}
+
+.toggleRow input:checked::after {
+  transform: translateX(16px);
+}
+
+.toggleRow input:focus-visible {
+  outline: 2px solid var(--c-red);
+  outline-offset: 2px;
 }

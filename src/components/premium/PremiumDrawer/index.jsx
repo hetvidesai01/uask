@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { motion, useAnimationControls } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../ui/Reveal'
+import { SNAPPY_SPRING } from '../../../utils/motion'
 import Drawer from '../../ui/Drawer'
 import Button from '../../ui/Button'
 import AnimatedBackground from '../../ui/AnimatedBackground'
@@ -33,6 +36,15 @@ const PRICE_UNIT = { monthly: 'month', yearly: 'year' }
 export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
   const [billingCycle, setBillingCycle] = useState('monthly')
   const [step, setStep] = useState('compare')
+  const cardControls = useAnimationControls()
+
+  // A single soft settle on the Premium plan card when the billing cycle
+  // changes, so the selection reads as a response, not a jump.
+  function selectBillingCycle(cycle) {
+    if (cycle === billingCycle) return
+    setBillingCycle(cycle)
+    cardControls.start({ scale: [1, 1.025, 1], transition: { duration: 0.32, ease: 'easeOut' } })
+  }
   const [submitting, setSubmitting] = useState(false)
 
   const isPremium = plan === 'premium'
@@ -70,6 +82,13 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
     >
       <div className={styles.content}>
         <AnimatedBackground variant="rich" />
+        {/* Keyed so moving between compare / checkout / confirmation is a soft cross-fade. */}
+        <motion.div
+          key={isPremium ? 'premium' : step}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
         {isPremium ? (
           <div className={styles.success}>
             <span className={styles.successIcon} aria-hidden="true">
@@ -135,14 +154,20 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
             <Button onClick={handleClose}>Close</Button>
           </div>
         ) : (
-          <>
+          <RevealGroup>
+            <Reveal>
             <p className={styles.intro}>
               Basic covers the core ASK → MATCH → CONNECT flow at no cost. Premium removes every
               weekly limit on AI tools, boosts and workflow features.
             </p>
+            </Reveal>
 
+            <Reveal>
             <div className={styles.plans}>
-              <div
+              <motion.div
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.99 }}
+                transition={SNAPPY_SPRING}
                 className={[styles.planCard, styles.planCardBasic].join(' ')}
                 role="button"
                 tabIndex={0}
@@ -158,44 +183,53 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
                 <span className={styles.planName}>Basic</span>
                 <span className={styles.planPrice}>Free</span>
                 <span className={styles.planNote}>Always free — tap to stay on Basic</span>
-              </div>
+              </motion.div>
 
-              <div className={`${styles.planCard} ${styles.premiumCard}`}>
+              <motion.div className={`${styles.planCard} ${styles.premiumCard}`} animate={cardControls}>
                 <span className={styles.planName}>Premium</span>
 
                 <div className={styles.billingToggle} role="group" aria-label="Billing cycle">
-                  <button
-                    type="button"
-                    className={[styles.billingOption, billingCycle === 'monthly' ? styles.billingActive : '']
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-pressed={billingCycle === 'monthly'}
-                    onClick={() => setBillingCycle('monthly')}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    type="button"
-                    className={[styles.billingOption, billingCycle === 'yearly' ? styles.billingActive : '']
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-pressed={billingCycle === 'yearly'}
-                    onClick={() => setBillingCycle('yearly')}
-                  >
-                    Yearly
-                  </button>
+                  {['monthly', 'yearly'].map((cycle) => (
+                    <button
+                      key={cycle}
+                      type="button"
+                      className={[styles.billingOption, billingCycle === cycle ? styles.billingActive : '']
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-pressed={billingCycle === cycle}
+                      onClick={() => selectBillingCycle(cycle)}
+                    >
+                      {billingCycle === cycle && (
+                        <motion.span
+                          layoutId="billing-pill"
+                          className={styles.billingPill}
+                          transition={SNAPPY_SPRING}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className={styles.billingLabel}>{cycle === 'monthly' ? 'Monthly' : 'Yearly'}</span>
+                    </button>
+                  ))}
                 </div>
 
-                <span className={styles.planPrice}>
+                <motion.span
+                  key={billingCycle}
+                  className={styles.planPrice}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
                   {PRICE_LABEL[billingCycle]}
                   <span className={styles.planPriceUnit}>/{PRICE_UNIT[billingCycle]}</span>
-                </span>
+                </motion.span>
                 <span className={styles.planNote}>
                   {billingCycle === 'monthly' ? 'or ₹999/year, billed annually' : 'Save ~44% vs. monthly billing'}
                 </span>
-              </div>
+              </motion.div>
             </div>
+            </Reveal>
 
+            <Reveal>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
@@ -218,12 +252,16 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
                 </tbody>
               </table>
             </div>
+            </Reveal>
 
+            <Reveal>
             <Button fullWidth onClick={handleStartUpgrade}>
               Upgrade to Premium
             </Button>
-          </>
+            </Reveal>
+          </RevealGroup>
         )}
+        </motion.div>
       </div>
     </Drawer>
   )

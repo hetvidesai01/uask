@@ -29,6 +29,12 @@
   border: 1px dashed var(--c-border);
   border-radius: var(--r-md);
   background-color: var(--c-surface-2);
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.fileInput:hover {
+  border-color: var(--c-red);
+  background-color: var(--c-red-wash);
 }
 
 .fileInput::file-selector-button {

@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import Tabs from '../../components/ui/Tabs'
-import AnimatedBackground from '../../components/ui/AnimatedBackground'
+import { motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import DiscoverAsksTab from './DiscoverAsksTab'
 import DiscoverPeopleTab from './DiscoverPeopleTab'
 import styles from './DiscoverAsks.module.css'
@@ -27,16 +28,24 @@ export default function Discover() {
   }
 
   return (
-    <div className={styles.page}>
-      <AnimatedBackground variant="quiet" />
-      <div className={styles.header}>
+    <RevealGroup className={styles.page}>
+      <Reveal className={styles.header}>
         <h1 className={styles.title}>Discover</h1>
         <p className={styles.subtitle}>Discover open ASKs, or explore professional profiles to connect with.</p>
-      </div>
+      </Reveal>
 
-      <Tabs items={TAB_ITEMS} active={activeTab} onChange={handleTabChange} />
+      <Reveal>
+        <Tabs items={TAB_ITEMS} active={activeTab} onChange={handleTabChange} />
+      </Reveal>
 
-      {activeTab === 'asks' ? <DiscoverAsksTab /> : <DiscoverPeopleTab />}
-    </div>
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {activeTab === 'asks' ? <DiscoverAsksTab /> : <DiscoverPeopleTab />}
+      </motion.div>
+    </RevealGroup>
   )
 }

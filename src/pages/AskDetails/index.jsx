@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import AskMetaGrid from '../../components/ask/AskMetaGrid'
 import Avatar from '../../components/ui/Avatar'
-import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import OfferList from '../../components/offer/OfferList'
 import OfferCard from '../../components/offer/OfferCard'
 import Card from '../../components/ui/Card'
@@ -131,7 +130,6 @@ export default function AskDetails() {
 
   return (
     <div className={styles.page}>
-      <AnimatedBackground variant="quiet" />
       <motion.div className={styles.brief} initial="hidden" animate="visible" variants={staggerContainer}>
         <motion.div className={styles.header} variants={staggerItem}>
           <div className={styles.headerTop}>

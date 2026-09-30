@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import TiltCard from '../../components/ui/TiltCard'
+import { listItem } from '../../utils/motion'
 import Select from '../../components/ui/Select'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
@@ -109,15 +112,28 @@ export default function DiscoverPeopleTab() {
 
       {status === 'done' && people.length > 0 && (
         <div className={styles.grid}>
-          {people.map((person) => (
-            <PersonCard
-              key={person.id}
-              user={person}
-              currentUserId={user.id}
-              rating={reputationById[person.id]?.averageRating ?? person.rating}
-              completedContractCount={reputationById[person.id]?.completedContractCount ?? 0}
-            />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {people.map((person, index) => (
+              <motion.div
+                key={person.id}
+                layout
+                custom={index}
+                variants={listItem}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <TiltCard>
+                  <PersonCard
+                    user={person}
+                    currentUserId={user.id}
+                    rating={reputationById[person.id]?.averageRating ?? person.rating}
+                    completedContractCount={reputationById[person.id]?.completedContractCount ?? 0}
+                  />
+                </TiltCard>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

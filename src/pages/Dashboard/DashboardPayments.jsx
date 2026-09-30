@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
+import MotionCard from '../../components/ui/MotionCard'
+import SpringFill from '../../components/ui/SpringFill'
+import AnimatedCounter from '../../components/ui/AnimatedCounter'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import StatCard from '../../components/ui/StatCard'
@@ -16,6 +21,9 @@ import styles from './DashboardPayments.module.css'
 
 // 'paid' is the only terminal milestone status — see mocks/contracts.js
 // for the full upcoming -> in_progress -> submitted -> approved -> paid flow.
+// Profile Booster tops out at +20% (see the formula in this file).
+const BOOSTER_MAX_PCT = 20
+
 function isSettled(milestoneStatus) {
   return milestoneStatus === 'paid'
 }
@@ -132,53 +140,86 @@ export default function DashboardPayments() {
       : 'Once an offer is accepted — as a seeker or a provider — the project will show up here.'
 
   return (
-    <div className={styles.payments}>
-      <div className={styles.header}>
+    <RevealGroup className={styles.payments}>
+      <Reveal className={styles.header}>
         <h1 className={styles.title}>Payments &amp; Milestones</h1>
         <p className={styles.subtitle}>Track accepted projects and where each one stands on payment.</p>
-      </div>
+      </Reveal>
 
       {/* Always visible, even with zero contracts — derived from filtered
           (possibly empty) data, never hidden behind the empty state. */}
-      <div className={styles.stats}>
-        <StatCard label="Revenue" value={formatCurrency(revenue, DEFAULT_CURRENCY)} />
+      <RevealGroup className={styles.stats}>
+        <StatCard
+          label="Revenue"
+          value={<AnimatedCounter value={revenue} duration={1} format={(n) => formatCurrency(n, DEFAULT_CURRENCY)} />}
+        />
         <StatCard
           label="Average rating"
-          value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : '— / 5'}
+          value={
+            averageRating != null ? (
+              <AnimatedCounter
+                value={Math.round(averageRating * 10)}
+                duration={0.9}
+                format={(n) => `${(n / 10).toFixed(1)} / 5`}
+              />
+            ) : (
+              '— / 5'
+            )
+          }
         />
 
-        <div className={styles.milestonesCard}>
+        <Reveal className={styles.milestonesCard}>
           <span className={styles.milestonesLabel}>Milestones</span>
           <span className={styles.milestonesValue}>
-            {completedMilestoneCount} / {totalMilestoneCount} completed
+            <AnimatedCounter value={completedMilestoneCount} /> / <AnimatedCounter value={totalMilestoneCount} /> completed
           </span>
           <div className={styles.progressTrack}>
-            <div className={styles.progressFill} style={{ width: `${milestoneCompletionPct}%` }} />
+            <SpringFill className={styles.progressFill} value={milestoneCompletionPct} delay={0.15} />
           </div>
-          <span className={styles.boosterLabel}>Profile Booster +{profileBoosterPct}%</span>
-        </div>
-      </div>
+          <div className={styles.progressTrack}>
+            <SpringFill
+              className={styles.progressFill}
+              value={(profileBoosterPct / BOOSTER_MAX_PCT) * 100}
+              delay={0.3}
+            />
+          </div>
+          {/* key remounts the label when the value changes so it pulses once. */}
+          <motion.span
+            key={profileBoosterPct}
+            className={styles.boosterLabel}
+            initial={{ scale: 1.14 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 14 }}
+            style={{ display: 'inline-block', transformOrigin: 'left center' }}
+          >
+            Profile Booster +{profileBoosterPct}%
+          </motion.span>
+        </Reveal>
+      </RevealGroup>
 
       {contracts.length === 0 ? (
         <EmptyState icon="💳" title="No active projects yet" message={emptyMessage} />
       ) : (
-        <div className={styles.grid}>
+        <RevealGroup className={styles.grid}>
           {contracts.map((contract) => {
             const ask = asksById[contract.askId]
             const otherUserId = contract.seekerId === user.id ? contract.providerId : contract.seekerId
             return (
-              <ContractCard
-                key={contract.id}
-                contract={contract}
-                ask={ask}
-                currentUserId={user.id}
-                otherUser={usersById[otherUserId]}
-              />
+              <Reveal key={contract.id}>
+                <MotionCard lift={3}>
+                  <ContractCard
+                    contract={contract}
+                    ask={ask}
+                    currentUserId={user.id}
+                    otherUser={usersById[otherUserId]}
+                  />
+                </MotionCard>
+              </Reveal>
             )
           })}
-        </div>
+        </RevealGroup>
       )}
-    </div>
+    </RevealGroup>
   )
 }
 
@@ -216,7 +257,7 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
 
       <div className={styles.progressBlock}>
         <div className={styles.progressTrack}>
-          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+          <SpringFill className={styles.progressFill} value={progressPct} delay={0.2} />
         </div>
         <span className={styles.progressLabel}>
           {paidCount} of {totalCount} milestones paid
@@ -224,7 +265,13 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
       </div>
 
       {nextMilestone ? (
-        <div className={styles.nextMilestone}>
+        <motion.div
+          key={nextMilestone.id}
+          className={styles.nextMilestone}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+        >
           <div className={styles.nextMilestoneText}>
             <p className={styles.nextMilestoneTitle}>{nextMilestone.title}</p>
             <p className={styles.nextMilestoneDue}>Due {formatAbsoluteDate(nextMilestone.dueDate)}</p>
@@ -235,7 +282,7 @@ function ContractCard({ contract, ask, currentUserId, otherUser }) {
             </span>
             <ContractStatusBadge status={nextMilestone.status} />
           </div>
-        </div>
+        </motion.div>
       ) : (
         <p className={styles.allSettled}>All milestones paid</p>
       )}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { menuPop } from '../../../utils/motion'
 import Select from '../../ui/Select'
 import Input from '../../ui/Input'
 import Button from '../../ui/Button'
@@ -100,8 +101,9 @@ export default function AskFilters({ categories, filters, onFilterChange, onRese
         </span>
       </button>
 
+      <AnimatePresence>
       {open && (
-        <div className={styles.panel} role="dialog" aria-label="Filter ASKs">
+        <motion.div className={styles.panel} role="dialog" aria-label="Filter ASKs" {...menuPop}>
           <div className={styles.header}>
             <h2 className={styles.heading}>Filters</h2>
             {activeEntries.length > 0 && (
@@ -176,8 +178,9 @@ export default function AskFilters({ categories, filters, onFilterChange, onRese
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

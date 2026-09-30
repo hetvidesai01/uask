@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
+import SpringFill from '../../components/ui/SpringFill'
+import { SOFT_SPRING } from '../../utils/motion'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
@@ -205,21 +209,23 @@ export default function Contract() {
   }, null)
 
   return (
-    <div className={styles.page}>
-      <Link to={`/app/asks/${askId}`} className={styles.backLink}>
-        ← Back to ASK
-      </Link>
+    <RevealGroup calm className={styles.page}>
+      <Reveal>
+        <Link to={`/app/asks/${askId}`} className={styles.backLink}>
+          ← Back to ASK
+        </Link>
+      </Reveal>
 
-      <div className={styles.header}>
+      <Reveal className={styles.header}>
         <span className={styles.kicker}>Contract</span>
         <h1 className={styles.title}>{ask?.title ?? 'Project contract'}</h1>
         <div className={styles.headerBadges}>
           <ContractStatusBadge status={contract.status} />
           <Badge variant={paymentStatus.variant}>{paymentStatus.label}</Badge>
         </div>
-      </div>
+      </Reveal>
 
-      <div className={styles.summaryGrid}>
+      <Reveal className={styles.summaryGrid}>
         <div className={styles.summaryItem}>
           <span className={styles.summaryLabel}>Client</span>
           <span className={styles.summaryValue}>{seeker?.name ?? '—'}</span>
@@ -248,20 +254,20 @@ export default function Contract() {
             {expectedCompletion ? formatAbsoluteDate(expectedCompletion) : '—'}
           </span>
         </div>
-      </div>
+      </Reveal>
 
       {contract.deliverables.length > 0 && (
-        <div className={styles.section}>
+        <Reveal className={styles.section}>
           <h2 className={styles.sectionTitle}>Deliverables</h2>
           <div className={styles.deliverablesList}>
             {contract.deliverables.map((item) => (
               <Tag key={item}>{item}</Tag>
             ))}
           </div>
-        </div>
+        </Reveal>
       )}
 
-      <div className={styles.paymentSummary}>
+      <Reveal className={styles.paymentSummary}>
         <div className={styles.paymentRow}>
           <span>Total contract value</span>
           <strong>{formatCurrency(contract.agreedPrice, contract.currency)}</strong>
@@ -274,9 +280,9 @@ export default function Contract() {
           <span>Remaining</span>
           <strong>{formatCurrency(remaining, contract.currency)}</strong>
         </div>
-      </div>
+      </Reveal>
 
-      <div className={styles.section}>
+      <Reveal className={styles.section}>
         <div className={styles.milestonesHeader}>
           <h2 className={styles.sectionTitle}>Milestones</h2>
           <span className={styles.milestonesCount}>
@@ -284,9 +290,18 @@ export default function Contract() {
           </span>
         </div>
         <div className={styles.progressTrack}>
-          <div className={styles.progressFill} style={{ width: `${completionPct}%` }} />
+          <SpringFill className={styles.progressFill} value={completionPct} delay={0.1} />
         </div>
-        <p className={styles.boosterLabel}>Profile Booster +{boosterPct}%</p>
+        <motion.p
+          key={boosterPct}
+          className={styles.boosterLabel}
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 14 }}
+          style={{ transformOrigin: 'left center' }}
+        >
+          Profile Booster +{boosterPct}%
+        </motion.p>
 
         <MilestoneTimeline
           milestones={contract.milestones}
@@ -296,7 +311,7 @@ export default function Contract() {
           onAction={handleMilestoneAction}
           actioningId={actioningMilestoneId}
         />
-      </div>
+      </Reveal>
 
       {allPaid && contract.status !== 'completed' && (
         isOwner ? (
@@ -325,12 +340,18 @@ export default function Contract() {
       )}
 
       {contract.status === 'completed' && contract.rating != null && (
-        <Card className={styles.finalRating}>
-          <h2 className={styles.sectionTitle}>Final rating</h2>
-          <p className={styles.finalRatingValue}>★ {contract.rating.toFixed(1)} / 5</p>
-          {contract.review && <p className={styles.finalReview}>&ldquo;{contract.review}&rdquo;</p>}
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={SOFT_SPRING}
+        >
+          <Card className={styles.finalRating}>
+            <h2 className={styles.sectionTitle}>Final rating</h2>
+            <p className={styles.finalRatingValue}>★ {contract.rating.toFixed(1)} / 5</p>
+            {contract.review && <p className={styles.finalReview}>&ldquo;{contract.review}&rdquo;</p>}
+          </Card>
+        </motion.div>
       )}
-    </div>
+    </RevealGroup>
   )
 }

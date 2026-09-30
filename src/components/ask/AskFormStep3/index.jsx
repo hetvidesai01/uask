@@ -1,5 +1,6 @@
 import Textarea from '../../ui/Textarea'
 import Tag from '../../ui/Tag'
+import { RevealGroup } from '../../ui/Reveal'
 import styles from './AskFormStep3.module.css'
 
 export default function AskFormStep3({ values, onChange }) {
@@ -24,7 +25,7 @@ export default function AskFormStep3({ values, onChange }) {
   }
 
   return (
-    <div className={styles.fields}>
+    <RevealGroup each calm className={styles.fields}>
       <div className={styles.uploadField}>
         <label htmlFor="ask-attachments" className={styles.label}>
           Attachments (optional)
@@ -59,6 +60,6 @@ export default function AskFormStep3({ values, onChange }) {
         value={values.requirements}
         onChange={(e) => onChange('requirements', e.target.value)}
       />
-    </div>
+    </RevealGroup>
   )
 }

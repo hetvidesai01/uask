@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Tabs from '../../components/ui/Tabs'
 import AskCard from '../../components/ask/AskCard'
 import PersonCard from '../../components/people/PersonCard'
@@ -113,7 +114,13 @@ export default function SearchResults() {
       )}
 
       {status === 'done' && !noResults && (
-        <div className={styles.results}>
+        <motion.div
+          key={activeTab}
+          className={styles.results}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        >
           {(activeTab === 'all' || activeTab === 'asks') && asks.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -163,7 +170,7 @@ export default function SearchResults() {
           {activeTab === 'people' && people.length === 0 && (
             <EmptyState icon="👤" title="No people matched" message={`Nobody matched "${query}".`} />
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   )

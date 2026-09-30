@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { revealGroup, revealItem, SNAPPY_SPRING } from '../../utils/motion'
 import Avatar from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -23,7 +25,7 @@ function ConnectionRow({ entry, busy, onRemove }) {
   const rowBusy = busy === entry.connectionId
 
   return (
-    <li className={styles.row}>
+    <motion.li className={styles.row} variants={revealItem} whileHover={{ y: -2 }} transition={SNAPPY_SPRING}>
       <Link to={`/app/profile/${user.id}`} className={styles.identity}>
         <Avatar src={user.avatarUrl} name={user.name} size="md" />
         <div className={styles.info}>
@@ -36,7 +38,7 @@ function ConnectionRow({ entry, busy, onRemove }) {
           Remove
         </Button>
       </div>
-    </li>
+    </motion.li>
   )
 }
 
@@ -121,11 +123,11 @@ export default function Connections() {
             message="Connect with people you meet through ASKs and offers to build your professional network here."
           />
         ) : (
-          <ul className={styles.list}>
+          <motion.ul className={styles.list} initial="hidden" animate="visible" variants={revealGroup}>
             {connected.map((entry) => (
               <ConnectionRow key={entry.connectionId} entry={entry} busy={busy} onRemove={handleRemove} />
             ))}
-          </ul>
+          </motion.ul>
         )}
       </section>
     </div>

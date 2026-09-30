@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import Avatar from '../../components/ui/Avatar'
-import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Tag from '../../components/ui/Tag'
 import Input from '../../components/ui/Input'
@@ -273,8 +273,8 @@ export default function Profile() {
   const isProvider = profileUser.roles.includes('provider')
 
   return (
-    <div className={styles.page}>
-      <AnimatedBackground variant="quiet" />
+    <RevealGroup className={styles.page}>
+      <Reveal>
       <Wrapper className={styles.form} {...wrapperProps}>
         <Card padding="lg" className={styles.header}>
           <div className={styles.headerTop}>
@@ -425,9 +425,11 @@ export default function Profile() {
           )}
         </Card>
       </Wrapper>
+      </Reveal>
 
       {isProvider && reputation && (
         <>
+          <Reveal>
           <Card padding="lg" className={styles.section}>
             <h2 className={styles.sectionTitle}>Reputation</h2>
             <ReputationMetrics
@@ -438,7 +440,9 @@ export default function Profile() {
               profileBoosterPct={reputation.profileBoosterPct}
             />
           </Card>
+          </Reveal>
 
+          <Reveal>
           <Card padding="lg" className={styles.section}>
             <h2 className={styles.sectionTitle}>Reviews</h2>
             {reviews.length > 0 ? (
@@ -447,7 +451,9 @@ export default function Profile() {
               <p className={styles.muted}>No reviews yet.</p>
             )}
           </Card>
+          </Reveal>
 
+          <Reveal>
           <Card padding="lg" className={styles.section}>
             <h2 className={styles.sectionTitle}>Completed work</h2>
             {completedWork.length > 0 ? (
@@ -456,7 +462,9 @@ export default function Profile() {
               <p className={styles.muted}>No completed contracts yet.</p>
             )}
           </Card>
+          </Reveal>
 
+          <Reveal>
           <Card padding="lg" className={styles.section}>
             <h2 className={styles.sectionTitle}>Portfolio</h2>
             {portfolio.length > 0 ? (
@@ -473,12 +481,14 @@ export default function Profile() {
               />
             )}
           </Card>
+          </Reveal>
         </>
       )}
 
       {/* Deliberately last and modest — a professional trust signal, not a
           social-network centerpiece. Rating/reviews/Profile Booster above
           stay the prominent signals. */}
+      <Reveal>
       <Card padding="lg" className={styles.section}>
         <div className={styles.connectionsHeader}>
           <div>
@@ -501,6 +511,7 @@ export default function Profile() {
           )}
         </div>
       </Card>
-    </div>
+      </Reveal>
+    </RevealGroup>
   )
 }

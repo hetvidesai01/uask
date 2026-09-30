@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { formatAbsoluteDate } from '../../utils/formatDate'
+import { revealGroup, revealItem, SOFT_SPRING } from '../../utils/motion'
 import styles from './ReviewsSection.module.css'
 
 export default function ReviewsSection({ reviews }) {
   return (
-    <div className={styles.list}>
+    <motion.div className={styles.list} initial="hidden" animate="visible" variants={revealGroup}>
       {reviews.map((review) => (
-        <article key={review.id} className={styles.card}>
+        <motion.article
+          key={review.id}
+          className={styles.card}
+          variants={revealItem}
+          whileHover={{ y: -2 }}
+          transition={SOFT_SPRING}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.rating}>★ {review.rating.toFixed(1)} / 5</span>
             <span className={styles.date}>{formatAbsoluteDate(review.completedAt)}</span>
@@ -21,8 +29,8 @@ export default function ReviewsSection({ reviews }) {
               {review.askTitle}
             </Link>
           </p>
-        </article>
+        </motion.article>
       ))}
-    </div>
+    </motion.div>
   )
 }

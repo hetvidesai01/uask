@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
+import { SNAPPY_SPRING } from '../../utils/motion'
 import UserMiniCard from '../../components/ask/UserMiniCard'
 import OfferCard from '../../components/offer/OfferCard'
 import OfferStatusBadge from '../../components/offer/OfferStatusBadge'
@@ -270,6 +273,15 @@ export default function CompareResponses() {
   }
 
   const selectedResults = rankedResults.filter((result) => selectedIds.includes(result.offer.id))
+  // rankedResults is sorted best-first, so the first entry is the top match.
+  const topOfferId = rankedResults[0]?.offer.id
+  // Columns fade/settle in when a response is selected; keyed by offer id so
+  // existing columns don't re-animate.
+  const cellIn = {
+    initial: { opacity: 0, y: 6 },
+    animate: { opacity: 1, y: 0 },
+    transition: SNAPPY_SPRING,
+  }
 
   const bestPrice =
     selectedResults.length > 1 ? Math.min(...selectedResults.map((result) => result.offer.price)) : null
@@ -333,16 +345,16 @@ export default function CompareResponses() {
   ]
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
+    <RevealGroup className={styles.page}>
+      <Reveal className={styles.header}>
         <h1 className={styles.title}>Compare responses</h1>
         <p className={styles.subtitle}>
           {ask.title} — ranked by match score. This is a starting point, not a decision made for you.
         </p>
-      </div>
+      </Reveal>
 
       {rankedResults.length > MAX_COMPARE && (
-        <div className={styles.picker}>
+        <Reveal className={styles.picker}>
           <p className={styles.pickerLabel}>
             Comparing {selectedIds.length} of {rankedResults.length} responses — choose up to {MAX_COMPARE}:
           </p>
@@ -352,7 +364,7 @@ export default function CompareResponses() {
               const disablePick = !isSelected && selectedIds.length >= MAX_COMPARE
 
               return (
-                <button
+                <motion.button
                   key={result.offer.id}
                   type="button"
                   className={[styles.pickerChip, isSelected ? styles.pickerChipSelected : '']
@@ -361,16 +373,19 @@ export default function CompareResponses() {
                   aria-pressed={isSelected}
                   disabled={disablePick}
                   onClick={() => toggleSelect(result.offer.id)}
+                  animate={{ scale: isSelected ? 1.03 : 1 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={SNAPPY_SPRING}
                 >
                   {result.provider?.name || 'Provider'} · {result.score}% · {formatCurrency(result.offer.price, result.offer.currency)}
-                </button>
+                </motion.button>
               )
             })}
           </div>
-        </div>
+        </Reveal>
       )}
 
-      <div className={styles.desktopWrap}>
+      <Reveal className={styles.desktopWrap}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -378,9 +393,14 @@ export default function CompareResponses() {
                 <span className="sr-only">Criteria</span>
               </th>
               {selectedResults.map((result) => (
-                <th scope="col" key={result.offer.id}>
+                <motion.th
+                  scope="col"
+                  key={result.offer.id}
+                  className={result.offer.id === topOfferId ? styles.topMatchHead : undefined}
+                  {...cellIn}
+                >
                   <UserMiniCard user={result.provider} />
-                </th>
+                </motion.th>
               ))}
             </tr>
           </thead>
@@ -391,12 +411,13 @@ export default function CompareResponses() {
                   {row.label}
                 </th>
                 {selectedResults.map((result) => (
-                  <td
+                  <motion.td
                     key={result.offer.id}
                     className={result.offer.status === 'accepted' ? styles.acceptedCell : undefined}
+                    {...cellIn}
                   >
                     {row.render(result)}
-                  </td>
+                  </motion.td>
                 ))}
               </tr>
             ))}
@@ -415,20 +436,21 @@ export default function CompareResponses() {
             </tr>
           </tbody>
         </table>
-      </div>
+      </Reveal>
 
-      <div className={styles.mobileList}>
+      <RevealGroup className={styles.mobileList}>
         {selectedResults.map((result) => (
-          <OfferCard
-            key={result.offer.id}
-            offer={result.offer}
-            provider={result.provider}
-            actions={renderActions(result.offer)}
-            tag={result.strength}
-            matchReasoning={`${result.score}% · ${result.label} — ${result.reasons.slice(0, 2).join(', ')}`}
-          />
+          <Reveal key={result.offer.id}>
+            <OfferCard
+              offer={result.offer}
+              provider={result.provider}
+              actions={renderActions(result.offer)}
+              tag={result.strength}
+              matchReasoning={`${result.score}% · ${result.label} — ${result.reasons.slice(0, 2).join(', ')}`}
+            />
+          </Reveal>
         ))}
-      </div>
-    </div>
+      </RevealGroup>
+    </RevealGroup>
   )
 }

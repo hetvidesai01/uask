@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import AppBackdrop from '../components/ui/AppBackdrop'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import GlobalSearch from '../components/search/GlobalSearch'
@@ -13,7 +14,7 @@ import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
 import { getThreads } from '../services/messageService'
 import { getSubscription, createCheckoutSession } from '../services/subscriptionService'
-import { hoverLift } from '../utils/motion'
+import { hoverLift, menuPop, routeEntrance, SNAPPY_SPRING } from '../utils/motion'
 import styles from './AppLayout.module.css'
 
 const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
@@ -59,7 +60,20 @@ function tabLinkClass({ isActive }) {
   return [styles.tabLink, isActive ? styles.active : ''].filter(Boolean).join(' ')
 }
 
+function tabActive(pathname, item) {
+  return item.end ? pathname === item.to : pathname === item.to || pathname.startsWith(`${item.to}/`)
+}
+
+// Screens that manage their own inner transitions (thread <-> list, sub-tabs)
+// share one key so the route entrance plays once per screen, not per sub-route.
+function routeKey(pathname) {
+  if (pathname.startsWith('/app/inbox')) return '/app/inbox'
+  if (pathname.startsWith('/app/dashboard')) return '/app/dashboard'
+  return pathname
+}
+
 export default function AppLayout() {
+  const { pathname } = useLocation()
   const { user, activeRole, setActiveRole, logout } = useAuth()
   const { showToast } = useToast()
   const [unreadCount, setUnreadCount] = useState(0)
@@ -143,6 +157,7 @@ export default function AppLayout() {
 
   return (
     <div className={styles.shell}>
+      <AppBackdrop />
       <motion.aside
         className={styles.sidebar}
         initial={{ opacity: 0, x: -12 }}
@@ -166,6 +181,14 @@ export default function AppLayout() {
             <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
               {({ isActive }) => (
                 <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="sidebar-nav-pill"
+                      className={styles.navPill}
+                      aria-hidden="true"
+                      transition={SNAPPY_SPRING}
+                    />
+                  )}
                   <motion.span
                     className={styles.activeDot}
                     aria-hidden="true"
@@ -215,8 +238,9 @@ export default function AppLayout() {
             </span>
           </button>
 
+          <AnimatePresence>
           {desktopMenuOpen && (
-            <div className={[styles.dropdown, styles.sidebarDropdown].join(' ')} role="menu">
+            <motion.div className={[styles.dropdown, styles.sidebarDropdown].join(' ')} role="menu" {...menuPop}>
               <Link
                 to="/app/profile"
                 className={styles.dropdownItem}
@@ -236,8 +260,9 @@ export default function AppLayout() {
               >
                 Log out
               </button>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </motion.aside>
 
@@ -263,8 +288,9 @@ export default function AppLayout() {
               <Avatar src={user.avatarUrl} name={user.name} size="sm" />
             </button>
 
+            <AnimatePresence>
             {mobileMenuOpen && (
-              <div className={styles.dropdown} role="menu">
+              <motion.div className={styles.dropdown} role="menu" {...menuPop}>
                 <Link
                   to="/app/profile"
                   className={styles.dropdownItem}
@@ -300,8 +326,9 @@ export default function AppLayout() {
                 >
                   Log out
                 </button>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
       </header>
@@ -352,7 +379,9 @@ export default function AppLayout() {
 
       <main className={styles.main}>
         <div className="container">
-          <Outlet />
+          <motion.div key={routeKey(pathname)} initial="hidden" animate="visible" variants={routeEntrance}>
+            <Outlet />
+          </motion.div>
         </div>
       </main>
 
@@ -373,7 +402,17 @@ export default function AppLayout() {
         {mobileNavItems.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.end} className={tabLinkClass}>
             <span className={styles.tabIconWrap}>
-              <span aria-hidden="true">{item.icon}</span>
+              {tabActive(pathname, item) && (
+                <motion.span
+                  layoutId="tab-nav-pill"
+                  className={styles.tabPill}
+                  aria-hidden="true"
+                  transition={SNAPPY_SPRING}
+                />
+              )}
+              <span aria-hidden="true" className={styles.tabIcon}>
+                {item.icon}
+              </span>
               {item.to === '/app/inbox' && unreadCount > 0 && (
                 <motion.span
                   className={styles.tabBadge}

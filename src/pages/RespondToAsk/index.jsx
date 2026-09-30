@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import StepIndicator from '../../components/ui/StepIndicator'
-import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -270,15 +270,17 @@ export default function RespondToAsk() {
   }
 
   return (
-    <div className={styles.page}>
-      <AnimatedBackground variant="minimal" />
-      <div className={styles.header}>
+    <RevealGroup calm className={styles.page}>
+      <Reveal className={styles.header}>
         <h1 className={styles.title}>Respond to this ASK</h1>
         <p className={styles.subtitle}>{ask.title}</p>
-      </div>
+      </Reveal>
 
-      <StepIndicator steps={STEPS} current={step} />
+      <Reveal>
+        <StepIndicator steps={STEPS} current={step} />
+      </Reveal>
 
+      <Reveal>
       <Card padding="lg" className={styles.card}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -307,6 +309,7 @@ export default function RespondToAsk() {
           )}
         </div>
       </Card>
-    </div>
+      </Reveal>
+    </RevealGroup>
   )
 }

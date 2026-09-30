@@ -5,7 +5,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion'
 // `animate()` is Framer Motion's imperative API — unlike `motion.*`
 // components it does not read the app-level <MotionConfig reducedMotion>
 // context automatically, so reduced motion is checked explicitly here.
-export function useCountUp(target, { duration = 0.8 } = {}) {
+export function useCountUp(target, { duration = 1.1 } = {}) {
   const prefersReducedMotion = useReducedMotion()
   const [value, setValue] = useState(target)
   const [trackedTarget, setTrackedTarget] = useState(target)

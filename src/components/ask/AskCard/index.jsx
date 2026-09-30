@@ -4,7 +4,7 @@ import Card from '../../ui/Card'
 import TiltCard from '../../ui/TiltCard'
 import Avatar from '../../ui/Avatar'
 import AskStatusBadge from '../AskStatusBadge'
-import { hoverLift } from '../../../utils/motion'
+import { hoverLift, SNAPPY_SPRING } from '../../../utils/motion'
 import { formatBudgetRange } from '../../../utils/formatCurrency'
 import { formatRelativeDate, formatAbsoluteDate } from '../../../utils/formatDate'
 import { getCategoryColorVar } from '../../../utils/categoryColor'
@@ -54,12 +54,14 @@ export default function AskCard({ ask, requester, editorial = false }) {
         <Link to={`/app/asks/${ask.id}`} className={styles.link}>
           <Card hoverable className={[styles.card, styles.editorialCard].join(' ')}>
             <div className={styles.top}>
-              <span
+              <motion.span
                 className={styles.categoryTag}
                 style={{ '--tag-color': `var(${getCategoryColorVar(ask.category)})` }}
+                whileHover={{ scale: 1.07 }}
+                transition={SNAPPY_SPRING}
               >
                 {ask.category}
-              </span>
+              </motion.span>
               <AskStatusBadge status={ask.status} />
             </div>
 

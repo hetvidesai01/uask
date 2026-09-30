@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { revealGroup } from '../../utils/motion'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
@@ -92,11 +94,11 @@ export default function NotificationsPanel({
         {groups.map(([label, items]) => (
           <section key={label} className={styles.group}>
             <h2 className={styles.groupTitle}>{label}</h2>
-            <ul className={styles.list}>
+            <motion.ul className={styles.list} initial="hidden" animate="visible" variants={revealGroup}>
               {items.map((notification) => (
                 <NotificationItem key={notification.id} notification={notification} onMarkRead={onMarkRead} />
               ))}
-            </ul>
+            </motion.ul>
           </section>
         ))}
       </div>

@@ -36,6 +36,20 @@
   color: var(--c-text-faint);
 }
 
+.boosterTrack {
+  height: 4px;
+  margin-top: var(--sp-1);
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  overflow: hidden;
+}
+
+.boosterFill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--grad-signal);
+}
+
 .boosterHeader {
   display: flex;
   align-items: center;

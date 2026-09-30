@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import StepIndicator from '../../components/ui/StepIndicator'
-import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
@@ -181,9 +181,8 @@ export default function CreateAsk() {
   }
 
   return (
-    <div className={styles.page}>
-      <AnimatedBackground variant="minimal" />
-      <div className={styles.header}>
+    <RevealGroup calm className={styles.page}>
+      <Reveal className={styles.header}>
         <div>
           <h1 className={styles.title}>Create ASK</h1>
           <p className={styles.subtitle}>Tell providers what you need — it takes about a minute.</p>
@@ -193,10 +192,13 @@ export default function CreateAsk() {
             Start over
           </Button>
         )}
-      </div>
+      </Reveal>
 
-      <StepIndicator steps={STEPS} current={step} />
+      <Reveal>
+        <StepIndicator steps={STEPS} current={step} />
+      </Reveal>
 
+      <Reveal>
       <Card padding="lg" className={styles.card}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -228,6 +230,7 @@ export default function CreateAsk() {
           )}
         </div>
       </Card>
+      </Reveal>
 
       <Modal open={discardOpen} onClose={() => setDiscardOpen(false)} title="Start over?">
         <div className={styles.modalBody}>
@@ -244,6 +247,6 @@ export default function CreateAsk() {
           </div>
         </div>
       </Modal>
-    </div>
+    </RevealGroup>
   )
 }

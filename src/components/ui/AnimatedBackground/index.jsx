@@ -27,6 +27,33 @@ import styles from './AnimatedBackground.module.css'
 //   - 'restrained' — Dashboard: extremely restrained, a single faint shape
 //   - 'minimal'    — forms (Create ASK): barely-there movement so it never competes with input focus
 const VARIANTS = {
+  // Logged-in app shell: clearly perceptible but still faint. Blobs use --pink/--red
+  // (blush alone is nearly the canvas colour, so it never read as motion), and
+  // `amp` widens the drift so the movement is noticeable over 14-20s cycles.
+  shell: {
+    amp: 3,
+    shapes: [
+      { top: '-10%', left: '6%', size: '46%', color: 'var(--pink)', opacity: 0.42, duration: 16, delay: 0 },
+      { top: '38%', right: '-10%', size: '40%', color: 'var(--pink)', opacity: 0.36, duration: 19, delay: 2 },
+      { top: '62%', left: '18%', size: '28%', color: 'var(--red)', opacity: 0.12, duration: 14, delay: 1 },
+      { top: '4%', right: '16%', size: '22%', color: 'var(--red)', opacity: 0.1, duration: 18, delay: 3 },
+    ],
+    rings: [
+      { top: '24%', left: '84%', size: '440px', opacity: 0.12, duration: 18 },
+      { top: '80%', left: '10%', size: '340px', opacity: 0.1, duration: 15 },
+    ],
+    nodes: [
+      { top: '18%', left: '6%', duration: 13 },
+      { top: '44%', left: '93%', duration: 16 },
+      { top: '72%', left: '52%', duration: 12 },
+      { top: '88%', left: '86%', duration: 15 },
+      { top: '8%', left: '58%', duration: 14 },
+    ],
+    connections: [
+      { d: 'M 4,30 Q 14,14 30,22', duration: 20 },
+      { d: 'M 70,84 Q 84,66 96,76', duration: 22 },
+    ],
+  },
   expressive: {
     shapes: [
       { top: '-10%', left: '-8%', size: '48%', color: 'var(--blush)', opacity: 0.55, duration: 18, delay: 0 },
@@ -85,7 +112,11 @@ export default function AnimatedBackground({ variant = 'quiet', className = '' }
   const config = VARIANTS[variant] || VARIANTS.quiet
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} aria-hidden="true">
+    <div
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={{ '--amp': config.amp ?? 1 }}
+      aria-hidden="true"
+    >
       {config.shapes.map((shape, index) => (
         <span
           key={`shape-${index}`}

@@ -1,6 +1,7 @@
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
 import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
+import { RevealGroup } from '../../ui/Reveal'
 import styles from './AskFormStep2.module.css'
 
 const REMOTE_OPTIONS = [
@@ -11,7 +12,7 @@ const REMOTE_OPTIONS = [
 
 export default function AskFormStep2({ values, errors, onChange }) {
   return (
-    <div className={styles.fields}>
+    <RevealGroup each calm className={styles.fields}>
       <div className={styles.group}>
         <span className={styles.groupLabel}>Budget</span>
         <div className={styles.budgetRow}>
@@ -70,6 +71,6 @@ export default function AskFormStep2({ values, errors, onChange }) {
           />
         </div>
       </div>
-    </div>
+    </RevealGroup>
   )
 }

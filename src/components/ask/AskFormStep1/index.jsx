@@ -1,6 +1,7 @@
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
 import Textarea from '../../ui/Textarea'
+import { RevealGroup } from '../../ui/Reveal'
 import styles from './AskFormStep1.module.css'
 
 export default function AskFormStep1({ values, errors, categories, onChange }) {
@@ -10,7 +11,7 @@ export default function AskFormStep1({ values, errors, categories, onChange }) {
   ]
 
   return (
-    <div className={styles.fields}>
+    <RevealGroup each calm className={styles.fields}>
       <Input
         label="Title"
         placeholder="e.g. Logo for a new bakery"
@@ -36,6 +37,6 @@ export default function AskFormStep1({ values, errors, categories, onChange }) {
         onChange={(e) => onChange('description', e.target.value)}
         error={errors.description}
       />
-    </div>
+    </RevealGroup>
   )
 }

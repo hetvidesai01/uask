@@ -197,11 +197,30 @@
 }
 
 .timelineLine {
+  position: relative;
   flex: 1;
   width: 1px;
   min-height: var(--sp-6);
   background-color: var(--c-border);
   margin-top: var(--sp-1);
+  overflow: hidden;
+}
+
+.timelineTitle,
+.timelineAmount {
+  transition: color 0.3s ease;
+}
+
+/* Completed milestones settle into a quieter, resolved tone. */
+.timelineItemDone .timelineTitle {
+  color: var(--c-text-mute);
+}
+
+.timelineLineFill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--c-red);
+  transform-origin: top center;
 }
 
 .timelineContent {

@@ -25,11 +25,14 @@
   background-color: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r-md);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .input:focus-visible {
   outline: 2px solid var(--c-red);
   outline-offset: 1px;
+  border-color: var(--c-red);
+  box-shadow: 0 0 0 4px var(--c-red-wash);
 }
 
 .input:disabled {

@@ -56,7 +56,6 @@
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-lift);
   padding: var(--sp-2);
-  animation: dropdownIn 0.12s ease;
 }
 
 @keyframes dropdownIn {
