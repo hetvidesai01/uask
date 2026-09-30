@@ -32,6 +32,7 @@ const DOT_SPRING = { type: 'spring', stiffness: 420, damping: 28 }
 const REQUESTER_NAV_ITEMS = [
   { to: '/', label: 'Home', icon: '🌐', end: true },
   { to: '/app/dashboard', label: 'Dashboard', icon: '🏠' },
+  { to: '/app/discover', label: 'Discover', icon: '🔍' },
   { to: '/app/inbox', label: 'Inbox', icon: '📥' },
   { to: '/app/connections', label: 'Connections', icon: '🤝' },
   { to: '/app/profile', label: 'Profile', icon: '👤' },
@@ -199,7 +200,7 @@ export default function AppLayout() {
                   <span className={styles.icon} aria-hidden="true">
                     {item.icon}
                   </span>
-                  {item.label}
+                  <span>{item.label}</span>
                   {item.to === '/app/inbox' && unreadCount > 0 && (
                     <motion.span
                       className={styles.navBadge}
