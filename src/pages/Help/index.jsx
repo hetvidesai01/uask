@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import AnimatedBackground from '../../components/ui/AnimatedBackground'
+import BackToTop from '../../components/ui/BackToTop'
 import { RevealGroup } from '../../components/ui/Reveal'
 import HowItWorksSection from './HowItWorksSection'
 import FaqSection from './FaqSection'
@@ -117,6 +118,7 @@ export default function Help() {
       <FaqSection />
 
       <ProductTourCallout />
+      <BackToTop />
     </div>
   )
 }

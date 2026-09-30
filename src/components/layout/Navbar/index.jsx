@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { SNAPPY_SPRING } from '../../../utils/motion'
 import Button from '../../ui/Button'
 import uaskLogo from '../../../assets/brand/uask.logo.png'
 import styles from './Navbar.module.css'
@@ -7,6 +9,18 @@ import styles from './Navbar.module.css'
 // Every public page shares the Home page's header treatment (large logo,
 // large links, transparent bar that frosts on scroll).
 const HOME_STYLE_PATHS = new Set(['/help', '/about', '/collaborators', '/login', '/signup'])
+
+const NAV_ITEMS = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/help', label: 'Help' },
+  { to: '/app/discover', label: 'Discover ASKs' },
+  { to: '/collaborators', label: 'Collaborators' },
+  { to: '/about', label: 'About Us' },
+]
+
+function navLinkClass({ isActive }) {
+  return isActive ? styles.active : undefined
+}
 
 export default function Navbar() {
   const { pathname } = useLocation()
@@ -45,11 +59,23 @@ export default function Navbar() {
           className={[styles.links, matchesHome ? styles.linksLanding : ''].filter(Boolean).join(' ')}
           aria-label="Primary"
         >
-          <Link to="/">Home</Link>
-          <Link to="/help">Help</Link>
-          <Link to="/app/discover">Discover ASKs</Link>
-          <Link to="/collaborators">Collaborators</Link>
-          <Link to="/about">About Us</Link>
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  {item.label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="public-nav-underline"
+                      className={styles.activeUnderline}
+                      transition={SNAPPY_SPRING}
+                      aria-hidden="true"
+                    />
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
         </nav>
 
         <div className={styles.actions}>

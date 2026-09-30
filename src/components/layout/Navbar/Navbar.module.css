@@ -148,6 +148,27 @@
   right: 0;
 }
 
+.links a.active,
+.links a.active:hover {
+  color: var(--c-red-deep);
+  -webkit-text-stroke-width: 0.7px;
+}
+
+/* Active tab: the hover underline is replaced by a sliding one. */
+.links a.active::after {
+  display: none;
+}
+
+.activeUnderline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+}
+
 .actions {
   display: flex;
   align-items: center;
