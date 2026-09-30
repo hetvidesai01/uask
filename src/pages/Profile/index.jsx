@@ -11,6 +11,7 @@ import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
 import ReputationMetrics from './ReputationMetrics'
+import ContactCard from './ContactCard'
 import ReviewsSection from './ReviewsSection'
 import CompletedWorkSection from './CompletedWorkSection'
 import PortfolioSection from './PortfolioSection'
@@ -20,11 +21,11 @@ import { getUserById } from '../../services/authService'
 import { getAskById, getCategories } from '../../services/askService'
 import { getThreads } from '../../services/messageService'
 import { getCompletedContractsForProvider, getProviderReputation } from '../../services/contractService'
-import { getPortfolioForUser } from '../../services/profileService'
-import { getConnectionCount } from '../../services/connectionService'
+import { getContactDetails, getPortfolioForUser } from '../../services/profileService'
+import { getConnectionCount, getConnectionStatus } from '../../services/connectionService'
 import ConnectButton from '../../components/people/ConnectButton'
 import SaveButton from '../../components/people/SaveButton'
-import { isRequired } from '../../utils/validators'
+import { isRequired, isValidEmail } from '../../utils/validators'
 import { formatAbsoluteDate } from '../../utils/formatDate'
 import { getProfileHeadline } from '../../utils/profileHeadline'
 import styles from './Profile.module.css'
@@ -70,6 +71,8 @@ export default function Profile() {
   const [messageThreadId, setMessageThreadId] = useState(null)
   const [categoryOptions, setCategoryOptions] = useState([])
   const [connectionCount, setConnectionCount] = useState(0)
+  const [isConnected, setIsConnected] = useState(false)
+  const [contactDetails, setContactDetails] = useState(null)
 
   const [editing, setEditing] = useState(false)
   const [editValues, setEditValues] = useState(null)
@@ -79,6 +82,18 @@ export default function Profile() {
   useEffect(() => {
     getCategories().then((list) => setCategoryOptions(list.map((category) => category.label)))
   }, [])
+
+  // Connected state + the (connection-gated) contact details for another
+  // user's profile. getContactDetails returns null unless Connected.
+  const refreshConnection = useCallback(
+    async (otherId) => {
+      const { status: connectionStatus } = await getConnectionStatus(currentUser.id, otherId)
+      const connected = connectionStatus === 'connected'
+      setIsConnected(connected)
+      setContactDetails(connected ? await getContactDetails(currentUser.id, otherId) : null)
+    },
+    [currentUser.id]
+  )
 
   const load = useCallback(async () => {
     setEditing(false)
@@ -128,8 +143,11 @@ export default function Profile() {
             setMessageThreadId(shared ? shared.id : null)
           })
         )
+        tasks.push(refreshConnection(found.id))
       } else {
         setMessageThreadId(null)
+        setIsConnected(false)
+        setContactDetails(null)
       }
 
       tasks.push(getConnectionCount(found.id).then(setConnectionCount))
@@ -141,7 +159,7 @@ export default function Profile() {
     } catch {
       setStatus('error')
     }
-  }, [targetId, currentUser.id])
+  }, [targetId, currentUser.id, refreshConnection])
 
   useEffect(() => {
     load()
@@ -155,6 +173,9 @@ export default function Profile() {
       location: profileUser.location,
       categories: [...profileUser.categories],
       avatarUrl: profileUser.avatarUrl,
+      linkedin: profileUser.linkedin ?? '',
+      instagram: profileUser.instagram ?? '',
+      contactEmail: profileUser.contactEmail ?? '',
     })
     setEditing(true)
   }
@@ -191,6 +212,11 @@ export default function Profile() {
       return
     }
 
+    if (editValues.contactEmail.trim() && !isValidEmail(editValues.contactEmail.trim())) {
+      setErrors({ contactEmail: 'Enter a valid email address.' })
+      return
+    }
+
     setSaving(true)
     try {
       const updated = await updateProfile({
@@ -199,6 +225,9 @@ export default function Profile() {
         location: editValues.location.trim(),
         categories: editValues.categories,
         avatarUrl: editValues.avatarUrl.trim(),
+        linkedin: editValues.linkedin.trim(),
+        instagram: editValues.instagram.trim(),
+        contactEmail: editValues.contactEmail.trim(),
       })
       setProfileUser(updated)
       setEditing(false)
@@ -366,7 +395,7 @@ export default function Profile() {
                   {profileUser.roles.includes('provider') && (
                     <SaveButton currentUserId={currentUser.id} providerId={profileUser.id} />
                   )}
-                  {messageThreadId && (
+                  {messageThreadId && !isConnected && (
                     <Button as={Link} to={`/app/inbox/messages/${messageThreadId}`} size="sm">
                       Message
                     </Button>
@@ -424,6 +453,32 @@ export default function Profile() {
             <p className={styles.muted}>No skills added yet.</p>
           )}
         </Card>
+        {editing && (
+          <Card padding="lg" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Contact &amp; Socials</h2>
+            <p className={styles.muted}>Optional. Only people you&apos;re Connected with can see these.</p>
+            <Input
+              label="LinkedIn"
+              placeholder="https://linkedin.com/in/your-name"
+              value={editValues.linkedin}
+              onChange={(event) => updateField('linkedin', event.target.value)}
+            />
+            <Input
+              label="Instagram"
+              placeholder="@username or profile URL"
+              value={editValues.instagram}
+              onChange={(event) => updateField('instagram', event.target.value)}
+            />
+            <Input
+              label="Contact email"
+              type="email"
+              placeholder="you@example.com"
+              value={editValues.contactEmail}
+              onChange={(event) => updateField('contactEmail', event.target.value)}
+              error={errors.contactEmail}
+            />
+          </Card>
+        )}
       </Wrapper>
       </Reveal>
 
@@ -488,6 +543,12 @@ export default function Profile() {
       {/* Deliberately last and modest — a professional trust signal, not a
           social-network centerpiece. Rating/reviews/Profile Booster above
           stay the prominent signals. */}
+      {!isOwnProfile && isConnected && (
+        <Reveal>
+          <ContactCard currentUserId={currentUser.id} targetUserId={profileUser.id} details={contactDetails} />
+        </Reveal>
+      )}
+
       <Reveal>
       <Card padding="lg" className={styles.section}>
         <div className={styles.connectionsHeader}>
@@ -506,7 +567,10 @@ export default function Profile() {
               currentUserId={currentUser.id}
               targetUserId={profileUser.id}
               showRemove
-              onChange={() => getConnectionCount(profileUser.id).then(setConnectionCount)}
+              onChange={() => {
+                getConnectionCount(profileUser.id).then(setConnectionCount)
+                refreshConnection(profileUser.id)
+              }}
             />
           )}
         </div>

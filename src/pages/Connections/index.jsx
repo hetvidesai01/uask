@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { revealGroup, revealItem, SNAPPY_SPRING } from '../../utils/motion'
+import MessageUserButton from '../../components/people/MessageUserButton'
 import Avatar from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -20,7 +21,7 @@ async function withUsers(entries) {
     .filter((entry) => entry.user)
 }
 
-function ConnectionRow({ entry, busy, onRemove }) {
+function ConnectionRow({ entry, busy, onRemove, currentUserId }) {
   const { user } = entry
   const rowBusy = busy === entry.connectionId
 
@@ -34,6 +35,7 @@ function ConnectionRow({ entry, busy, onRemove }) {
         </div>
       </Link>
       <div className={styles.actions}>
+        <MessageUserButton currentUserId={currentUserId} targetUserId={user.id} variant="secondary" />
         <Button size="sm" variant="ghost" loading={rowBusy} disabled={rowBusy} onClick={() => onRemove(entry)}>
           Remove
         </Button>
@@ -125,7 +127,13 @@ export default function Connections() {
         ) : (
           <motion.ul className={styles.list} initial="hidden" animate="visible" variants={revealGroup}>
             {connected.map((entry) => (
-              <ConnectionRow key={entry.connectionId} entry={entry} busy={busy} onRemove={handleRemove} />
+              <ConnectionRow
+                key={entry.connectionId}
+                entry={entry}
+                busy={busy}
+                onRemove={handleRemove}
+                currentUserId={user.id}
+              />
             ))}
           </motion.ul>
         )}

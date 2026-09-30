@@ -10,6 +10,7 @@ import MessageBubble from '../../components/messages/MessageBubble'
 import MessageComposer from '../../components/messages/MessageComposer'
 import { useToast } from '../../hooks/useToast'
 import { getMessages, markThreadAsRead, sendMessage } from '../../services/messageService'
+import { getProfileHeadline } from '../../utils/profileHeadline'
 import styles from './Thread.module.css'
 
 export default function Thread() {
@@ -140,6 +141,7 @@ export default function Thread() {
           <Link to={`/app/profile/${participant?.id}`} className={styles.participantName}>
             {participant?.name ?? 'Unknown user'}
           </Link>
+          {participant && <span className={styles.headline}>{getProfileHeadline(participant)}</span>}
           {ask && (
             <Link to={`/app/asks/${ask.id}`} className={styles.askContext}>
               <span className={styles.askContextTitle}>{ask.title}</span>
@@ -150,6 +152,9 @@ export default function Thread() {
       </div>
 
       <div className={styles.messages} ref={scrollRef}>
+        {messages.length === 0 && (
+          <p className={styles.emptyNote}>No messages yet — say hello to {participant?.name ?? 'them'}.</p>
+        )}
         {messages.map((message, index) => {
           const previous = messages[index - 1]
           const next = messages[index + 1]
