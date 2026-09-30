@@ -15,7 +15,7 @@ import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getCategories, createAsk } from '../../services/askService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
-import { DEFAULT_CURRENCY } from '../../utils/formatCurrency'
+import { getPreferredCurrency } from '../../utils/formatCurrency'
 import styles from './CreateAsk.module.css'
 
 const DRAFT_KEY = 'uask.draft.createAsk'
@@ -27,7 +27,6 @@ const DEFAULT_VALUES = {
   description: '',
   budgetMin: '',
   budgetMax: '',
-  currency: DEFAULT_CURRENCY,
   deadline: '',
   location: '',
   isRemote: '',
@@ -35,7 +34,7 @@ const DEFAULT_VALUES = {
   requirements: '',
 }
 
-const DEFAULT_DRAFT = { step: 1, values: DEFAULT_VALUES }
+const getDefaultDraft = () => ({ step: 1, values: { ...DEFAULT_VALUES, currency: getPreferredCurrency() } })
 
 function hasDraftContent(draft) {
   if (!draft) return false
@@ -97,7 +96,7 @@ export default function CreateAsk() {
   const { user } = useAuth()
   const { showToast } = useToast()
 
-  const [draft, setDraft] = useLocalStorage(DRAFT_KEY, DEFAULT_DRAFT)
+  const [draft, setDraft] = useLocalStorage(DRAFT_KEY, getDefaultDraft())
   const [errors, setErrors] = useState({})
   const [categories, setCategories] = useState([])
   const [publishing, setPublishing] = useState(false)
@@ -108,7 +107,7 @@ export default function CreateAsk() {
     getCategories().then(setCategories)
   }, [])
 
-  const { step, values } = draft ?? DEFAULT_DRAFT
+  const { step, values } = draft ?? getDefaultDraft()
 
   function updateValues(field, value) {
     setDraft((current) => ({ ...current, values: { ...current.values, [field]: value } }))
@@ -134,7 +133,7 @@ export default function CreateAsk() {
   }
 
   function handleDiscard() {
-    setDraft(DEFAULT_DRAFT)
+    setDraft(getDefaultDraft())
     setErrors({})
     setDiscardOpen(false)
   }

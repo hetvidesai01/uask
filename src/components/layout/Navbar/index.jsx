@@ -40,8 +40,11 @@ export default function Navbar() {
           className={[styles.links, isLanding ? styles.linksLanding : ''].filter(Boolean).join(' ')}
           aria-label="Primary"
         >
+          <Link to="/">Home</Link>
           <Link to="/help">Help</Link>
           <Link to="/app/discover">Discover ASKs</Link>
+          <Link to="/collaborators">Collaborators</Link>
+          <Link to="/about">About Us</Link>
         </nav>
 
         <div className={styles.actions}>

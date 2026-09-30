@@ -1,6 +1,6 @@
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
-import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
+import { CURRENCY_OPTIONS, formatSampleAmount } from '../../../utils/formatCurrency'
 import { RevealGroup } from '../../ui/Reveal'
 import styles from './AskFormStep2.module.css'
 
@@ -20,7 +20,7 @@ export default function AskFormStep2({ values, errors, onChange }) {
             label="Budget minimum"
             type="number"
             min="0"
-            placeholder="₹10,000"
+            placeholder={formatSampleAmount(10000, values.currency)}
             value={values.budgetMin}
             onChange={(e) => onChange('budgetMin', e.target.value)}
             error={errors.budgetMin}
@@ -29,7 +29,7 @@ export default function AskFormStep2({ values, errors, onChange }) {
             label="Budget maximum"
             type="number"
             min="0"
-            placeholder="₹10,000"
+            placeholder={formatSampleAmount(10000, values.currency)}
             value={values.budgetMax}
             onChange={(e) => onChange('budgetMax', e.target.value)}
             error={errors.budgetMax}

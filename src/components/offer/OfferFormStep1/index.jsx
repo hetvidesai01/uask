@@ -3,7 +3,7 @@ import Input from '../../ui/Input'
 import Select from '../../ui/Select'
 import Button from '../../ui/Button'
 import Tag from '../../ui/Tag'
-import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
+import { CURRENCY_OPTIONS, formatSampleAmount } from '../../../utils/formatCurrency'
 import { RevealGroup } from '../../ui/Reveal'
 import styles from './OfferFormStep1.module.css'
 
@@ -40,7 +40,7 @@ export default function OfferFormStep1({ values, errors, onChange }) {
             label="Price"
             type="number"
             min="0"
-            placeholder="₹15,000"
+            placeholder={formatSampleAmount(15000, values.currency)}
             value={values.price}
             onChange={(e) => onChange('price', e.target.value)}
             error={errors.price}

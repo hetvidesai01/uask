@@ -1,6 +1,9 @@
 import { useId } from 'react'
 import { motion } from 'framer-motion'
 import Card from '../../components/ui/Card'
+import Select from '../../components/ui/Select'
+import { useCurrencyPreference } from '../../hooks/useCurrencyPreference'
+import { PREFERENCE_CURRENCY_OPTIONS } from '../../utils/formatCurrency'
 import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
@@ -51,6 +54,7 @@ function Segmented({ label, options, value, onChange }) {
 export default function Settings() {
   const { user, activeRole, setActiveRole } = useAuth()
   const { preference, setPreference } = useTheme()
+  const [currency, setCurrency] = useCurrencyPreference()
 
   // Placeholder, frontend-only notification preferences — no backend to
   // send anything yet, just remembered locally so the toggles feel real.
@@ -80,6 +84,25 @@ export default function Settings() {
           </div>
 
           <Segmented label="Appearance" options={APPEARANCE_OPTIONS} value={preference} onChange={setPreference} />
+        </Card>
+      </Reveal>
+
+      <Reveal>
+        <Card padding="lg" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Default currency</h2>
+            <p className={styles.sectionCopy}>
+              Prices across UASK are shown in this currency, converted at a fixed demo rate.
+            </p>
+          </div>
+
+          <Select
+            label="Default currency"
+            options={PREFERENCE_CURRENCY_OPTIONS}
+            value={currency}
+            onChange={(event) => setCurrency(event.target.value)}
+            className={styles.currencySelect}
+          />
         </Card>
       </Reveal>
 

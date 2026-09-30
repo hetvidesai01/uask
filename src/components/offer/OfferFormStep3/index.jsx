@@ -1,6 +1,6 @@
 import Tag from '../../ui/Tag'
 import Button from '../../ui/Button'
-import { formatCurrency } from '../../../utils/formatCurrency'
+import { formatCurrencyAs } from '../../../utils/formatCurrency'
 import styles from './OfferFormStep3.module.css'
 
 export default function OfferFormStep3({ values, onEdit }) {
@@ -16,7 +16,7 @@ export default function OfferFormStep3({ values, onEdit }) {
         <dl className={styles.rows}>
           <div className={styles.row}>
             <dt>Price</dt>
-            <dd>{formatCurrency(Number(values.price), values.currency)}</dd>
+            <dd>{formatCurrencyAs(Number(values.price), values.currency)}</dd>
           </div>
           <div className={styles.row}>
             <dt>Delivery</dt>

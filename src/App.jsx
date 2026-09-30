@@ -6,6 +6,8 @@ import ProtectedRoute from './layouts/ProtectedRoute'
 
 import Landing from './pages/Landing'
 import Help from './pages/Help'
+import About from './pages/About'
+import Collaborators from './pages/Collaborators'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -43,6 +45,8 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/collaborators" element={<Collaborators />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>

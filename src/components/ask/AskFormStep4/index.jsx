@@ -1,6 +1,6 @@
 import Tag from '../../ui/Tag'
 import Button from '../../ui/Button'
-import { formatBudgetRange } from '../../../utils/formatCurrency'
+import { formatCurrencyAs } from '../../../utils/formatCurrency'
 import { formatAbsoluteDate } from '../../../utils/formatDate'
 import styles from './AskFormStep4.module.css'
 
@@ -40,7 +40,9 @@ export default function AskFormStep4({ values, onEdit }) {
         <dl className={styles.rows}>
           <div className={styles.row}>
             <dt>Budget</dt>
-            <dd>{formatBudgetRange(Number(values.budgetMin), Number(values.budgetMax), values.currency)}</dd>
+            <dd>{Number(values.budgetMin) === Number(values.budgetMax)
+              ? formatCurrencyAs(Number(values.budgetMin), values.currency)
+              : `${formatCurrencyAs(Number(values.budgetMin), values.currency)}–${formatCurrencyAs(Number(values.budgetMax), values.currency)}`}</dd>
           </div>
           <div className={styles.row}>
             <dt>Deadline</dt>

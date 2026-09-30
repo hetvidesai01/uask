@@ -85,6 +85,10 @@
   color: var(--c-red-deep);
 }
 
+.currencySelect {
+  max-width: 280px;
+}
+
 .fieldList {
   display: flex;
   flex-direction: column;

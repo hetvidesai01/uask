@@ -16,14 +16,13 @@ import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getAskById, incrementResponseCount } from '../../services/askService'
 import { getOffersForAsk, createOffer } from '../../services/offerService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
-import { DEFAULT_CURRENCY } from '../../utils/formatCurrency'
+import { getPreferredCurrency } from '../../utils/formatCurrency'
 import styles from './RespondToAsk.module.css'
 
 const STEPS = ['Your offer', "Why you're a fit", 'Review']
 
 const DEFAULT_VALUES = {
   price: '',
-  currency: DEFAULT_CURRENCY,
   deliveryDays: '',
   deliverables: [],
   pitch: '',
@@ -32,7 +31,7 @@ const DEFAULT_VALUES = {
   attachments: [],
 }
 
-const DEFAULT_DRAFT = { step: 1, values: DEFAULT_VALUES }
+const getDefaultDraft = () => ({ step: 1, values: { ...DEFAULT_VALUES, currency: getPreferredCurrency() } })
 
 function validateStep(step, values) {
   const errors = {}
@@ -63,7 +62,7 @@ export default function RespondToAsk() {
   const [blockReason, setBlockReason] = useState(null)
   const [ask, setAsk] = useState(null)
 
-  const [draft, setDraft] = useLocalStorage(`uask.draft.respond.${askId}`, DEFAULT_DRAFT)
+  const [draft, setDraft] = useLocalStorage(`uask.draft.respond.${askId}`, getDefaultDraft())
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -116,7 +115,7 @@ export default function RespondToAsk() {
     load()
   }, [load])
 
-  const { step, values } = draft ?? DEFAULT_DRAFT
+  const { step, values } = draft ?? getDefaultDraft()
 
   function updateValues(field, value) {
     setDraft((current) => ({ ...current, values: { ...current.values, [field]: value } }))

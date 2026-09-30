@@ -1,0 +1,201 @@
+.page {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--sp-7) var(--sp-8);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--sp-7), 8vw, var(--sp-9));
+}
+
+/* Decorative signal marks: static, behind content, side gutters only. */
+.sideGraphics {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .sideGraphics {
+    display: block;
+  }
+}
+
+.signalLeft,
+.signalRight {
+  position: absolute;
+  opacity: 0.35;
+  transform: scale(3.2);
+}
+
+.signalLeft {
+  top: 10%;
+  left: 6%;
+}
+
+.signalRight {
+  top: 52%;
+  right: 6%;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.h1 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 9vw, 5rem);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6vw, 3.25rem);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+  color: var(--c-text);
+}
+
+.lead {
+  max-width: 34em;
+  font-size: clamp(1.25rem, 3vw, 1.625rem);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.body {
+  max-width: 36em;
+  font-size: clamp(1.125rem, 2.4vw, 1.3125rem);
+  line-height: var(--lh-normal);
+  color: var(--c-text-mute);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.flow {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.flowStep {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.flowLabel {
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-full);
+  background-color: var(--blush);
+  color: var(--c-red-deep);
+  font-family: var(--font-mono);
+  font-size: clamp(0.9375rem, 2vw, 1.125rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.flowArrow {
+  font-size: var(--fs-xl);
+  color: var(--c-text-faint);
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 900px) {
+  .contactGrid {
+    grid-template-columns: 1fr 1.2fr;
+    align-items: start;
+  }
+}
+
+.contactIntro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.contactEmail {
+  font-size: clamp(1.125rem, 2.4vw, 1.3125rem);
+  font-weight: 600;
+  color: var(--c-red-deep);
+}
+
+.formCard {
+  padding: var(--sp-5);
+  border-radius: var(--r-lg);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
+}
+
+/* Larger labels, field text, hints and errors for this page only. */
+.formCard label {
+  font-size: 1.0625rem;
+}
+
+.formCard input,
+.formCard textarea {
+  font-size: 1.0625rem;
+}
+
+.formCard span[id$='-note'] {
+  font-size: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.successIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red-wash);
+  color: var(--c-red-deep);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+
+.successTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 400;
+}

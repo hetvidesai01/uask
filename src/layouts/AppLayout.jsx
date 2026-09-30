@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import AppBackdrop from '../components/ui/AppBackdrop'
@@ -14,6 +14,7 @@ import { useToast } from '../hooks/useToast'
 import { getNotifications } from '../services/notificationService'
 import { getThreads } from '../services/messageService'
 import { getSubscription, createCheckoutSession } from '../services/subscriptionService'
+import { useCurrencyPreference } from '../hooks/useCurrencyPreference'
 import { hoverLift, menuPop, routeEntrance, SNAPPY_SPRING } from '../utils/motion'
 import styles from './AppLayout.module.css'
 
@@ -75,6 +76,7 @@ function routeKey(pathname) {
 
 export default function AppLayout() {
   const { pathname } = useLocation()
+  const [currency] = useCurrencyPreference()
   const { user, activeRole, setActiveRole, logout } = useAuth()
   const { showToast } = useToast()
   const [unreadCount, setUnreadCount] = useState(0)
@@ -243,6 +245,14 @@ export default function AppLayout() {
           {desktopMenuOpen && (
             <motion.div className={[styles.dropdown, styles.sidebarDropdown].join(' ')} role="menu" {...menuPop}>
               <Link
+                to="/about"
+                className={styles.dropdownItem}
+                role="menuitem"
+                onClick={() => setDesktopMenuOpen(false)}
+              >
+                About Us
+              </Link>
+              <Link
                 to="/app/profile"
                 className={styles.dropdownItem}
                 role="menuitem"
@@ -381,7 +391,10 @@ export default function AppLayout() {
       <main className={styles.main}>
         <div className="container">
           <motion.div key={routeKey(pathname)} initial="hidden" animate="visible" variants={routeEntrance}>
-            <Outlet />
+            {/* Keyed on the currency preference so every price on screen re-renders in the new currency. */}
+            <Fragment key={currency}>
+              <Outlet />
+            </Fragment>
           </motion.div>
         </div>
       </main>

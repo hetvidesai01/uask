@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { CANONICAL_CURRENCY, convertCurrency, getPreferredCurrency } from '../../utils/formatCurrency'
 import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
@@ -82,8 +83,8 @@ export default function DiscoverAsksTab() {
       sort,
     }
     if (query.isRemote !== undefined) query.isRemote = query.isRemote === 'true'
-    if (query.budgetMin !== undefined) query.budgetMin = Number(query.budgetMin)
-    if (query.budgetMax !== undefined) query.budgetMax = Number(query.budgetMax)
+    if (query.budgetMin !== undefined) query.budgetMin = Math.round(convertCurrency(Number(query.budgetMin), getPreferredCurrency(), CANONICAL_CURRENCY))
+    if (query.budgetMax !== undefined) query.budgetMax = Math.round(convertCurrency(Number(query.budgetMax), getPreferredCurrency(), CANONICAL_CURRENCY))
 
     getAsks(query)
       .then(async (result) => {
