@@ -2,7 +2,12 @@
   display: flex;
   gap: var(--sp-2);
   border-bottom: 1px solid var(--c-border);
+  /* Horizontal scroll only, for many tabs on narrow screens. Without an
+     explicit overflow-y the browser computes it as `auto` (a non-visible
+     overflow-x forces overflow-y off `visible`), and any sub-pixel of
+     vertical overshoot from the animated underline shows a tiny scrollbar. */
   overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .tab {
