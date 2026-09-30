@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import StaggerReveal from '../../components/ui/StaggerReveal'
+import { staggerItem } from '../../utils/motion'
 import styles from './FaqSection.module.css'
 
 const FAQS = [
@@ -59,17 +62,23 @@ export default function FaqSection() {
   return (
     <section id="faqs" className="section">
       <div className="container">
-        <span className={styles.kicker}>FAQs</span>
-        <h2 className={styles.heading}>Frequently asked questions</h2>
+        <StaggerReveal>
+          <motion.span className={styles.kicker} variants={staggerItem}>
+            FAQs
+          </motion.span>
+          <motion.h2 className={styles.heading} variants={staggerItem}>
+            Frequently asked questions
+          </motion.h2>
+        </StaggerReveal>
 
-        <div className={styles.list}>
+        <StaggerReveal className={styles.list} threshold={0.05}>
           {FAQS.map((faq, index) => {
             const isOpen = openIndex === index
             const panelId = `faq-panel-${index}`
             const buttonId = `faq-button-${index}`
 
             return (
-              <div key={faq.question} className={styles.item}>
+              <motion.div key={faq.question} className={styles.item} variants={staggerItem}>
                 <h3 className={styles.itemHeading}>
                   <button
                     type="button"
@@ -85,19 +94,28 @@ export default function FaqSection() {
                     </span>
                   </button>
                 </h3>
-                <div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={buttonId}
-                  className={styles.panel}
-                  hidden={!isOpen}
-                >
-                  <p className={styles.answer}>{faq.answer}</p>
-                </div>
-              </div>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      className={styles.panelWrap}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className={styles.panel}>
+                        <p className={styles.answer}>{faq.answer}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             )
           })}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   )

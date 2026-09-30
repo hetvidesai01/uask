@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion'
 import styles from './UpgradeTeaser.module.css'
 
-const ENTRANCE_TRANSITION = { type: 'spring', stiffness: 260, damping: 22, delay: 0.6 }
-const SLIDE_TRANSITION = { duration: 0.25, ease: 'easeOut' }
+const ENTRANCE_TRANSITION = { duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.6 }
+const SLIDE_TRANSITION = { duration: 0.18, ease: 'easeOut' }
 
-// A small curiosity hook, not a persistent sales card: rests mostly off
-// the right edge of the viewport, slides fully into view on hover/focus,
-// and opens the full Basic vs Premium comparison in a PremiumDrawer on
-// click. Always visible for a non-Premium user — no dismiss/collapse
-// state, since being a quiet constant is the point.
+// A vertical tab flush against the right edge of the viewport reading
+// "GO PREMIUM". Slides in once on mount, slides slightly further out on
+// hover/focus, and opens the Premium drawer on click (drawer, pricing and
+// checkout are unchanged). Always visible for a non-Premium user.
 export default function UpgradeTeaser({ onOpen }) {
   return (
     <motion.button
@@ -17,15 +16,14 @@ export default function UpgradeTeaser({ onOpen }) {
       onClick={onOpen}
       aria-label="Open UASK Premium — see plans and upgrade"
       initial={{ x: '100%', y: '-50%', opacity: 0 }}
-      animate={{ x: '58%', y: '-50%', opacity: 1, transition: ENTRANCE_TRANSITION }}
-      whileHover={{ x: '0%', y: '-50%', transition: SLIDE_TRANSITION }}
-      whileFocus={{ x: '0%', y: '-50%', transition: SLIDE_TRANSITION }}
-      whileTap={{ scale: 0.96 }}
+      animate={{ x: 0, y: '-50%', opacity: 1, transition: ENTRANCE_TRANSITION }}
+      whileHover={{ x: -8, y: '-50%', transition: SLIDE_TRANSITION }}
+      whileFocus={{ x: -8, y: '-50%', transition: SLIDE_TRANSITION }}
+      whileTap={{ x: -4, y: '-50%', transition: SLIDE_TRANSITION }}
     >
-      <span className={styles.iconBadge} aria-hidden="true">
-        💎
+      <span className={styles.label} aria-hidden="true">
+        GO PREMIUM
       </span>
-      <span className={styles.label}>Go Premium</span>
     </motion.button>
   )
 }

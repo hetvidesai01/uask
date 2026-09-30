@@ -1,0 +1,280 @@
+.section {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding-block: var(--sp-7);
+}
+
+@media (min-width: 900px) {
+  .section {
+    padding-block: var(--sp-8);
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+}
+
+.headingRow {
+  margin-bottom: var(--sp-6);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, var(--fs-4xl));
+  font-weight: 400;
+  color: var(--c-text);
+}
+
+.note {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-text-faint);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.card {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-radius: var(--r-lg);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  background-color: color-mix(in srgb, var(--c-surface) 92%, var(--blush));
+  box-shadow: var(--shadow-lift);
+}
+
+.quoteMark {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 0.6;
+  height: 1.4rem;
+  color: var(--red);
+  transform-origin: left bottom;
+  transition: transform 0.16s ease;
+}
+
+.card:hover .quoteMark {
+  transform: scale(1.15) translateY(-2px);
+}
+
+.quote {
+  margin: 0;
+  flex: 1;
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.personText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.role {
+  font-size: var(--fs-xs);
+  color: var(--c-red-deep);
+}
+
+/* ── Ambient decoration (asymmetric, faint, slow, non-interactive) ── */
+.ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+  will-change: transform;
+}
+
+.blobA {
+  top: -12%;
+  left: -6%;
+  width: 34%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, var(--pink) 0%, transparent 70%);
+  opacity: 0.4;
+}
+
+.blobB {
+  bottom: -18%;
+  right: 4%;
+  width: 26%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, var(--red) 0%, transparent 70%);
+  opacity: 0.1;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--red);
+}
+
+.ringA {
+  top: 6%;
+  right: -4%;
+  width: 320px;
+  height: 320px;
+  opacity: 0.1;
+}
+
+.ringB {
+  bottom: 2%;
+  left: 3%;
+  width: 200px;
+  height: 200px;
+  opacity: 0.08;
+}
+
+.dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  opacity: 0.35;
+}
+
+.dotA {
+  top: 20%;
+  left: 4%;
+}
+
+.dotB {
+  top: 12%;
+  right: 22%;
+  width: 5px;
+  height: 5px;
+  background: var(--pink);
+  opacity: 0.7;
+}
+
+.dotC {
+  bottom: 14%;
+  right: 8%;
+}
+
+.curves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.curve {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 0.25;
+  stroke-dasharray: 5 4;
+  opacity: 0.16;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .blobA {
+    animation: tDriftA 16s ease-in-out infinite alternate;
+  }
+
+  .blobB {
+    animation: tDriftB 20s ease-in-out infinite alternate;
+  }
+
+  .ringA {
+    animation: tRing 18s ease-in-out infinite;
+  }
+
+  .ringB {
+    animation: tRing 14s ease-in-out infinite reverse;
+  }
+
+  .dotA {
+    animation: tFloat 12s ease-in-out infinite alternate;
+  }
+
+  .dotB {
+    animation: tFloat 15s ease-in-out infinite alternate-reverse;
+  }
+
+  .dotC {
+    animation: tFloat 11s ease-in-out infinite alternate;
+  }
+
+  .curve {
+    animation: tFlow 20s linear infinite;
+  }
+}
+
+@keyframes tDriftA {
+  to {
+    transform: translate3d(28px, 18px, 0);
+  }
+}
+
+@keyframes tDriftB {
+  to {
+    transform: translate3d(-32px, -16px, 0);
+  }
+}
+
+@keyframes tRing {
+  50% {
+    transform: scale(1.07);
+    opacity: 0.16;
+  }
+}
+
+@keyframes tFloat {
+  to {
+    transform: translate3d(8px, -14px, 0);
+  }
+}
+
+@keyframes tFlow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}

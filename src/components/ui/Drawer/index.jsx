@@ -9,7 +9,9 @@ const FOCUSABLE_SELECTOR =
 // A right-side slide-over panel — same focus-trap/scroll-lock/Escape
 // contract as Modal (see components/ui/Modal), just anchored to an edge
 // and animated with a spring slide instead of appearing centered.
-export default function Drawer({ open, onClose, title, headerContent, children }) {
+// `showTitle={false}` drops the visible title (the dialog keeps its aria-label)
+// and tightens the header to just the close button.
+export default function Drawer({ open, onClose, title, headerContent, showTitle = true, children }) {
   const panelRef = useRef(null)
   const previouslyFocused = useRef(null)
 
@@ -77,8 +79,12 @@ export default function Drawer({ open, onClose, title, headerContent, children }
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 34 }}
           >
-            <div className={styles.header}>
-              {headerContent ?? (title && <h2 className={styles.title}>{title}</h2>)}
+            <div className={[styles.header, showTitle ? '' : styles.headerCompact].filter(Boolean).join(' ')}>
+              {showTitle ? (
+                (headerContent ?? (title && <h2 className={styles.title}>{title}</h2>))
+              ) : (
+                <span className={styles.headerSpacer} />
+              )}
               <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
                 ✕
               </button>

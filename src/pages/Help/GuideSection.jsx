@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from '../../hooks/useInView'
-import { staggerContainer, staggerItem } from '../../utils/motion'
+import StaggerReveal from '../../components/ui/StaggerReveal'
+import { SOFT_SPRING, staggerContainer, staggerItem } from '../../utils/motion'
 import styles from './GuideSection.module.css'
 
 export default function GuideSection({ id, kicker, heading, intro, steps, tone = 'default' }) {
@@ -9,9 +10,17 @@ export default function GuideSection({ id, kicker, heading, intro, steps, tone =
   return (
     <section id={id} className={`section ${styles.section}`}>
       <div className="container">
-        <span className={styles.kicker}>{kicker}</span>
-        <h2 className={styles.heading}>{heading}</h2>
-        <p className={styles.intro}>{intro}</p>
+        <StaggerReveal>
+          <motion.span className={styles.kicker} variants={staggerItem}>
+            {kicker}
+          </motion.span>
+          <motion.h2 className={styles.heading} variants={staggerItem}>
+            {heading}
+          </motion.h2>
+          <motion.p className={styles.intro} variants={staggerItem}>
+            {intro}
+          </motion.p>
+        </StaggerReveal>
 
         <motion.ol
           ref={ref}
@@ -25,6 +34,7 @@ export default function GuideSection({ id, kicker, heading, intro, steps, tone =
               key={step.title}
               className={[styles.card, tone === 'provider' ? styles.provider : ''].filter(Boolean).join(' ')}
               variants={staggerItem}
+              whileHover={{ y: -3, transition: SOFT_SPRING }}
             >
               <span className={styles.number} aria-hidden="true">
                 {String(index + 1).padStart(2, '0')}

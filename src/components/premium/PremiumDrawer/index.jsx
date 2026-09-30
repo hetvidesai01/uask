@@ -5,7 +5,6 @@ import { SNAPPY_SPRING } from '../../../utils/motion'
 import Drawer from '../../ui/Drawer'
 import Button from '../../ui/Button'
 import AnimatedBackground from '../../ui/AnimatedBackground'
-import uaskLogo from '../../../assets/brand/uask.logo.png'
 import styles from './PremiumDrawer.module.css'
 
 const FEATURES = [
@@ -78,7 +77,7 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
       open={open}
       onClose={handleClose}
       title="UASK Premium"
-      headerContent={<img src={uaskLogo} alt="UASK" className={styles.headerLogo} />}
+      showTitle={false}
     >
       <div className={styles.content}>
         <AnimatedBackground variant="rich" />
@@ -156,12 +155,15 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
         ) : (
           <RevealGroup>
             <Reveal>
-            <p className={styles.intro}>
-              Basic covers the core ASK → MATCH → CONNECT flow at no cost. Premium removes every
-              weekly limit on AI tools, boosts and workflow features.
-            </p>
+            <div className={styles.comingSoon}>
+              <p className={styles.comingSoonTitle}>COMING SOON</p>
+              <p className={styles.comingSoonNote}>Premium features are currently in development.</p>
+            </div>
             </Reveal>
 
+            {/* Intentionally unavailable for now: visible but blurred, and inert so it can't be
+                focused or clicked. Underlying pricing/checkout code is unchanged. */}
+            <div className={styles.locked} aria-hidden="true" inert>
             <Reveal>
             <div className={styles.plans}>
               <motion.div
@@ -259,6 +261,7 @@ export default function PremiumDrawer({ open, onClose, plan, onCheckout }) {
               Upgrade to Premium
             </Button>
             </Reveal>
+            </div>
           </RevealGroup>
         )}
         </motion.div>

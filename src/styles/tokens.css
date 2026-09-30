@@ -204,3 +204,19 @@ html[data-theme='dark'] {
   --c-warning: #D9A441;
   --c-info:    #5B9BD9;
 }
+
+/* ── Logged-in app typography scale ─────────────────────────────────────
+   AppLayout sets data-shell="app" on <html> while the logged-in shell is
+   mounted (including portals like the Premium drawer / modals), so these
+   larger sizes reach every consumer of the --fs-* tokens inside the app
+   without touching the public pages, which keep the base scale above. */
+:root[data-shell='app'] {
+  --fs-xs: 0.875rem;
+  --fs-sm: 1rem;
+  --fs-base: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: clamp(2rem, 4.5vw, 2.875rem);
+  --fs-4xl: clamp(2.25rem, 5vw, 3rem);
+}

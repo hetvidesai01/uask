@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion'
+import { fadeRise } from '../../utils/motion'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { useAuth } from '../../hooks/useAuth'
@@ -16,7 +18,13 @@ export default function ProductTourCallout() {
   return (
     <section className="section">
       <div className="container">
-        <div className={styles.callout}>
+        <motion.div
+          className={styles.callout}
+          variants={fadeRise}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
           <div>
             <span className={styles.kicker}>Guided tour</span>
             <h2 className={styles.heading}>New to the app shell?</h2>
@@ -36,7 +44,7 @@ export default function ProductTourCallout() {
               </Button>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

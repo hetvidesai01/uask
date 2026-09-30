@@ -6,7 +6,6 @@ import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import AskCard from '../../components/ask/AskCard'
 import AskFilters from '../../components/ask/AskFilters'
 import RecommendedAskCard from '../../components/matching/RecommendedAskCard'
-import Select from '../../components/ui/Select'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
 import Button from '../../components/ui/Button'
@@ -159,13 +158,26 @@ export default function DiscoverAsksTab() {
             onFilterChange={updateFilter}
             onReset={resetFilters}
           />
-          <Select
-            className={styles.sort}
-            label="Sort by"
-            options={SORT_OPTIONS}
-            value={sort}
-            onChange={(e) => updateFilter('sort', e.target.value)}
-          />
+          {/* Looks exactly like the Filter trigger; the real <select> sits invisibly on top
+              so the native option list, keyboard support and sort logic are unchanged. */}
+          <div className={styles.sortTrigger}>
+            <span>Sort by</span>
+            <span className={styles.sortChevron} aria-hidden="true">
+              ▾
+            </span>
+            <select
+              className={styles.sortSelect}
+              aria-label="Sort by"
+              value={sort}
+              onChange={(e) => updateFilter('sort', e.target.value)}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

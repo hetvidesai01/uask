@@ -1,61 +1,53 @@
-/* Right-edge "peek" tab. Positioned at a fixed viewport percentage
-   (rather than switching to a bottom-anchored offset on mobile) so a
-   single Framer Motion transform strategy works at every breakpoint —
-   56% down the viewport clears the mobile tab bar + FAB (~128px worth
-   of bottom chrome) on any viewport taller than ~400px, and reads as
-   "mid/lower-mid" on desktop. */
+/* Vertical "GO PREMIUM" tab, flush with the right edge of the viewport.
+   Vertical centering is done by Framer Motion's y: -50% transform (see
+   index.jsx), so `top` alone places it. Sits slightly below center, which
+   also clears the mobile tab bar + FAB at the bottom of the screen. */
 .teaser {
   position: fixed;
-  top: 56%;
+  top: 54%;
   right: 0;
   z-index: 12;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
-  border-radius: var(--r-lg) 0 0 var(--r-lg);
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-red);
-  border-right: none;
-  box-shadow: var(--shadow-lift);
+  justify-content: center;
+  padding: var(--sp-5) var(--sp-3);
+  border-radius: var(--r-md) 0 0 var(--r-md);
+  background-color: var(--c-red);
+  border: none;
+  box-shadow: var(--shadow-card);
   cursor: pointer;
-  white-space: nowrap;
+  transition: box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.teaser:hover,
+.teaser:focus-visible {
+  background-color: var(--c-red-deep);
+  box-shadow: var(--shadow-lift);
 }
 
 .teaser:focus-visible {
-  outline: 2px solid var(--c-red);
-  outline-offset: -2px;
-}
-
-.iconBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--r-full);
-  background-color: var(--blush);
-  font-size: var(--fs-sm);
-  flex-shrink: 0;
+  outline: 2px solid var(--c-red-deep);
+  outline-offset: 2px;
 }
 
 .label {
+  writing-mode: vertical-rl;
+  font-family: var(--font-body);
   font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--c-red-deep);
+  letter-spacing: 0.16em;
+  line-height: 1;
+  white-space: nowrap;
+  color: white;
 }
 
 @media (max-width: 639px) {
   .teaser {
-    padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
-  }
-
-  .iconBadge {
-    width: 24px;
-    height: 24px;
+    padding: var(--sp-4) var(--sp-2);
   }
 
   .label {
     font-size: var(--fs-xs);
+    letter-spacing: 0.12em;
   }
 }

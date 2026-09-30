@@ -1,3 +1,6 @@
+import { motion } from 'framer-motion'
+import StaggerReveal from '../../components/ui/StaggerReveal'
+import { staggerItem } from '../../utils/motion'
 import SignalRail from '../../components/ui/SignalRail'
 import styles from './HowItWorksSection.module.css'
 
@@ -28,12 +31,18 @@ export default function HowItWorksSection() {
   return (
     <section id="how-it-works" className={`section ${styles.flow}`}>
       <div className="container">
-        <span className={styles.kicker}>How UASK works</span>
-        <h2 className={styles.heading}>One flow, from ASK to CONNECT</h2>
-        <p className={styles.intro}>
-          UASK is a reverse marketplace — you don't go looking for providers, they come to you. Here's the whole
-          flow in five simple steps.
-        </p>
+        <StaggerReveal>
+          <motion.span className={styles.kicker} variants={staggerItem}>
+            How UASK works
+          </motion.span>
+          <motion.h2 className={styles.heading} variants={staggerItem}>
+            One flow, from ASK to CONNECT
+          </motion.h2>
+          <motion.p className={styles.intro} variants={staggerItem}>
+            UASK is a reverse marketplace — you don't go looking for providers, they come to you. Here's the whole
+            flow in five simple steps.
+          </motion.p>
+        </StaggerReveal>
 
         <SignalRail steps={STEPS} />
       </div>

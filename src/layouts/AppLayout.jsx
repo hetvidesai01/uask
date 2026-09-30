@@ -77,6 +77,14 @@ function routeKey(pathname) {
 export default function AppLayout() {
   const { pathname } = useLocation()
   const [currency] = useCurrencyPreference()
+
+  // Opt the document into the larger logged-in type scale (see tokens.css).
+  useEffect(() => {
+    document.documentElement.dataset.shell = 'app'
+    return () => {
+      delete document.documentElement.dataset.shell
+    }
+  }, [])
   const { user, activeRole, setActiveRole, logout } = useAuth()
   const { showToast } = useToast()
   const [unreadCount, setUnreadCount] = useState(0)

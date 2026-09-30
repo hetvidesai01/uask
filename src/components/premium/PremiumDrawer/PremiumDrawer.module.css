@@ -3,25 +3,47 @@
   isolation: isolate;
 }
 
-/* Replaces the drawer's default plain-text title (see headerContent on
-   Drawer) with the official brand mark — the wordmark already says
-   "Uask", so a separate "UASK Premium" label would just repeat it; the
-   dialog's accessible name still carries the full "UASK Premium" text via
-   Drawer's title/aria-label prop, unchanged. Sized to sit level with the
-   close button's 32px footprint; width is auto so the untouched logo file
-   only scales, never stretches. */
-.headerLogo {
-  display: block;
-  height: 32px;
-  width: auto;
-  object-fit: contain;
-}
-
 .intro {
   margin-bottom: var(--sp-5);
   font-size: var(--fs-sm);
   line-height: var(--lh-normal);
   color: var(--c-text-mute);
+}
+
+/* COMING SOON headline that replaces the old intro paragraph. */
+.comingSoon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+  text-align: center;
+}
+
+.comingSoonTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 11vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--c-red);
+  overflow-wrap: anywhere;
+}
+
+.comingSoonNote {
+  font-size: var(--fs-base);
+  color: var(--c-text-mute);
+}
+
+/* Blurred, non-interactive preview of the plans, pricing and comparison. */
+.locked {
+  position: relative;
+  filter: blur(5px);
+  opacity: 0.75;
+  user-select: none;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, rgba(0, 0, 0, 0.45));
+  mask-image: linear-gradient(to bottom, #000 55%, rgba(0, 0, 0, 0.45));
 }
 
 .plans {

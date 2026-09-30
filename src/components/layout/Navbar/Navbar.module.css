@@ -9,6 +9,17 @@
   border-bottom: 1px solid var(--c-border);
 }
 
+.plain {
+  /* Same look and scroll behaviour as the Home header (transparent at the
+     top, frosted once scrolled), but sticky rather than fixed, so it stays
+     in normal flow and page content starts below it without extra padding. */
+  position: sticky;
+  top: 0;
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+
 .overHero {
   position: fixed;
   top: 0;
@@ -19,7 +30,8 @@
   transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
-.overHero.scrolled {
+.overHero.scrolled,
+.plain.scrolled {
   /* Warm-surface frosted scrim — was a leftover hardcoded near-black
      (rgba(11,10,10,...) = the old dark-theme --c-bg) from before the
      light redesign; light-mode equivalent of --c-surface at the same
@@ -79,10 +91,15 @@
 .links {
   display: none;
   align-items: center;
-  gap: var(--sp-6);
+  gap: var(--sp-4);
+  font-family: var(--font-display);
   font-size: var(--fs-sm);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 400;
+  /* Apple Garamond Light ships one weight, so a synthetic bold would smear it.
+     A hairline text stroke adds contrast while keeping the elegant serif shapes. */
+  font-synthesis: none;
+  -webkit-text-stroke: 0.5px currentColor;
+  letter-spacing: 0.01em;
   color: var(--c-text-mute);
 }
 
@@ -92,12 +109,18 @@
    the smaller default .links size. Color, weight, letter-spacing and the
    red hover-underline are all inherited unchanged — only size grows. */
 .links.linksLanding {
-  font-size: var(--fs-lg);
+  font-size: 1.375rem;
 }
 
 @media (min-width: 900px) {
   .links.linksLanding {
-    font-size: var(--fs-xl);
+    font-size: clamp(1.375rem, 1.7vw, 1.625rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  .links {
+    gap: var(--sp-6);
   }
 }
 
@@ -128,13 +151,69 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  gap: var(--sp-3);
 }
 
 .loginLink {
-  font-size: var(--fs-sm);
-  font-weight: 600;
+  position: relative;
+  padding-block: var(--sp-1);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  font-synthesis: none;
+  -webkit-text-stroke: 0.5px currentColor;
+  letter-spacing: 0.01em;
   color: var(--c-text);
+  transition: color 0.15s ease;
+}
+
+/* Same red hover-underline as the nav links. */
+.loginLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--c-red);
+  transition: right 0.2s ease;
+}
+
+.loginLink:hover {
+  color: var(--c-red-deep);
+}
+
+.loginLink:hover::after {
+  right: 0;
+}
+
+/* Prominent pill CTA. Hover lift / press scale come from the shared Button. */
+.actions .signupButton {
+  padding: var(--sp-2) var(--sp-5);
+  min-height: 44px;
+  border-radius: var(--r-full);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  font-synthesis: none;
+  -webkit-text-stroke: 0.5px currentColor;
+  letter-spacing: 0.01em;
+  box-shadow: var(--shadow-card);
+}
+
+.actions .signupButton:hover:not([aria-disabled='true']) {
+  box-shadow: var(--shadow-lift);
+}
+
+@media (min-width: 900px) {
+  .loginLink,
+  .actions .signupButton {
+    font-size: 1.375rem;
+  }
+
+  .actions .signupButton {
+    padding-inline: var(--sp-5);
+  }
 }
 
 @media (min-width: 640px) {

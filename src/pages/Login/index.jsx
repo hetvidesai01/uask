@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import AuthLayout from '../../components/auth/AuthLayout'
 import Input from '../../components/ui/Input'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
@@ -70,13 +70,15 @@ export default function Login() {
   }
 
   return (
-    <div className={`section container ${styles.page}`}>
-      <Card padding="lg" className={styles.card}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Log in</h1>
-          <p className={styles.subtitle}>Welcome back — pick up where you left off.</p>
-        </div>
-
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Your next ASK, response or connection is waiting."
+      footer={
+        <>
+          Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+        </>
+      }
+    >
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <Input
             label="Email"
@@ -102,11 +104,6 @@ export default function Login() {
             Log in
           </Button>
         </form>
-
-        <p className={styles.footer}>
-          Don&apos;t have an account? <Link to="/signup">Sign up</Link>
-        </p>
-      </Card>
-    </div>
+    </AuthLayout>
   )
 }

@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import BackToTop from '../../components/ui/BackToTop'
 import AnimatedBackground from '../../components/ui/AnimatedBackground'
 import HeroSection from './HeroSection'
 import FlowSection from './FlowSection'
+import TestimonialsSection from './TestimonialsSection'
 import ReverseMarketplaceSection from './ReverseMarketplaceSection'
 import ValuePropsSection from './ValuePropsSection'
 import SampleAsksSection from './SampleAsksSection'
@@ -23,11 +25,13 @@ export default function Landing() {
       <AnimatedBackground variant="expressive" />
       <HeroSection />
       <FlowSection />
+      <TestimonialsSection />
       <ReverseMarketplaceSection />
       <ValuePropsSection />
       <SampleAsksSection />
       <CategoriesSection />
       <CtaSection />
+      <BackToTop />
     </div>
   )
 }

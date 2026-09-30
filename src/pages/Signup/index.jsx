@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import AuthLayout from '../../components/auth/AuthLayout'
 import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
 import { useAuth } from '../../hooks/useAuth'
@@ -99,13 +99,15 @@ export default function Signup() {
   }
 
   return (
-    <div className={`section container ${styles.page}`}>
-      <Card padding="lg" className={styles.card}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Create your account</h1>
-          <p className={styles.subtitle}>Post an ASK or start responding to them — takes a minute.</p>
-        </div>
-
+    <AuthLayout
+      title="Start with an ASK"
+      subtitle="One UASK account works both ways — post ASKs as a Seeker, respond to them as a Provider, or do both."
+      footer={
+        <>
+          Already have an account? <Link to="/login">Log in</Link>
+        </>
+      }
+    >
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <Input
             label="Name"
@@ -159,11 +161,6 @@ export default function Signup() {
             Create account
           </Button>
         </form>
-
-        <p className={styles.footer}>
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
-      </Card>
-    </div>
+    </AuthLayout>
   )
 }

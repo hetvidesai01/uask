@@ -1,3 +1,8 @@
+.page {
+  position: relative;
+  isolation: isolate;
+}
+
 .hero {
   padding-top: var(--sp-9);
   text-align: center;
@@ -6,7 +11,7 @@
 .kicker {
   display: block;
   margin-bottom: var(--sp-3);
-  font-size: var(--fs-xs);
+  font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -15,7 +20,7 @@
 
 .heading {
   font-family: var(--font-display);
-  font-size: var(--fs-4xl);
+  font-size: clamp(3.25rem, 8vw, 4rem);
   line-height: var(--lh-tight);
   max-width: 720px;
   margin: 0 auto var(--sp-4);
@@ -24,7 +29,7 @@
 .subtitle {
   max-width: 560px;
   margin: 0 auto var(--sp-6);
-  font-size: var(--fs-lg);
+  font-size: clamp(1.25rem, 2.6vw, 1.5rem);
   line-height: var(--lh-normal);
   color: var(--c-text-mute);
 }
@@ -41,19 +46,30 @@
   border-radius: var(--r-full);
   border: 1px solid var(--c-border);
   background-color: var(--c-surface);
-  font-size: var(--fs-sm);
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--c-text-mute);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
 }
 
 .quickLink:hover {
   border-color: var(--c-red);
+  background-color: var(--c-red-wash);
   color: var(--c-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .quickLink:hover {
+    transform: translateY(-2px);
+  }
+
+  .quickLink:active {
+    transform: scale(0.98);
+  }
 }
 
 @media (min-width: 900px) {
   .heading {
-    font-size: var(--fs-5xl);
+    font-size: clamp(3.25rem, 8vw, 4rem);
   }
 }

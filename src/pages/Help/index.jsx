@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import AnimatedBackground from '../../components/ui/AnimatedBackground'
+import { RevealGroup } from '../../components/ui/Reveal'
 import HowItWorksSection from './HowItWorksSection'
 import FaqSection from './FaqSection'
 import GuideSection from './GuideSection'
@@ -71,9 +73,11 @@ export default function Help() {
   }, [hash])
 
   return (
-    <div>
+    <div className={styles.page}>
+      {/* Existing ambient background system (blobs, rings, dots, faint lines) */}
+      <AnimatedBackground variant="shell" />
       <section className={`section ${styles.hero}`}>
-        <div className="container">
+        <RevealGroup each className="container">
           <span className={styles.kicker}>Help center</span>
           <h1 className={styles.heading}>Everything you need to use UASK well</h1>
           <p className={styles.subtitle}>
@@ -88,7 +92,7 @@ export default function Help() {
               </a>
             ))}
           </nav>
-        </div>
+        </RevealGroup>
       </section>
 
       <HowItWorksSection />

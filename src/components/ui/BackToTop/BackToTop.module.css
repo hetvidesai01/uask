@@ -1,0 +1,47 @@
+.button {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-width: 44px;
+  height: 44px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  box-shadow: var(--shadow-lift);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.button:hover {
+  background-color: var(--c-red-deep);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* Icon-only on mobile; text label from tablet up. */
+.label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .button {
+    right: var(--sp-5);
+    bottom: var(--sp-5);
+    padding-inline: var(--sp-4);
+  }
+
+  .label {
+    display: inline;
+  }
+}
