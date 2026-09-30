@@ -1,12 +1,7 @@
 import Input from '../../ui/Input'
 import Select from '../../ui/Select'
+import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
 import styles from './AskFormStep2.module.css'
-
-const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'GBP', label: 'GBP (£)' },
-]
 
 const REMOTE_OPTIONS = [
   { value: '', label: 'Choose one' },
@@ -24,7 +19,7 @@ export default function AskFormStep2({ values, errors, onChange }) {
             label="Budget minimum"
             type="number"
             min="0"
-            placeholder="$0"
+            placeholder="₹10,000"
             value={values.budgetMin}
             onChange={(e) => onChange('budgetMin', e.target.value)}
             error={errors.budgetMin}
@@ -33,7 +28,7 @@ export default function AskFormStep2({ values, errors, onChange }) {
             label="Budget maximum"
             type="number"
             min="0"
-            placeholder="$0"
+            placeholder="₹10,000"
             value={values.budgetMax}
             onChange={(e) => onChange('budgetMax', e.target.value)}
             error={errors.budgetMax}

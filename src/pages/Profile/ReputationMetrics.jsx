@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { formatCurrency } from '../../utils/formatCurrency'
+import { formatCurrency, DEFAULT_CURRENCY } from '../../utils/formatCurrency'
 import styles from './ReputationMetrics.module.css'
 
 export default function ReputationMetrics({
@@ -28,7 +28,7 @@ export default function ReputationMetrics({
 
       <div className={styles.tile}>
         <span className={styles.label}>Total Revenue</span>
-        <span className={styles.value}>{formatCurrency(revenue, 'USD')}</span>
+        <span className={styles.value}>{formatCurrency(revenue, DEFAULT_CURRENCY)}</span>
       </div>
 
       <div className={styles.tile}>

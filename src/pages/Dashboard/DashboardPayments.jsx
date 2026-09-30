@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { getContractsForUser } from '../../services/contractService'
 import { getAskById } from '../../services/askService'
 import { getUserById } from '../../services/authService'
-import { formatCurrency } from '../../utils/formatCurrency'
+import { formatCurrency, DEFAULT_CURRENCY } from '../../utils/formatCurrency'
 import { formatAbsoluteDate } from '../../utils/formatDate'
 import styles from './DashboardPayments.module.css'
 
@@ -141,7 +141,7 @@ export default function DashboardPayments() {
       {/* Always visible, even with zero contracts — derived from filtered
           (possibly empty) data, never hidden behind the empty state. */}
       <div className={styles.stats}>
-        <StatCard label="Revenue" value={formatCurrency(revenue, 'USD')} />
+        <StatCard label="Revenue" value={formatCurrency(revenue, DEFAULT_CURRENCY)} />
         <StatCard
           label="Average rating"
           value={averageRating != null ? `${averageRating.toFixed(1)} / 5` : '— / 5'}

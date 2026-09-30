@@ -3,13 +3,8 @@ import Input from '../../ui/Input'
 import Select from '../../ui/Select'
 import Button from '../../ui/Button'
 import Tag from '../../ui/Tag'
+import { CURRENCY_OPTIONS } from '../../../utils/formatCurrency'
 import styles from './OfferFormStep1.module.css'
-
-const CURRENCY_OPTIONS = [
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'GBP', label: 'GBP (£)' },
-]
 
 export default function OfferFormStep1({ values, errors, onChange }) {
   const [itemText, setItemText] = useState('')
@@ -44,7 +39,7 @@ export default function OfferFormStep1({ values, errors, onChange }) {
             label="Price"
             type="number"
             min="0"
-            placeholder="$0"
+            placeholder="₹15,000"
             value={values.price}
             onChange={(e) => onChange('price', e.target.value)}
             error={errors.price}

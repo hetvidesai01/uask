@@ -1,3 +1,4 @@
+import { DEFAULT_CURRENCY } from '../utils/formatCurrency'
 import { offers } from '../mocks/offers'
 
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -22,7 +23,7 @@ export async function createOffer(data) {
 
   const newOffer = {
     id: `offer-${offers.length + 1}`,
-    currency: 'USD',
+    currency: DEFAULT_CURRENCY,
     deliverables: [],
     attachments: [],
     status: 'pending',

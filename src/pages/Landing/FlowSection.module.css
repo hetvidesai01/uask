@@ -1,4 +1,6 @@
 .flow {
+  position: relative;
+  overflow: hidden;
   background-color: var(--c-surface-2);
   padding-block: var(--sp-6);
 }
@@ -108,16 +110,23 @@
 }
 
 .markCaption {
-  font-size: var(--fs-sm);
-  color: var(--c-text-faint);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--c-text-mute);
+}
+
+@media (min-width: 900px) {
+  .markCaption {
+    font-size: 1.375rem;
+  }
 }
 
 .rankCaption {
-  font-size: var(--fs-sm);
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--c-text-faint);
+  color: var(--c-text-mute);
   text-align: center;
   margin: calc(-1 * var(--sp-4)) 0 0;
 }
@@ -230,4 +239,90 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+@media (min-width: 900px) {
+  .rankCaption {
+    font-size: 1.0625rem;
+  }
+}
+
+/* Ambient side graphics — decorative, behind content, slow drift only. */
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .ambient {
+    display: block;
+  }
+}
+
+.ambientLeft,
+.ambientRight {
+  position: absolute;
+  width: 320px;
+  height: 560px;
+}
+
+.ambientLeft {
+  left: -40px;
+  top: 12%;
+}
+
+.ambientRight {
+  right: -30px;
+  bottom: 4%;
+}
+
+.blobA,
+.blobB,
+.driftSlow,
+.driftFast {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.blobA {
+  animation: driftA 26s ease-in-out infinite alternate;
+}
+
+.blobB {
+  animation: driftB 32s ease-in-out infinite alternate;
+}
+
+.driftSlow {
+  animation: driftA 38s ease-in-out infinite alternate;
+}
+
+.driftFast {
+  animation: driftB 28s ease-in-out infinite alternate;
+}
+
+@keyframes driftA {
+  from { transform: translate(0, 0); }
+  to { transform: translate(10px, -14px); }
+}
+
+@keyframes driftB {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-12px, 10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blobA,
+  .blobB,
+  .driftSlow,
+  .driftFast {
+    animation: none;
+  }
 }

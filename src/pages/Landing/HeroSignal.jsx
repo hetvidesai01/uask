@@ -7,9 +7,9 @@ import styles from './HeroSignal.module.css'
 // people come to you. Plays once on mount (no loop), respects
 // prefers-reduced-motion automatically via MotionConfig.
 const OFFERS = [
-  { id: 'design', top: '6%', name: 'Maya R.', role: 'Designer', price: '$450' },
-  { id: 'writing', top: '42%', name: 'Theo W.', role: 'Writer', price: '$220' },
-  { id: 'dev', top: '78%', name: 'Chen L.', role: 'Developer', price: '$600' },
+  { id: 'design', top: '6%', name: 'Maya R.', role: 'Designer', price: '₹38,000' },
+  { id: 'writing', top: '42%', name: 'Theo W.', role: 'Writer', price: '₹18,000' },
+  { id: 'dev', top: '78%', name: 'Chen L.', role: 'Developer', price: '₹52,000' },
 ]
 
 const PATHS = [

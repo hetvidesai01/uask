@@ -20,7 +20,7 @@ const OFFERS = [
   {
     id: 'diego',
     name: 'Diego M.',
-    price: '$240',
+    price: '₹20,000',
     score: 92,
     label: 'Excellent Match',
     reasons: ['Strong skill fit', '4.9★ · 6 similar projects'],
@@ -29,7 +29,7 @@ const OFFERS = [
   {
     id: 'amara',
     name: 'Amara O.',
-    price: '$280',
+    price: '₹23,000',
     score: 74,
     label: 'Strong Match',
     reasons: ['Great portfolio fit', '4.7★ rating'],
@@ -38,7 +38,7 @@ const OFFERS = [
   {
     id: 'priya',
     name: 'Priya N.',
-    price: '$310',
+    price: '₹26,000',
     score: 58,
     label: 'Relevant',
     reasons: ['Quote fits budget', 'New to this category'],
@@ -60,7 +60,36 @@ export default function FlowSection() {
 
   return (
     <section id="how-it-works" className={`section ${styles.flow}`}>
-      <div className="container">
+      <div className={styles.ambient} aria-hidden="true">
+        <svg className={`${styles.ambientLeft}`} viewBox="0 0 320 560" fill="none">
+          <path className={styles.blobA} d="M60 90c50-50 140-40 170 20s-10 130-80 140S10 190 60 90Z" fill="var(--c-pink)" opacity="0.35" />
+          <g className={styles.driftSlow} stroke="var(--c-red)" strokeWidth="1.2" opacity="0.5">
+            <circle cx="120" cy="330" r="30" />
+            <circle cx="120" cy="330" r="60" opacity="0.6" />
+            <circle cx="120" cy="330" r="92" opacity="0.35" />
+          </g>
+          <path d="M30 470C110 400 160 500 260 420" stroke="var(--c-red)" strokeWidth="1" strokeDasharray="3 6" opacity="0.4" />
+          <g className={styles.driftFast} fill="var(--c-red)">
+            <circle cx="260" cy="420" r="4" opacity="0.6" />
+            <circle cx="190" cy="150" r="3" opacity="0.5" />
+            <circle cx="40" cy="250" r="2.5" opacity="0.5" />
+          </g>
+        </svg>
+        <svg className={`${styles.ambientRight}`} viewBox="0 0 320 560" fill="none">
+          <path className={styles.blobB} d="M240 380c-60 60-170 40-190-30s60-120 130-110 110 90 60 140Z" fill="var(--c-pink)" opacity="0.3" />
+          <g className={styles.driftFast} stroke="var(--c-red)" strokeWidth="1.2" opacity="0.5">
+            <circle cx="210" cy="120" r="22" />
+            <circle cx="210" cy="120" r="48" opacity="0.55" />
+          </g>
+          <path d="M290 40C210 120 250 230 130 290" stroke="var(--c-red)" strokeWidth="1" strokeDasharray="3 6" opacity="0.4" />
+          <g className={styles.driftSlow} fill="var(--c-red)">
+            <circle cx="130" cy="290" r="4" opacity="0.6" />
+            <circle cx="270" cy="470" r="3" opacity="0.5" />
+            <circle cx="90" cy="60" r="2.5" opacity="0.45" />
+          </g>
+        </svg>
+      </div>
+      <div className={`container ${styles.content}`}>
         <div className={styles.headingRow}>
           <h2 className={styles.heading}>How UASK works</h2>
           <p className={styles.subheading}>

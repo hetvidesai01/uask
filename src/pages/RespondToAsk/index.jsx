@@ -16,13 +16,14 @@ import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getAskById, incrementResponseCount } from '../../services/askService'
 import { getOffersForAsk, createOffer } from '../../services/offerService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
+import { DEFAULT_CURRENCY } from '../../utils/formatCurrency'
 import styles from './RespondToAsk.module.css'
 
 const STEPS = ['Your offer', "Why you're a fit", 'Review']
 
 const DEFAULT_VALUES = {
   price: '',
-  currency: 'USD',
+  currency: DEFAULT_CURRENCY,
   deliveryDays: '',
   deliverables: [],
   pitch: '',

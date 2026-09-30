@@ -15,6 +15,7 @@ import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getCategories, createAsk } from '../../services/askService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
+import { DEFAULT_CURRENCY } from '../../utils/formatCurrency'
 import styles from './CreateAsk.module.css'
 
 const DRAFT_KEY = 'uask.draft.createAsk'
@@ -26,7 +27,7 @@ const DEFAULT_VALUES = {
   description: '',
   budgetMin: '',
   budgetMax: '',
-  currency: 'USD',
+  currency: DEFAULT_CURRENCY,
   deadline: '',
   location: '',
   isRemote: '',

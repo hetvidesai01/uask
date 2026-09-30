@@ -4,6 +4,7 @@ import Select from '../../ui/Select'
 import Input from '../../ui/Input'
 import Button from '../../ui/Button'
 import Tag from '../../ui/Tag'
+import { formatCurrency } from '../../../utils/formatCurrency'
 import styles from './AskFilters.module.css'
 
 const BADGE_SPRING = { type: 'spring', stiffness: 500, damping: 22 }
@@ -35,8 +36,8 @@ const FILTER_LABELS = {
   status: (value) => STATUS_OPTIONS.find((o) => o.value === value)?.label,
   isRemote: (value) => REMOTE_OPTIONS.find((o) => o.value === value)?.label,
   location: (value) => `Near "${value}"`,
-  budgetMin: (value) => `Min $${value}`,
-  budgetMax: (value) => `Max $${value}`,
+  budgetMin: (value) => `Min ${formatCurrency(Number(value))}`,
+  budgetMax: (value) => `Max ${formatCurrency(Number(value))}`,
   postedWithin: (value) => POSTED_OPTIONS.find((o) => o.value === value)?.label,
 }
 
@@ -144,7 +145,7 @@ export default function AskFilters({ categories, filters, onFilterChange, onRese
                 label="Min budget"
                 type="number"
                 min="0"
-                placeholder="$0"
+                placeholder="₹0"
                 value={filters.budgetMin || ''}
                 onChange={(e) => onFilterChange('budgetMin', e.target.value)}
               />
