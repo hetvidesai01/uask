@@ -148,7 +148,7 @@ def test_list_notifications(client: TestClient):
 
     item = inbox["items"][0]
     assert set(item.keys()) == NOTIFICATION_KEYS
-    assert item["type"] == "ask_new_offer"
+    assert item["type"] == "offer_received"
     assert item["title"] == "New offer received"
     assert item["body"] == f"Fast Provider submitted an offer on {ask['title']}"
     assert item["link"] == f"/app/asks/{ask['id']}"
@@ -305,7 +305,7 @@ def test_offer_notifications(client: TestClient):
     # New offer received → ASK owner.
     offer_a = _create_offer(client, provider_a, ask["id"])
     inbox = _list(client, owner_headers)
-    assert [n["type"] for n in inbox["items"]] == ["ask_new_offer"]
+    assert [n["type"] for n in inbox["items"]] == ["offer_received"]
 
     # Shortlisted → provider only.
     _set_offer_status(client, owner_headers, offer_a["id"], "shortlisted")
@@ -362,7 +362,7 @@ def test_message_notifications(client: TestClient):
     # Baselines from the offer lifecycle: thread creation is silent.
     owner_inbox = _list(client, owner)
     provider_inbox = _list(client, provider)
-    assert [n["type"] for n in owner_inbox["items"]] == ["ask_new_offer"]
+    assert [n["type"] for n in owner_inbox["items"]] == ["offer_received"]
     assert [n["type"] for n in provider_inbox["items"]] == ["offer_accepted"]
     owner_base = owner_inbox["total"]
     provider_base = provider_inbox["total"]
@@ -377,7 +377,7 @@ def test_message_notifications(client: TestClient):
     inbox = _list(client, owner)
     assert inbox["total"] == owner_base + 1
     item = inbox["items"][0]
-    assert item["type"] == "new_message"
+    assert item["type"] == "message"
     assert item["title"] == "New message"
     assert item["body"] == (
         "Thread Provider: The files are ready for review."
@@ -398,7 +398,7 @@ def test_message_notifications(client: TestClient):
     assert _list(client, owner)["total"] == owner_base + 1
     inbox = _list(client, provider)
     assert inbox["total"] == provider_base + 1
-    assert inbox["items"][0]["type"] == "new_message"
+    assert inbox["items"][0]["type"] == "message"
     assert inbox["items"][0]["link"] == f"/app/messages/{thread_id}"
 
     # Outsiders see nothing.

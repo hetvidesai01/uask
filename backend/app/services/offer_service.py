@@ -238,7 +238,7 @@ def update_offer(
 
 
 def _accept_offer(db: Session, offer: Offer) -> OfferResponse:
-    """Accept one offer atomically: lock, verify, accept, reject, close."""
+    """Accept one offer atomically: lock, verify, accept, reject, mark ASK."""
     # Lock order: ask first — serializes all concurrent accept attempts.
     ask = offer_repo.lock_ask(db, offer.ask_id)
     if ask is None:
@@ -250,7 +250,11 @@ def _accept_offer(db: Session, offer: Offer) -> OfferResponse:
             "An offer has already been accepted for this ASK.",
             code="OFFER_ALREADY_ACCEPTED",
         )
-    if ask.status in (AskStatus.closed, AskStatus.cancelled):
+    if ask.status in (
+        AskStatus.accepted,
+        AskStatus.closed,
+        AskStatus.cancelled,
+    ):
         raise ConflictError(
             "This ASK is no longer accepting offers.", code="ASK_NOT_OPEN"
         )
@@ -271,7 +275,7 @@ def _accept_offer(db: Session, offer: Offer) -> OfferResponse:
         locked.status = OfferStatus.accepted
         for other in competing:
             other.status = OfferStatus.rejected
-        ask.status = AskStatus.closed
+        ask.status = AskStatus.accepted
         db.flush()
         # Messaging opens with the accepted transaction: one thread,
         # between ASK owner and provider, created in this same commit.

@@ -703,9 +703,9 @@ def test_accept_offer_transaction(client: TestClient):
         offer_c["id"]: "rejected",
     }
 
-    # ASK closed.
+    # ASK is accepted - a provider was chosen, work may proceed.
     resp = client.get(f"{API}/asks/{ask['id']}", headers=owner_headers)
-    assert resp.json()["status"] == "closed"
+    assert resp.json()["status"] == "accepted"
 
 
 def test_accept_then_second_accept_conflicts(client: TestClient):
@@ -834,12 +834,12 @@ def test_concurrent_accept_only_one_wins(client: TestClient):
     assert not errors, errors
     assert sorted(results) == ["OFFER_ALREADY_ACCEPTED", "accepted"]
 
-    # Exactly one accepted, one rejected, ASK closed.
+    # Exactly one accepted, one rejected, ASK accepted.
     resp = client.get(f"{API}/asks/{ask['id']}/offers", headers=owner_headers)
     statuses = sorted(item["status"] for item in resp.json()["items"])
     assert statuses == ["accepted", "rejected"]
     resp = client.get(f"{API}/asks/{ask['id']}", headers=owner_headers)
-    assert resp.json()["status"] == "closed"
+    assert resp.json()["status"] == "accepted"
 
 
 # --------------------------------------------------------------------------

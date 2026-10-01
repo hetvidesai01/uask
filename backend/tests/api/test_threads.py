@@ -198,7 +198,7 @@ def test_thread_created_after_acceptance(client: TestClient):
         assert set(participant.keys()) == USER_PUBLIC_KEYS
     assert set(thread["ask"].keys()) == ASK_REF_KEYS
     assert thread["ask"]["id"] == ask["id"]
-    assert thread["ask"]["status"] == "closed"
+    assert thread["ask"]["status"] == "accepted"
     assert thread["lastMessage"] is None
     assert thread["unreadCount"] == 0
     assert thread["createdAt"] and thread["updatedAt"]

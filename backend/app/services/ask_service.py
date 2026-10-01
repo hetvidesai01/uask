@@ -108,9 +108,13 @@ def update_ask(
         raise ForbiddenError(
             "Only the ASK owner may update this ASK.", code="NOT_ASK_OWNER"
         )
-    if ask.status in (AskStatus.closed, AskStatus.cancelled):
+    if ask.status in (
+        AskStatus.accepted,
+        AskStatus.closed,
+        AskStatus.cancelled,
+    ):
         raise ConflictError(
-            "Closed or cancelled ASKs cannot be updated.",
+            "Accepted, closed or cancelled ASKs cannot be updated.",
             code="ASK_NOT_EDITABLE",
         )
 

@@ -204,7 +204,8 @@ def _seed(session: Session) -> None:
     users = [alice, bob, carol, dave, erin, frank]
 
     # --- asks ----------------------------------------------------------
-    # 5 open, 2 closed with accepted offers, 1 cancelled — all 8 categories.
+    # 5 open, 1 accepted (work in progress), 1 closed (finished),
+    # 1 cancelled — all 8 categories.
     ask_logo = _make_ask(
         alice,
         title="Design a logo and brand kit for a new bakery",
@@ -301,7 +302,7 @@ def _seed(session: Session) -> None:
         category="Tutoring",
         budget_min="80",
         budget_max="200",
-        status=AskStatus.closed,
+        status=AskStatus.accepted,
         created_days_ago=24,
         deadline_days=-10,
         location="Round Rock, TX",
@@ -354,8 +355,8 @@ def _seed(session: Session) -> None:
 
     # --- offers --------------------------------------------------------
     # ask_logo has 4 live offers (compare endpoint supports up to 4).
-    # Both closed asks have an accepted offer and rejected competitors.
-    # The accepted offers drive the seeded messaging threads below.
+    # The accepted ask and the closed ask each have an accepted offer and
+    # rejected competitors. The accepted offers drive the seeded threads.
     photo_accept = _make_offer(
         ask_photo,
         carol,
@@ -660,6 +661,7 @@ def _seed(session: Session) -> None:
         AskStatus.open,
         AskStatus.matched,
         AskStatus.in_review,
+        AskStatus.accepted,
         AskStatus.closed,
         AskStatus.cancelled,
     )

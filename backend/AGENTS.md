@@ -56,23 +56,45 @@ Authoritative design doc: [`UASK_BACKEND_BLUEPRINT.md`](../UASK_BACKEND_BLUEPRIN
 
 ## Phase status — do not redo completed work
 
-**Completed:**
+**Completed — blueprint §12:**
 
-- **Phase 1 — Skeleton (done):** project layout, `config.py`, `db/session.py`, `db/base.py`, `main.py` + CORS, `GET /health`, Alembic init, migration `001` (pgcrypto/citext), `pyproject.toml` installable, `scripts/`, `docker-compose.yml`, local `.env` + running Postgres.
-- Phase 1 is committed on branch `backend` (see git log: Phase 1 skeleton + FastAPI setup fix).
+- **Phases 1–7 (done):** skeleton, core plumbing, auth + users, asks, offers, notifications, messaging. All covered by the API test suite.
+- **Phase 8 — Uploads (partial):** `POST /uploads`, local disk backend behind `app/storage` interface. Still open: `attachments` table, Supabase Storage backend.
+- **Phase 9 — Hardening (partial):** full test suite, seed script, README. Still open: rate limiting on auth routes, structured logging, CI, deploy.
+- **Phase 10 — AI matching (not started):** no `matching_service.py`, no `GET /asks/{id}/matches`.
+- **Backend Contract Alignment — Phase 1 (done):** ASK `accepted` state, canonical notification names, `lastMessage` object, pagination envelope, currency set. Migration `70311ae197b1`. Contract checks live in `tests/api/test_contract_alignment.py`.
 
 **Rules:**
 
-- Do **not** rebuild or re-commit Phase 1.
+- Do **not** rebuild or re-commit completed phases.
 - Do **not** invent a different folder layout than the blueprint.
-- Migrations live in `backend/alembic/versions/` (not `migrations/`).
+- Migrations live in `backend/alembic/versions/` (not `migrations/`). Never edit an applied migration — add a new one.
+- Do **not** start a later phase (connections, matching, contracts, search, payments, deployment) without being asked.
 
-**Next phase:**
+**Next phase:** awaiting instruction. Read the frozen contract section below before touching frontend-facing behavior.
 
-- **Phase 2 — Core plumbing:** `app/core/enums.py`, `app/core/exceptions.py` + handlers, `app/schemas/base.py` (`CamelModel`), `app/core/pagination.py`, `app/repositories/base.py`, request-ID middleware.
-- **Done when:** a deliberate error returns the exact error envelope from blueprint §4 (`{error: {code, message, details, requestId}}`).
+## Frozen frontend contract — source of truth
 
-Then Phase 3 (Auth + User), 4 (Asks), 5 (Offers), 6 (Notifications), 7 (Messaging), 8 (Uploads), 9 (Hardening), 10 (AI matching) — per blueprint §12.
+Decided in Backend Contract Alignment Phase 1. The frontend contract wins over the blueprint where they disagree.
+
+| Area | Decision |
+|---|---|
+| ASK lifecycle | `open`, `matched`, `in_review`, `accepted`, `closed`, plus backend-only `cancelled` (kept, never removed). Accepting an offer sets **`accepted`** — a provider was chosen and work may proceed. `closed` is reserved for finished work. |
+| Offer eligibility | Only `open` ASKs accept new offers; anything else → 409 `ASK_NOT_OPEN`. |
+| Accepted ASK edits | An `accepted` ASK is immutable, like `closed`/`cancelled` → 409 `ASK_NOT_EDITABLE`. |
+| Accept transaction | One atomic transaction: offer accepted, competing offers rejected, ASK → `accepted`, thread created, notifications emitted. Never split into separate commits. |
+| Notification types | Canonical on the wire: `offer_received`, `offer_shortlisted`, `offer_accepted`, `offer_rejected`, `ask_matched`, `message`. The API emits these directly — no per-service mapping layer. `ask_closing_soon` and `system` remain as extra backend values. |
+| Thread shape | `lastMessage` is an object `{id, body, senderId, createdAt}` or `null`, never a string. The frontend service adapter normalizes/uses this object at integration time. |
+| Pagination | `{items, page, pageSize, total, totalPages, hasNext}` on every list endpoint. Never a bare array. Adapters unwrap `items`. |
+| Currency | `INR`, `USD`, `EUR`, default `INR`. Generic ISO-4217 3-letter validation stays; no new currencies this phase. |
+
+### Future product rules — preserve, do not implement yet
+
+- **Matching ranks only actual responders** to an ASK — never the whole provider directory.
+- **Connections are instant** — no pending or approval state.
+- **Connected users may start or reuse the UASK chat thread** for that ASK.
+
+Not built yet: connections, connected-user chat changes, contact privacy fields, responder ranking, contracts, milestones, search, preferences, premium/payments, Supabase uploads, deployment.
 
 ## Commands
 
