@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_active_user, get_db
@@ -11,6 +11,7 @@ from app.schemas.thread import (
     MessageCreate,
     MessagePage,
     MessageResponse,
+    ThreadCreate,
     ThreadResponse,
 )
 from app.services import message_service, thread_service
@@ -31,6 +32,27 @@ def list_threads(
     return thread_service.list_threads(
         db, current_user=current_user, page=page, page_size=page_size
     )
+
+
+@router.post(
+    "/threads",
+    response_model=ThreadResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_thread(
+    payload: ThreadCreate,
+    db: DbDep,
+    current_user: CurrentUser,
+    response: Response,
+) -> ThreadResponse:
+    """Direct chat with a connected user — idempotent per pair."""
+    thread, created = thread_service.create_direct_thread(
+        db, payload, current_user=current_user
+    )
+    if not created:
+        response.status_code = status.HTTP_200_OK
+    return thread
+
 
 
 @router.get("/threads/{thread_id}", response_model=ThreadResponse)

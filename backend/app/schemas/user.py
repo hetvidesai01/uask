@@ -6,6 +6,7 @@ from pydantic import Field, field_serializer, field_validator
 
 from app.core.enums import UserRole
 from app.schemas.base import CamelModel
+from app.utils.validators import EMAIL_RE as _EMAIL_RE
 from app.utils.validators import normalize_categories
 
 
@@ -37,6 +38,10 @@ class UserUpdate(CamelModel):
     location: str | None = Field(default=None, max_length=120)
     categories: list[str] = Field(default=None, max_length=10)
     roles: list[UserRole] = Field(default=None, min_length=1)
+    # Nullable private contact/social details — null clears them.
+    linkedin: str | None = Field(default=None, max_length=200)
+    instagram: str | None = Field(default=None, max_length=100)
+    contact_email: str | None = Field(default=None, max_length=255)
 
     @field_validator("name")
     @classmethod
@@ -44,6 +49,29 @@ class UserUpdate(CamelModel):
         if not v.strip():
             raise ValueError("name must not be blank.")
         return v.strip()
+
+    @field_validator("linkedin", "instagram")
+    @classmethod
+    def strip_social_handle(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            raise ValueError("value must not be blank — send null to clear.")
+        return v
+
+    @field_validator("contact_email")
+    @classmethod
+    def validate_contact_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            raise ValueError("contactEmail must not be blank — send null to clear.")
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Invalid email address.")
+        return v
+
 
     @field_validator("categories")
     @classmethod
@@ -106,7 +134,18 @@ class UserResponse(UserBase):
     is_active: bool = True
     joined_at: datetime
     updated_at: datetime
+    linkedin: str | None = None
+    instagram: str | None = None
+    contact_email: str | None = None
 
     @field_serializer("rating")
     def _serialize_rating(self, value: Decimal) -> float:
         return float(value)
+
+
+class ContactDetails(CamelModel):
+    """GET /users/{id}/contact — served only to the owner or connections."""
+
+    linkedin: str | None = None
+    instagram: str | None = None
+    contact_email: str | None = None

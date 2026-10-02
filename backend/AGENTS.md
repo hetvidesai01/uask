@@ -63,13 +63,14 @@ Authoritative design doc: [`UASK_BACKEND_BLUEPRINT.md`](../UASK_BACKEND_BLUEPRIN
 - **Phase 9 — Hardening (partial):** full test suite, seed script, README. Still open: rate limiting on auth routes, structured logging, CI, deploy.
 - **Phase 10 — AI matching (not started):** no `matching_service.py`, no `GET /asks/{id}/matches`.
 - **Backend Contract Alignment — Phase 1 (done):** ASK `accepted` state, canonical notification names, `lastMessage` object, pagination envelope, currency set. Migration `70311ae197b1`. Contract checks live in `tests/api/test_contract_alignment.py`.
+- **Backend Contract Alignment — Phase 2 (done):** instant connections (`connections` table, no pending state), connected-user chat via `POST /threads`, private contact/social fields (`linkedin`, `instagram`, `contactEmail`) with owner-or-connection read access. Migration `810496335b61`. Contract checks live in `tests/api/test_connections.py` + `tests/api/test_contact_privacy.py`.
 
 **Rules:**
 
 - Do **not** rebuild or re-commit completed phases.
 - Do **not** invent a different folder layout than the blueprint.
 - Migrations live in `backend/alembic/versions/` (not `migrations/`). Never edit an applied migration — add a new one.
-- Do **not** start a later phase (connections, matching, contracts, search, payments, deployment) without being asked.
+- Do **not** start a later phase (matching, contracts, search, payments, deployment) without being asked.
 
 **Next phase:** awaiting instruction. Read the frozen contract section below before touching frontend-facing behavior.
 
@@ -87,14 +88,16 @@ Decided in Backend Contract Alignment Phase 1. The frontend contract wins over t
 | Thread shape | `lastMessage` is an object `{id, body, senderId, createdAt}` or `null`, never a string. The frontend service adapter normalizes/uses this object at integration time. |
 | Pagination | `{items, page, pageSize, total, totalPages, hasNext}` on every list endpoint. Never a bare array. Adapters unwrap `items`. |
 | Currency | `INR`, `USD`, `EUR`, default `INR`. Generic ISO-4217 3-letter validation stays; no new currencies this phase. |
+| Connections | Instant — one `connections` row per unordered pair (`user_a_id < user_b_id`), no pending/approval state. `POST /connections {toUserId}` → 201 first time, 200 on repeat (same id). `GET /connections/status/{targetUserId}` → `{status: self\|none\|connected, connectionId}`. `DELETE /connections/{id}` → 204, participants only. |
+| Connected chat | `POST /threads {participantId}` opens a direct chat for a connected pair only (403 `NOT_CONNECTED`, 422 `SELF_THREAD`, 404 `USER_NOT_FOUND`) → 201 new / 200 existing thread. One thread per pair is reused, including accept-created threads: on acceptance an existing unbound direct thread is bound to the ASK/offer instead of duplicating. |
+| Contact privacy | `linkedin`, `instagram`, `contactEmail` are writable only through `PATCH /users/{id}` (owner/admin) and readable only via `GET /users/{id}/contact` by the owner or a connection — everyone else gets 403 `NOT_CONNECTED`. They never appear in `UserProfile` (`GET /users/{id}`) or `UserPublic` embeddings. |
 
 ### Future product rules — preserve, do not implement yet
 
 - **Matching ranks only actual responders** to an ASK — never the whole provider directory.
-- **Connections are instant** — no pending or approval state.
 - **Connected users may start or reuse the UASK chat thread** for that ASK.
 
-Not built yet: connections, connected-user chat changes, contact privacy fields, responder ranking, contracts, milestones, search, preferences, premium/payments, Supabase uploads, deployment.
+Not built yet: responder ranking, contracts, milestones, search, preferences, premium/payments, Supabase uploads, deployment.
 
 ## Commands
 

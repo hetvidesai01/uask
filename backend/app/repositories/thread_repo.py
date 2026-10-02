@@ -3,10 +3,38 @@
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, aliased, joinedload, selectinload
 
 from app.models.ask import Ask
 from app.models.thread import Thread, ThreadParticipant
+
+
+def _both_members(user_a: UUID, user_b: UUID):  # noqa: ANN202
+    """Threads where both users participate, most recently updated first."""
+    pa = aliased(ThreadParticipant)
+    pb = aliased(ThreadParticipant)
+    return (
+        select(Thread)
+        .join(pa, pa.thread_id == Thread.id)
+        .join(pb, pb.thread_id == Thread.id)
+        .where(pa.user_id == user_a, pb.user_id == user_b)
+        .order_by(Thread.updated_at.desc(), Thread.id.desc())
+    )
+
+
+def find_between(session: Session, user_a: UUID, user_b: UUID) -> Thread | None:
+    """Any thread shared by both users (direct or ASK/offer bound)."""
+    return session.scalar(_both_members(user_a, user_b))
+
+
+def find_unbound_between(
+    session: Session, user_a: UUID, user_b: UUID
+) -> Thread | None:
+    """A direct thread with no ASK/offer — safe to bind on acceptance."""
+    stmt = _both_members(user_a, user_b).where(
+        Thread.ask_id.is_(None), Thread.offer_id.is_(None)
+    )
+    return session.scalar(stmt)
 
 
 def get_thread(session: Session, thread_id: UUID) -> Thread | None:

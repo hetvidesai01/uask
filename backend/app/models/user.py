@@ -51,6 +51,10 @@ class User(Base):
     )
     bio: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     location: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # Private contact/social details — owner and connected users only.
+    linkedin: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    instagram: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     categories: Mapped[list[str]] = mapped_column(
         ARRAY(Text),
         nullable=False,

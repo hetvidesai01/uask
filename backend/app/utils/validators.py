@@ -1,5 +1,9 @@
 """Fixed value lists shared by Ask and User schemas."""
 
+import re
+
+EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+
 ALLOWED_CATEGORIES: tuple[str, ...] = (
     "Design",
     "Writing",

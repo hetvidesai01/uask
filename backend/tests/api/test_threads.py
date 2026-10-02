@@ -209,14 +209,34 @@ def test_thread_created_after_acceptance(client: TestClient):
     assert provider_inbox["items"][0]["id"] == thread["id"]
 
 
-def test_no_manual_thread_creation(client: TestClient):
-    headers, _ = _signup(client, ["seeker"])
+def test_thread_creation_requires_connection(client: TestClient):
+    headers, user_id = _signup(client, ["seeker"])
+    _, other_id = _signup(client, ["provider"], name="Not Connected")
+
+    # Connected chat only — an unknown or unconnected target is rejected.
+    resp = client.post(
+        f"{API}/threads",
+        json={"participantId": other_id},
+        headers=headers,
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CONNECTED"
+
+    resp = client.post(
+        f"{API}/threads",
+        json={"participantId": user_id},
+        headers=headers,
+    )
+    assert resp.status_code == 422
+    assert _error_code(resp) == "SELF_THREAD"
+
     resp = client.post(
         f"{API}/threads",
         json={"participantId": str(uuid.uuid4())},
         headers=headers,
     )
-    assert resp.status_code == 405
+    assert resp.status_code == 404
+    assert _error_code(resp) == "USER_NOT_FOUND"
 
 
 def test_duplicate_prevention(client: TestClient, db: Session):

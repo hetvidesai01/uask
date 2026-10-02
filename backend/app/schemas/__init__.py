@@ -8,6 +8,13 @@ from app.schemas.ask import (
 from app.schemas.auth import AuthResponse, LoginRequest, RefreshResponse, SignupRequest
 from app.schemas.base import CamelModel
 from app.schemas.common import AttachmentRef, ErrorResponse, Page, PageMeta
+from app.schemas.connection import (
+    ConnectionCountResponse,
+    ConnectionCreate,
+    ConnectionResponse,
+    ConnectionStatus,
+    ConnectionStatusResponse,
+)
 from app.schemas.notification import NotificationResponse
 from app.schemas.offer import OfferCreate, OfferResponse, OfferStatusUpdate, OfferUpdate
 from app.schemas.thread import (
@@ -16,9 +23,11 @@ from app.schemas.thread import (
     MessagePage,
     MessageResponse,
     ThreadAskRef,
+    ThreadCreate,
     ThreadResponse,
 )
 from app.schemas.user import (
+    ContactDetails,
     PasswordUpdate,
     UserCreate,
     UserProfile,
@@ -36,6 +45,12 @@ __all__ = [
     "AttachmentRef",
     "AuthResponse",
     "CamelModel",
+    "ConnectionCountResponse",
+    "ConnectionCreate",
+    "ConnectionResponse",
+    "ConnectionStatus",
+    "ConnectionStatusResponse",
+    "ContactDetails",
     "ErrorResponse",
     "LastMessagePreview",
     "LoginRequest",
@@ -53,6 +68,7 @@ __all__ = [
     "RefreshResponse",
     "SignupRequest",
     "ThreadAskRef",
+    "ThreadCreate",
     "ThreadResponse",
     "UserCreate",
     "UserPublic",

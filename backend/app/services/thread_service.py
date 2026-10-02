@@ -4,14 +4,19 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ForbiddenError, NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError, ValidationError
 from app.core.pagination import Page, PageParams, build_page
 from app.models.ask import Ask
 from app.models.offer import Offer
 from app.models.thread import Thread, ThreadParticipant
 from app.models.user import User
-from app.repositories import message_repo, thread_repo
-from app.schemas.thread import LastMessagePreview, ThreadAskRef, ThreadResponse
+from app.repositories import connection_repo, message_repo, thread_repo
+from app.schemas.thread import (
+    LastMessagePreview,
+    ThreadAskRef,
+    ThreadCreate,
+    ThreadResponse,
+)
 from app.schemas.user import UserPublic
 
 
@@ -20,10 +25,21 @@ def ensure_thread_for_accept(db: Session, *, ask: Ask, offer: Offer) -> Thread:
 
     Runs inside the accept transaction, where the ASK row is already
     locked, so racing accepts cannot create two threads for one offer.
+    An existing direct thread between the same two users is bound to the
+    ASK/offer instead of being duplicated — its messages are preserved.
     """
     existing = thread_repo.find_by_offer(db, offer.id)
     if existing is not None:
         return existing
+
+    reusable = thread_repo.find_unbound_between(
+        db, ask.requester_id, offer.provider_id
+    )
+    if reusable is not None:
+        reusable.ask_id = ask.id
+        reusable.offer_id = offer.id
+        db.flush()
+        return reusable
 
     now = message_repo.db_now(db)
     thread = Thread(
@@ -40,6 +56,46 @@ def ensure_thread_for_accept(db: Session, *, ask: Ask, offer: Offer) -> Thread:
     db.add(thread)
     db.flush()
     return thread
+
+
+def create_direct_thread(
+    db: Session, payload: ThreadCreate, *, current_user: User
+) -> tuple[ThreadResponse, bool]:
+    """Open a direct chat between two connected users.
+
+    Returns (response, created) — an existing thread between the pair is
+    returned unchanged so repeated calls never duplicate conversations.
+    """
+    participant_id = payload.participant_id
+    if participant_id == current_user.id:
+        raise ValidationError(
+            "You cannot start a chat with yourself.", code="SELF_THREAD"
+        )
+    if db.get(User, participant_id) is None:
+        raise NotFoundError("User not found.", code="USER_NOT_FOUND")
+    if (
+        connection_repo.find_pair(db, current_user.id, participant_id) is None
+    ):
+        raise ForbiddenError(
+            "You can only start a chat with someone you are connected to.",
+            code="NOT_CONNECTED",
+        )
+
+    existing = thread_repo.find_between(db, current_user.id, participant_id)
+    if existing is not None:
+        return get_thread(db, existing.id, current_user=current_user), False
+
+    now = message_repo.db_now(db)
+    thread = Thread(ask_id=None, offer_id=None, created_at=now, updated_at=now)
+    for user_id in dict.fromkeys((current_user.id, participant_id)):
+        thread.participants.append(
+            ThreadParticipant(user_id=user_id, last_read_at=now, joined_at=now)
+        )
+    db.add(thread)
+    db.flush()
+    response = _thread_response(thread, unread_count=0, asks={})
+    db.commit()
+    return response, True
 
 
 def require_participant(

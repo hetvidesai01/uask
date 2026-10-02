@@ -9,6 +9,12 @@ from app.schemas.base import CamelModel
 from app.schemas.user import UserPublic
 
 
+class ThreadCreate(CamelModel):
+    """POST /threads — start a direct chat with a connected user."""
+
+    participant_id: uuid.UUID
+
+
 class MessageCreate(CamelModel):
     body: str = Field(min_length=1, max_length=5000)
     attachments: list[dict[str, Any]] = Field(default_factory=list, max_length=5)
