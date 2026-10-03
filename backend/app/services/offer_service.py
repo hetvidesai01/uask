@@ -18,7 +18,7 @@ from app.models.offer import Offer
 from app.models.user import User
 from app.repositories import ask_repo, offer_repo
 from app.schemas.offer import OfferCreate, OfferResponse, OfferUpdate
-from app.services import notification_service, thread_service
+from app.services import contract_service, notification_service, thread_service
 
 MAX_COMPARE_IDS = 4
 
@@ -277,9 +277,10 @@ def _accept_offer(db: Session, offer: Offer) -> OfferResponse:
             other.status = OfferStatus.rejected
         ask.status = AskStatus.accepted
         db.flush()
-        # Messaging opens with the accepted transaction: one thread,
-        # between ASK owner and provider, created in this same commit.
+        # Messaging and the contract open with the accepted transaction:
+        # thread, contract, and initial milestones all land in this commit.
         thread_service.ensure_thread_for_accept(db, ask=ask, offer=locked)
+        contract_service.create_contract_for_accept(db, ask=ask, offer=locked)
         notification_service.notify_offer_status(
             db, ask=ask, offer=locked, status=OfferStatus.accepted
         )

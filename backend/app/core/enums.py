@@ -35,6 +35,29 @@ class OfferStatus(StrEnum):
     withdrawn = "withdrawn"
 
 
+class ContractStatus(StrEnum):
+    """Contract lifecycle. Both states are terminal-friendly: `completed`
+    never reverts, `active` is the only state where milestones move."""
+
+    active = "active"
+    completed = "completed"
+
+
+class MilestoneStatus(StrEnum):
+    """Role-gated milestone flow.
+
+    provider: upcoming -> in_progress -> submitted (or straight to submitted)
+    seeker:   submitted -> approved -> paid
+    `paid` is terminal. Mock payment state — no gateway involved.
+    """
+
+    upcoming = "upcoming"
+    in_progress = "in_progress"
+    submitted = "submitted"
+    approved = "approved"
+    paid = "paid"
+
+
 class NotificationType(StrEnum):
     """Names on the wire are the canonical frontend names.
 

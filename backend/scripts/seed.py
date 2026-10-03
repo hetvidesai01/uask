@@ -40,6 +40,8 @@ _ALLOWED_ENVS = ("development", "test")
 
 _ALL_TABLES = (
     "connections",
+    "milestones",
+    "contracts",
     "thread_participants",
     "messages",
     "threads",

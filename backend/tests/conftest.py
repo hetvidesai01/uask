@@ -40,6 +40,8 @@ TestingSessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=Fals
 
 _TABLES = [
     "connections",
+    "milestones",
+    "contracts",
     "thread_participants",
     "messages",
     "threads",

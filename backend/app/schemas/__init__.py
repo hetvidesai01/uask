@@ -15,6 +15,14 @@ from app.schemas.connection import (
     ConnectionStatus,
     ConnectionStatusResponse,
 )
+from app.schemas.contract import (
+    CompletedContractResponse,
+    ContractResponse,
+    MilestoneResponse,
+    MilestoneStatusUpdate,
+    RatingCreate,
+    ReputationResponse,
+)
 from app.schemas.matching import MatchLabel, MatchStrength, RankedResponse
 from app.schemas.notification import NotificationResponse
 from app.schemas.offer import OfferCreate, OfferResponse, OfferStatusUpdate, OfferUpdate
@@ -46,12 +54,14 @@ __all__ = [
     "AttachmentRef",
     "AuthResponse",
     "CamelModel",
+    "CompletedContractResponse",
     "ConnectionCountResponse",
     "ConnectionCreate",
     "ConnectionResponse",
     "ConnectionStatus",
     "ConnectionStatusResponse",
     "ContactDetails",
+    "ContractResponse",
     "ErrorResponse",
     "LastMessagePreview",
     "LoginRequest",
@@ -60,6 +70,8 @@ __all__ = [
     "MessageCreate",
     "MessagePage",
     "MessageResponse",
+    "MilestoneResponse",
+    "MilestoneStatusUpdate",
     "NotificationResponse",
     "OfferCreate",
     "OfferResponse",
@@ -69,7 +81,9 @@ __all__ = [
     "PageMeta",
     "PasswordUpdate",
     "RankedResponse",
+    "RatingCreate",
     "RefreshResponse",
+    "ReputationResponse",
     "SignupRequest",
     "ThreadAskRef",
     "ThreadCreate",
