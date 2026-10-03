@@ -15,6 +15,7 @@ from app.schemas.connection import (
     ConnectionStatus,
     ConnectionStatusResponse,
 )
+from app.schemas.matching import MatchLabel, MatchStrength, RankedResponse
 from app.schemas.notification import NotificationResponse
 from app.schemas.offer import OfferCreate, OfferResponse, OfferStatusUpdate, OfferUpdate
 from app.schemas.thread import (
@@ -54,6 +55,8 @@ __all__ = [
     "ErrorResponse",
     "LastMessagePreview",
     "LoginRequest",
+    "MatchLabel",
+    "MatchStrength",
     "MessageCreate",
     "MessagePage",
     "MessageResponse",
@@ -65,6 +68,7 @@ __all__ = [
     "Page",
     "PageMeta",
     "PasswordUpdate",
+    "RankedResponse",
     "RefreshResponse",
     "SignupRequest",
     "ThreadAskRef",

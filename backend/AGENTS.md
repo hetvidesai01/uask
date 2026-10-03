@@ -61,16 +61,17 @@ Authoritative design doc: [`UASK_BACKEND_BLUEPRINT.md`](../UASK_BACKEND_BLUEPRIN
 - **Phases 1–7 (done):** skeleton, core plumbing, auth + users, asks, offers, notifications, messaging. All covered by the API test suite.
 - **Phase 8 — Uploads (partial):** `POST /uploads`, local disk backend behind `app/storage` interface. Still open: `attachments` table, Supabase Storage backend.
 - **Phase 9 — Hardening (partial):** full test suite, seed script, README. Still open: rate limiting on auth routes, structured logging, CI, deploy.
-- **Phase 10 — AI matching (not started):** no `matching_service.py`, no `GET /asks/{id}/matches`.
+- **Phase 10 — AI matching (not started):** no embedding/ML model, no `GET /asks/{id}/matches`. Contract responder ranking exists (see Phase 3) but directory-wide AI matching does not.
 - **Backend Contract Alignment — Phase 1 (done):** ASK `accepted` state, canonical notification names, `lastMessage` object, pagination envelope, currency set. Migration `70311ae197b1`. Contract checks live in `tests/api/test_contract_alignment.py`.
 - **Backend Contract Alignment — Phase 2 (done):** instant connections (`connections` table, no pending state), connected-user chat via `POST /threads`, private contact/social fields (`linkedin`, `instagram`, `contactEmail`) with owner-or-connection read access. Migration `810496335b61`. Contract checks live in `tests/api/test_connections.py` + `tests/api/test_contact_privacy.py`.
+- **Backend Contract Alignment — Phase 3 (done):** deterministic responder ranking in `app/services/matching_service.py` behind `GET /asks/{askId}/ranked-responses` (owner-only) and `GET /me/recommended-asks?limit=6` (provider role). No migration — no new tables or columns. Contract checks live in `tests/api/test_ranking.py`, scoring rules in `tests/unit/test_matching_scoring.py`.
 
 **Rules:**
 
 - Do **not** rebuild or re-commit completed phases.
 - Do **not** invent a different folder layout than the blueprint.
 - Migrations live in `backend/alembic/versions/` (not `migrations/`). Never edit an applied migration — add a new one.
-- Do **not** start a later phase (matching, contracts, search, payments, deployment) without being asked.
+- Do **not** start a later phase (contracts, search, payments, deployment) without being asked.
 
 **Next phase:** awaiting instruction. Read the frozen contract section below before touching frontend-facing behavior.
 
@@ -91,13 +92,15 @@ Decided in Backend Contract Alignment Phase 1. The frontend contract wins over t
 | Connections | Instant — one `connections` row per unordered pair (`user_a_id < user_b_id`), no pending/approval state. `POST /connections {toUserId}` → 201 first time, 200 on repeat (same id). `GET /connections/status/{targetUserId}` → `{status: self\|none\|connected, connectionId}`. `DELETE /connections/{id}` → 204, participants only. |
 | Connected chat | `POST /threads {participantId}` opens a direct chat for a connected pair only (403 `NOT_CONNECTED`, 422 `SELF_THREAD`, 404 `USER_NOT_FOUND`) → 201 new / 200 existing thread. One thread per pair is reused, including accept-created threads: on acceptance an existing unbound direct thread is bound to the ASK/offer instead of duplicating. |
 | Contact privacy | `linkedin`, `instagram`, `contactEmail` are writable only through `PATCH /users/{id}` (owner/admin) and readable only via `GET /users/{id}/contact` by the owner or a connection — everyone else gets 403 `NOT_CONNECTED`. They never appear in `UserProfile` (`GET /users/{id}`) or `UserPublic` embeddings. |
+| Ranked responses | `GET /asks/{askId}/ranked-responses` → bare `RankedResponse[]` for the **ASK owner only** (403 `NOT_ASK_OWNER`, 404 `ASK_NOT_FOUND`, 401). **Bare-array exception:** the contract specifies `[]` plus `?limit=`, so this endpoint skips the pagination envelope (documented deviation). Only offers actually submitted to that ASK are ranked. Deterministic weights (total 100): category relevance 30, similar projects 25, rating/reviews 15, budget fit 10, timeline fit 10, profile completeness 10. Signals that do not exist yet score a neutral 50 and `similarProjectCount` is reported as `null` — never faked. Labels: ≥80 `Excellent Match`, ≥55 `Strong Match`, else `Relevant` (half-up rounding). `reasons` ≤3, favorable factors only. `strength` superlatives (`Best value`, `Fastest delivery`, `Highest rated`, `Strongest portfolio fit`) only when ≥2 responses and only for the unique holder. Sort: score desc → rating desc → price asc → createdAt asc → offer id. Read-only: never selects a winner, writes no statuses, emits no notifications. |
+| Recommended ASKs | `GET /me/recommended-asks?limit=6` (`limit` 1–50) → bare `Ask[]`: open ASKs whose category matches the provider's own categories, excluding the provider's own ASKs and ASKs they already answered; newest first. 403 `FORBIDDEN` for non-provider roles, 401 unauthenticated, `[]` when the provider has no categories. Discovery only — never auto-responds. |
 
 ### Future product rules — preserve, do not implement yet
 
-- **Matching ranks only actual responders** to an ASK — never the whole provider directory.
+- **Provider-directory matching (`GET /asks/{id}/matches`) ranks the whole directory** — still not implemented. Phase 3 ranks only the actual responders to an ASK, never the directory.
 - **Connected users may start or reuse the UASK chat thread** for that ASK.
 
-Not built yet: responder ranking, contracts, milestones, search, preferences, premium/payments, Supabase uploads, deployment.
+Not built yet: contracts, milestones, search, preferences, premium/payments, Supabase uploads, deployment, provider-directory matches.
 
 ## Commands
 

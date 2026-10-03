@@ -90,6 +90,18 @@ def get_by_ids_for_ask(
     return list(session.scalars(stmt).all())
 
 
+def list_live_with_providers(session: Session, ask_id: UUID) -> list[Offer]:
+    """Every response submitted to an ASK, with providers eagerly loaded."""
+    stmt = (
+        select(Offer)
+        .where(Offer.ask_id == ask_id, Offer.deleted_at.is_(None))
+        .options(joinedload(Offer.provider))
+        .order_by(Offer.created_at.asc(), Offer.id.asc())
+    )
+    return list(session.scalars(stmt).unique().all())
+
+
+
 def accepted_exists(session: Session, ask_id: UUID) -> bool:
     """True if any live offer on the ASK is already accepted."""
     stmt = select(Offer.id).where(

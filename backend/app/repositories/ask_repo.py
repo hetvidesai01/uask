@@ -113,3 +113,34 @@ def get_ask(session: Session, ask_id: UUID) -> tuple[Ask, int] | None:
         .options(joinedload(Ask.requester))
     )
     return session.execute(stmt).unique().one_or_none()
+
+
+def list_recommended(
+    session: Session,
+    *,
+    provider_id: UUID,
+    categories: list[str],
+    limit: int = 6,
+) -> list[tuple[Ask, int]]:
+    """Open ASKs in the provider's own categories that they neither created
+    nor responded to. Discovery only — no scoring happens in SQL."""
+    if not categories:
+        return []
+    responded = select(Offer.ask_id).where(
+        Offer.provider_id == provider_id, Offer.deleted_at.is_(None)
+    )
+    stmt = (
+        select(Ask, _response_count_subq())
+        .where(
+            Ask.deleted_at.is_(None),
+            Ask.status == AskStatus.open,
+            Ask.requester_id != provider_id,
+            ~Ask.id.in_(responded),
+            func.lower(Ask.category).in_([c.strip().lower() for c in categories]),
+        )
+        .options(joinedload(Ask.requester))
+        .order_by(Ask.created_at.desc(), Ask.id.desc())
+        .limit(limit)
+    )
+    return list(session.execute(stmt).unique().all())
+
