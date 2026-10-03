@@ -26,6 +26,7 @@ from app.schemas.contract import (
 from app.schemas.matching import MatchLabel, MatchStrength, RankedResponse
 from app.schemas.notification import NotificationResponse
 from app.schemas.offer import OfferCreate, OfferResponse, OfferStatusUpdate, OfferUpdate
+from app.schemas.search import SearchResults
 from app.schemas.thread import (
     LastMessagePreview,
     MessageCreate,
@@ -84,6 +85,7 @@ __all__ = [
     "RatingCreate",
     "RefreshResponse",
     "ReputationResponse",
+    "SearchResults",
     "SignupRequest",
     "ThreadAskRef",
     "ThreadCreate",
