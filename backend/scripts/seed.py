@@ -39,6 +39,7 @@ SEED_PASSWORD = "password123"
 _ALLOWED_ENVS = ("development", "test")
 
 _ALL_TABLES = (
+    "attachments",
     "connections",
     "milestones",
     "contracts",

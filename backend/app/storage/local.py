@@ -1,4 +1,7 @@
-"""Local-disk storage: files live under ``UPLOAD_DIR``, served from ``/media``."""
+"""Local-disk storage: files live under ``UPLOAD_DIR``, served from ``/media``.
+
+Development/testing fallback only — production uses ``STORAGE_PROVIDER=supabase``.
+"""
 
 from pathlib import Path
 
@@ -23,10 +26,16 @@ class LocalDiskStorage(StorageBackend):
         path.write_bytes(data)
         return StoredFile(
             key=key,
-            url=f"{self.public_prefix}/{key}",
+            url=self.get_public_url(key),
             size=len(data),
             content_type=content_type,
         )
+
+    def delete(self, key: str) -> None:
+        (self.directory / self._safe_key(key)).unlink(missing_ok=True)
+
+    def get_public_url(self, key: str) -> str:
+        return f"{self.public_prefix}/{self._safe_key(key)}"
 
     @staticmethod
     def _safe_key(key: str) -> str:

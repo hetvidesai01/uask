@@ -39,6 +39,7 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 _TABLES = [
+    "attachments",
     "connections",
     "milestones",
     "contracts",

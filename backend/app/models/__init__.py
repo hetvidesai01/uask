@@ -1,4 +1,5 @@
 from app.models.ask import Ask
+from app.models.attachment import Attachment
 from app.models.connection import Connection
 from app.models.contract import Contract, Milestone
 from app.models.notification import Notification
@@ -9,6 +10,7 @@ from app.models.user import User
 
 __all__ = [
     "Ask",
+    "Attachment",
     "Connection",
     "Contract",
     "Message",

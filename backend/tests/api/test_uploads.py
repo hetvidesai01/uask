@@ -23,14 +23,23 @@ CSV = b"item,price\nlogo,500\n"
 ACCEPTED = [
     ("photo.png", PNG, "image/png"),
     ("scan.jpg", JPEG, "image/jpeg"),
-    ("anim.gif", GIF, "image/gif"),
     ("art.webp", WEBP, "image/webp"),
     ("brief.pdf", PDF, "application/pdf"),
+]
+
+REJECTED = [
+    ("anim.gif", GIF, "image/gif"),
     ("notes.txt", TEXT, "text/plain"),
     ("prices.csv", CSV, "text/csv"),
     ("assets.zip", ZIP, "application/zip"),
     ("report.docx", ZIP, "application/vnd.openxmlformats-"
      "officedocument.wordprocessingml.document"),
+    ("setup.exe", PNG, "application/x-msdownload"),
+    ("page.html", PNG, "text/html"),
+    ("icon.svg", PNG, "image/svg+xml"),
+    ("script.js", PNG, "text/javascript"),
+    ("photo.png", PNG, "application/octet-stream"),
+    ("photo.png", PNG, ""),
 ]
 
 
@@ -114,22 +123,12 @@ def test_accepted_content_types(
     assert resp.status_code == 201, resp.text
 
 
-@pytest.mark.parametrize(
-    ("filename", "content_type"),
-    [
-        ("setup.exe", "application/x-msdownload"),
-        ("page.html", "text/html"),
-        ("icon.svg", "image/svg+xml"),
-        ("script.js", "text/javascript"),
-        ("photo.png", "application/octet-stream"),
-        ("photo.png", ""),
-    ],
-)
+@pytest.mark.parametrize(("filename", "data", "content_type"), REJECTED)
 def test_unsupported_content_types_rejected(
-    client: TestClient, filename: str, content_type: str
+    client: TestClient, filename: str, data: bytes, content_type: str
 ):
     headers, _ = _signup(client, ["seeker"])
-    resp = _upload(client, headers, filename, PNG, content_type)
+    resp = _upload(client, headers, filename, data, content_type)
     assert resp.status_code == 422
     assert _error_code(resp) == "UNSUPPORTED_FILE_TYPE"
 
@@ -139,7 +138,8 @@ def test_unsupported_content_types_rejected(
     [
         ("notes.pdf", "image/png"),
         ("photo.png", "application/pdf"),
-        ("data.zip", "text/plain"),
+        ("art.webp", "image/png"),
+        ("scan.jpg", "image/webp"),
     ],
 )
 def test_extension_must_match_declared_type(
@@ -164,16 +164,9 @@ def test_unsafe_binary_content_rejected(client: TestClient):
     assert _error_code(resp) == "UNSAFE_FILE"
 
 
-def test_text_with_null_bytes_rejected(client: TestClient):
-    headers, _ = _signup(client, ["seeker"])
-    resp = _upload(client, headers, "notes.txt", b"hi\x00there", "text/plain")
-    assert resp.status_code == 422
-    assert _error_code(resp) == "UNSAFE_FILE"
-
-
 def test_empty_file_rejected(client: TestClient):
     headers, _ = _signup(client, ["seeker"])
-    resp = _upload(client, headers, "empty.txt", b"", "text/plain")
+    resp = _upload(client, headers, "empty.png", b"", "image/png")
     assert resp.status_code == 422
     assert _error_code(resp) == "VALIDATION_ERROR"
 
@@ -182,7 +175,7 @@ def test_oversized_file_rejected(client: TestClient, monkeypatch):
     monkeypatch.setattr(get_settings(), "UPLOAD_MAX_MB", 1)
     headers, _ = _signup(client, ["seeker"])
     blob = b"a" * (1024 * 1024 + 1)
-    resp = _upload(client, headers, "big.txt", blob, "text/plain")
+    resp = _upload(client, headers, "big.png", blob, "image/png")
     assert resp.status_code == 413
     assert _error_code(resp) == "FILE_TOO_LARGE"
 

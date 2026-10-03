@@ -56,6 +56,12 @@ class PayloadTooLargeError(AppError):
     message = "File is too large."
 
 
+class StorageError(AppError):
+    status_code = 502
+    code = "STORAGE_ERROR"
+    message = "File storage operation failed."
+
+
 class InvalidTransitionError(ConflictError):
     code = "INVALID_STATUS_TRANSITION"
     message = "Invalid status transition."

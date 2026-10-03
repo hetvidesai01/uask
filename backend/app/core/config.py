@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     ENV: str = "development"
     COOKIE_SECURE: bool = False
     COOKIE_DOMAIN: str | None = None
-    UPLOAD_BACKEND: str = "local"
+    STORAGE_PROVIDER: str = "local"
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_STORAGE_BUCKET: str = ""
     UPLOAD_MAX_MB: int = 10
     UPLOAD_DIR: str = "uploads"
 
