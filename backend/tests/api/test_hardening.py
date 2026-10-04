@@ -285,3 +285,29 @@ def test_production_app_hides_interactive_docs():
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "None None None"
+
+
+def test_staging_env_exposes_docs_when_opted_in():
+    """DOCS_ENABLED=true keeps Swagger available on a ENV=production host."""
+    backend = Path(app_main.__file__).resolve().parents[1]
+    env = {
+        **os.environ,
+        "ENV": "production",
+        "DOCS_ENABLED": "true",
+        "JWT_SECRET": "p" * 48,
+        "LOG_LEVEL": "WARNING",
+    }
+    script = (
+        "from app.main import app; "
+        "print(app.docs_url, app.redoc_url, app.openapi_url)"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=backend,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "/docs /redoc /openapi.json"

@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"
+    # None = default (docs hidden when ENV=production). Staging sets true,
+    # hardened prod can force false — either way the choice is explicit.
+    DOCS_ENABLED: bool | None = None
     COOKIE_SECURE: bool = False
     COOKIE_DOMAIN: str | None = None
     # Trust X-Forwarded-For (Render/Railway/nginx) for per-client rate keys.
@@ -68,6 +71,29 @@ class Settings(BaseSettings):
     RATE_LIMIT_MESSAGE_WINDOW_SECONDS: int = 60
 
     model_config = {"env_file": ".env", "extra": "ignore"}
+
+    @field_validator("DATABASE_URL", "TEST_DATABASE_URL", mode="before")
+    @classmethod
+    def _normalize_postgres_scheme(cls, value: object) -> object:
+        """Render/Railway hand out ``postgres://``; SQLAlchemy 2 needs a driver.
+
+        Without this the process dies with ``NoSuchModuleError`` the moment it
+        connects (psycopg2 is not installed — we speak psycopg 3).
+        """
+        if not isinstance(value, str):
+            return value
+        url = value.strip()
+        for legacy in ("postgres://", "postgresql://"):
+            if url.startswith(legacy):
+                return "postgresql+psycopg://" + url[len(legacy) :]
+        return url
+
+    @field_validator("DOCS_ENABLED", mode="before")
+    @classmethod
+    def _empty_docs_flag_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @field_validator("CORS_ORIGINS")
     @classmethod
@@ -148,6 +174,14 @@ class Settings(BaseSettings):
     @property
     def is_development(self) -> bool:
         return self.ENV.lower() in {"development", "dev", ""}
+
+    @property
+    def docs_exposed(self) -> bool:
+        """Interactive API docs: an explicit DOCS_ENABLED wins, else the
+        production default hides them (staging opts in with true)."""
+        if self.DOCS_ENABLED is not None:
+            return self.DOCS_ENABLED
+        return not self.is_production
 
     @property
     def log_level(self) -> str:

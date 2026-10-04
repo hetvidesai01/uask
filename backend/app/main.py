@@ -37,13 +37,14 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("application shutdown", extra={"event": "shutdown"})
 
 
-# Production serves no interactive API docs (see AGENTS.md Phase 7).
+# API docs follow settings.docs_exposed: hidden in production by default,
+# staging/production can force them on/off with DOCS_ENABLED (AGENTS.md P8).
 app = FastAPI(
     title="UASK API",
     lifespan=_lifespan,
-    docs_url=None if settings.is_production else "/docs",
-    redoc_url=None if settings.is_production else "/redoc",
-    openapi_url=None if settings.is_production else "/openapi.json",
+    docs_url="/docs" if settings.docs_exposed else None,
+    redoc_url="/redoc" if settings.docs_exposed else None,
+    openapi_url="/openapi.json" if settings.docs_exposed else None,
 )
 
 app.add_middleware(RequestIDMiddleware)

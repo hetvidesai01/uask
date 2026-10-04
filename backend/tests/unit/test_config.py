@@ -99,3 +99,54 @@ def test_env_example_holds_placeholders_only():
 def test_env_file_is_gitignored():
     gitignore = (_backend_path() / ".gitignore").read_text(encoding="utf-8")
     assert ".env" in gitignore.split()
+
+
+# --------------------------------------------------------------------------
+# Phase 8 — deployment compatibility
+# --------------------------------------------------------------------------
+
+
+def test_paas_postgres_scheme_is_normalized():
+    """Render hands out postgres:// — SQLAlchemy 2 + psycopg 3 needs a driver."""
+    settings = _settings(
+        DATABASE_URL="postgres://uask:secret@db.internal:5432/uask?sslmode=require"
+    )
+    assert settings.DATABASE_URL == (
+        "postgresql+psycopg://uask:secret@db.internal:5432/uask?sslmode=require"
+    )
+
+
+def test_bare_postgresql_scheme_gains_the_psycopg_driver():
+    settings = _settings(DATABASE_URL="postgresql://uask:secret@db:5432/uask")
+    assert settings.DATABASE_URL == (
+        "postgresql+psycopg://uask:secret@db:5432/uask"
+    )
+
+
+def test_driver_qualified_url_is_untouched():
+    url = "postgresql+psycopg://uask:uask@localhost:5432/uask"
+    assert _settings(DATABASE_URL=url).DATABASE_URL == url
+
+
+def test_test_database_url_is_normalized_too():
+    settings = _settings(TEST_DATABASE_URL="postgres://uask:pw@db/uask_test")
+    assert settings.TEST_DATABASE_URL.startswith("postgresql+psycopg://")
+
+
+def test_docs_default_matches_environment():
+    assert _settings(ENV="production").docs_exposed is False
+    assert _settings(ENV="development").docs_exposed is True
+
+
+def test_docs_flag_forces_docs_on_in_production():
+    settings = _settings(ENV="production", DOCS_ENABLED=True)
+    assert settings.docs_exposed is True
+
+
+def test_docs_flag_forces_docs_off_in_development():
+    settings = _settings(ENV="development", DOCS_ENABLED=False)
+    assert settings.docs_exposed is False
+
+
+def test_empty_docs_flag_string_means_unset():
+    assert _settings(DOCS_ENABLED="").DOCS_ENABLED is None

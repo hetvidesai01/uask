@@ -1,0 +1,70 @@
+# Render blueprint — UASK backend staging (see backend/DEPLOYMENT.md).
+#
+# Deploy: Render dashboard → New → Blueprint → connect this repository →
+# Render parses this file → review (adjust plans if rejected) → Apply.
+# Values marked `sync: false` are prompted for during setup.
+#
+# Fallback: if the blueprint path misbehaves, create the services manually
+# in the dashboard — DEPLOYMENT.md has the full step-by-step + env var table.
+
+databases:
+  - name: uask-staging-db
+    plan: free # if Render rejects 'free', pick the cheapest available plan
+    region: oregon
+    databaseName: uask
+    user: uask
+    postgresMajorVersion: 16 # matches local docker-compose (postgres:16)
+
+services:
+  - type: web
+    name: uask-backend-staging
+    runtime: python
+    rootDir: backend # monorepo: frontend lives at the repo root
+    plan: free # sleeps after inactivity; upgrade if you need always-on
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: sh scripts/start.sh # alembic upgrade head, then uvicorn — no --reload
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.11"
+      - key: ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true # Render-generated, never committed
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+      - key: DOCS_ENABLED
+        value: "true" # staging exposes /docs (see AGENTS.md Phase 8)
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: DATABASE_URL
+        fromDatabase:
+          name: uask-staging-db
+          # External works on every plan; switch to InternalDatabaseConnection
+          # if you upgrade and want the private-network path.
+          propertyName: ExternalDatabaseConnection
+      - key: CORS_ORIGINS
+        value: http://localhost:5173 # local Vite dev origin
+      - key: FRONTEND_URL
+        sync: false # future deployed frontend origin (also CORS-allowed)
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: BEHIND_PROXY
+        value: "true" # trust Render's X-Forwarded-For / proxy headers
+      - key: WEB_CONCURRENCY
+        value: "1" # one worker on the 512MB free instance
+      - key: STORAGE_PROVIDER
+        value: supabase # never local: Render's disk is ephemeral
+      - key: SUPABASE_URL
+        sync: false # https://PROJECT.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Supabase → Project Settings → API → service_role
+      - key: SUPABASE_STORAGE_BUCKET
+        sync: false # e.g. uask-uploads (public bucket)
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
