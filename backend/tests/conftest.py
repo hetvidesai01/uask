@@ -15,6 +15,9 @@ os.environ["DATABASE_URL"] = (
 os.environ["TEST_DATABASE_URL"] = (
     "postgresql+psycopg://uask:uask@localhost:5432/uask_test"
 )
+# Rate limiting stays off for the shared suite (every test shares one IP);
+# tests/api/test_rate_limiting.py switches it on explicitly.
+os.environ["RATE_LIMIT_ENABLED"] = "false"
 # Uploaded test files never touch the repo's dev uploads directory.
 os.environ["UPLOAD_DIR"] = os.path.join(
     tempfile.gettempdir(), "uask-test-uploads"
@@ -25,6 +28,7 @@ from app.core.config import get_settings  # noqa: E402
 get_settings.cache_clear()
 
 from app.core.deps import get_db  # noqa: E402
+from app.core.ratelimit import reset_rate_limits  # noqa: E402
 from app.main import app  # noqa: E402
 
 settings = get_settings()
@@ -69,6 +73,14 @@ def clean_db() -> Generator[None, None, None]:
     _truncate_all()
     yield
     _truncate_all()
+
+
+@pytest.fixture(autouse=True)
+def clean_rate_limits() -> Generator[None, None, None]:
+    """Isolated counters per test — limits are opt-in via monkeypatch."""
+    reset_rate_limits()
+    yield
+    reset_rate_limits()
 
 
 @pytest.fixture(scope="session", autouse=True)

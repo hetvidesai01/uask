@@ -62,6 +62,23 @@ class StorageError(AppError):
     message = "File storage operation failed."
 
 
+class RateLimitError(AppError):
+    status_code = 429
+    code = "RATE_LIMITED"
+    message = "Too many requests. Please try again shortly."
+
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        retry_after: int = 60,
+        code: str | None = None,
+        details: Any = None,
+    ) -> None:
+        super().__init__(message, code=code, details=details)
+        self.retry_after = max(1, int(retry_after))
+
+
 class InvalidTransitionError(ConflictError):
     code = "INVALID_STATUS_TRANSITION"
     message = "Invalid status transition."

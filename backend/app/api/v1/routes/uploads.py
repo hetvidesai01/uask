@@ -14,6 +14,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_active_user, get_db
+from app.core.ratelimit import user_rate_limit
 from app.models.user import User
 from app.schemas.common import AttachmentRef
 from app.services import upload_service
@@ -22,6 +23,7 @@ router = APIRouter(tags=["uploads"])
 
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
 DbDep = Annotated[Session, Depends(get_db)]
+UploadLimit = Annotated[str, Depends(user_rate_limit("upload"))]
 
 
 @router.post(
@@ -32,6 +34,7 @@ DbDep = Annotated[Session, Depends(get_db)]
 def upload_file(
     db: DbDep,
     current_user: CurrentUser,
+    _rate_limit: UploadLimit,
     file: Annotated[UploadFile, File(...)],
     entity_type: Annotated[str | None, Form(alias="entityType")] = None,
     entity_id: Annotated[str | None, Form(alias="entityId")] = None,

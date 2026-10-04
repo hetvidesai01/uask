@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_active_user, get_db
 from app.core.pagination import Page
+from app.core.ratelimit import user_rate_limit
 from app.models.user import User
 from app.schemas.thread import (
     MessageCreate,
@@ -20,6 +21,7 @@ router = APIRouter(tags=["threads"])
 
 DbDep = Annotated[Session, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
+MessageLimit = Annotated[str, Depends(user_rate_limit("message"))]
 
 
 @router.get("/threads", response_model=Page[ThreadResponse])
@@ -91,6 +93,7 @@ def send_message(
     payload: MessageCreate,
     db: DbDep,
     current_user: CurrentUser,
+    _rate_limit: MessageLimit,
 ) -> MessageResponse:
     return message_service.send_message(
         db, thread_id, payload, current_user=current_user

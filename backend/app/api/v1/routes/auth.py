@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.deps import get_current_active_user, get_db
+from app.core.ratelimit import ip_rate_limit
 from app.core.security import REFRESH_COOKIE_NAME
 from app.models.user import User
 from app.schemas.auth import AuthResponse, LoginRequest, RefreshResponse, SignupRequest
@@ -15,6 +16,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 DbDep = Annotated[Session, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
+SignupLimit = Annotated[str, Depends(ip_rate_limit("signup"))]
+LoginLimit = Annotated[str, Depends(ip_rate_limit("login"))]
+RefreshLimit = Annotated[str, Depends(ip_rate_limit("refresh"))]
 
 
 def _cookie_flags() -> dict:
@@ -46,6 +50,7 @@ def _clear_refresh_cookie(response: Response) -> None:
 
 @router.post("/signup", response_model=AuthResponse, status_code=201)
 def signup(
+    _rate_limit: SignupLimit,
     payload: SignupRequest,
     db: DbDep,
     response: Response,
@@ -57,6 +62,7 @@ def signup(
 
 @router.post("/login", response_model=AuthResponse)
 def login(
+    _rate_limit: LoginLimit,
     payload: LoginRequest,
     db: DbDep,
     response: Response,
@@ -68,6 +74,7 @@ def login(
 
 @router.post("/refresh", response_model=RefreshResponse)
 def refresh(
+    _rate_limit: RefreshLimit,
     request: Request,
     db: DbDep,
     response: Response,
