@@ -47,7 +47,7 @@ services:
           name: uask-staging-db
           # External works on every plan; switch to InternalDatabaseConnection
           # if you upgrade and want the private-network path.
-          propertyName: ExternalDatabaseConnection
+          propertyName: connectionString
       - key: CORS_ORIGINS
         value: http://localhost:5173 # local Vite dev origin
       - key: FRONTEND_URL
