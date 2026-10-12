@@ -148,6 +148,7 @@ export default function CompareResponses() {
           currency: updated.currency,
           deliverables: updated.deliverables,
           deliveryDays: updated.deliveryDays,
+          scope: ask?.description,
         })
         showToast('Offer accepted — contract started.')
         navigate(`/app/asks/${askId}/contract`)

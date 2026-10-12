@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ContractLink from '../../components/contract/ContractLink'
+import { getContractsForUser } from '../../services/contractService'
 import { motion } from 'framer-motion'
 import { Reveal, RevealGroup } from '../../components/ui/Reveal'
 import MotionCard from '../../components/ui/MotionCard'
@@ -95,6 +97,7 @@ export default function DashboardOverview() {
   const [myOffers, setMyOffers] = useState([])
   const [askTitlesById, setAskTitlesById] = useState({})
   const [receivedOffers, setReceivedOffers] = useState([])
+  const [contractsByAskId, setContractsByAskId] = useState({})
   const [activeTab, setActiveTab] = useState('asks')
   const didSetDefaultTab = useRef(false)
 
@@ -102,9 +105,10 @@ export default function DashboardOverview() {
     if (!user) return
     setStatus('loading')
     try {
-      const [asks, offers] = await Promise.all([
+      const [asks, offers, myContracts] = await Promise.all([
         getAsks({ requesterId: user.id }),
         getOffersByProviderId(user.id),
+        getContractsForUser(user.id),
       ])
 
       const offerAskIds = [...new Set(offers.map((offer) => offer.askId))]
@@ -125,6 +129,7 @@ export default function DashboardOverview() {
       setMyOffers(offers)
       setAskTitlesById(titles)
       setReceivedOffers(receivedByAsk.flat())
+      setContractsByAskId(Object.fromEntries(myContracts.map((c) => [c.askId, c])))
       setStatus('done')
 
       if (!didSetDefaultTab.current) {
@@ -201,6 +206,13 @@ export default function DashboardOverview() {
         </div>
       </Reveal>
 
+      {/* TEMPORARY testing shortcut — remove after Contract UI review. */}
+      <Reveal>
+        <Button as={Link} to="/app/asks/ask-7/contract">
+          Open Demo Contract
+        </Button>
+      </Reveal>
+
       <RevealGroup className={styles.stats}>
         <StatCard icon="🗂️" label="Active ASKs" value={activeAsksCount} />
         <StatCard icon="📨" label="Responses received" value={responsesReceivedCount} />
@@ -237,6 +249,7 @@ export default function DashboardOverview() {
                     <MotionCard lift={2}>
                       <AskCard ask={ask} />
                     </MotionCard>
+                    <ContractLink contract={contractsByAskId[ask.id]} />
                   </Reveal>
                 ))}
               </RevealGroup>
@@ -265,6 +278,7 @@ export default function DashboardOverview() {
                         {ask && <AskStatusBadge status={ask.status} />}
                       </Link>
                       <OfferCard offer={offer} provider={user} />
+                      <ContractLink contract={contractsByAskId[offer.askId]} />
                     </Reveal>
                   )
                 })}

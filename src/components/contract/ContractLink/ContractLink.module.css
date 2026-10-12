@@ -1,0 +1,28 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+}
+
+.compact {
+  margin-top: 0;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-3);
+  flex-shrink: 0;
+}
+
+.link {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-red-accent);
+}
+
+.link:hover {
+  color: var(--c-red-deep);
+}

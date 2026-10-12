@@ -1,5 +1,7 @@
 # UASK — API Contract (frontend freeze checkpoint)
 
+> **Freeze exception:** the frontend remains frozen except for the explicitly approved Contract workflow revision (§9).
+
 What the **current frontend** expects from a backend. Derived from `src/services/*` and `src/mocks/*` — each
 service function below is the exact swap point; its signature and return shape are what pages already depend on.
 Pages never call `mocks/` directly, so a backend only needs to replace service bodies.
@@ -215,33 +217,84 @@ Inbox unread badge = unread notifications + unread thread messages (computed cli
 
 ## 9. Contracts / Milestones / Payments
 
+Demo/prototype contract flow: **ASK → Respond → Select → Contract Draft → Both Agree & Sign → 25% → ~60% progress →
+50% → Final completion → 25% → Complete.** No real escrow, payments, signatures, penalties or refunds exist — every
+"payment" is a status change. Seeker = "ASK Side", provider = "Respond Side".
+
 ```
 Contract {
   id, askId, offerId, seekerId, providerId,
   agreedPrice: number, currency,
+  scope: string,
   deliverables: string[],
-  status: 'active' | 'completed',
-  rating: number|null,          // out of 5, set once by seeker after completion
-  review: string|null,
+  deadline: ISO,
+  revisionsIncluded: number, revisionsUsed: number,
+  status: 'draft'|'awaiting_signatures'|'active'|'completed'|'cancelled'|'disputed',
+  signatures: { seeker: {signed, signedAt: ISO|null}, provider: {signed, signedAt: ISO|null} },
+  progressPercent: 0|25|60|100,
+  ownership: 'transfer_on_final_payment'|'custom',
+  portfolioPermission: 'allowed'|'not_allowed'|'ask_first',
+  confidentiality: boolean,
+  fees: { clientPlatformFeePct: number, freelancerCommissionPct: number },   // demo/mock-driven rates
+  editCount: number, editFeesTotal: number,                                   // demo, never charged
+  pendingChange: { id, kind:'edit'|'amendment'|'dispute_correction', changes: Partial<editable fields>,
+                   note: string|null, proposedBy:'seeker'|'provider', proposedAt: ISO,
+                   editNumber: number|null, fee: number } | null,
+  cancellationRequest: { by:'seeker'|'provider', at: ISO } | null,
+  dispute: { reason, description: string|null, raisedBy:'seeker'|'provider', raisedAt: ISO } | null,
+  previousStatus: string|null,                                                // status restored when a dispute is withdrawn
+  rating: number|null, review: string|null,                                  // out of 5, set once by seeker after completion
   createdAt: ISO, completedAt: ISO|null,
-  milestones: Milestone[]
+  milestones: PaymentStage[],                                                 // always exactly 3: initial, progress, final
+  history: { id, actor:'ASK Side'|'Respond Side'|'System', action: string, at: ISO }[]
 }
-Milestone { id, title, description, amount: number, dueDate: ISO,
-            status: 'upcoming'|'in_progress'|'submitted'|'approved'|'paid' }
+PaymentStage { id, stage:'initial'|'progress'|'final', title, description, percent: 25|50|25, amount: number,
+               dueDate: ISO, status:'upcoming'|'in_progress'|'submitted'|'approved'|'paid', paidAt: ISO|null }
 ```
-Milestone flow: `upcoming/in_progress → submitted` (**provider** action) `→ approved` (**seeker**) `→ paid`
-(**seeker**, mock payment). `paid` is the only terminal/settled state. Contract: `active` until the seeker marks
-it completed; rating/review set once after completion.
+- **Draft → active:** a contract is generated as `draft` when the seeker selects an offer. First signature →
+  `awaiting_signatures`; both signed → `active`. An approved edit while still `draft`/`awaiting_signatures` resets both
+  signatures to unsigned (`draft`); edits after `active` keep signatures.
+- **Payment stages** split `agreedPrice` 25/50/25 (`round(25%)`, `round(50%)`, remainder on `final`). Flow:
+  `initial`: `upcoming → paid` (seeker, after `active`). `progress`/`final`: `upcoming/in_progress → submitted`
+  (**provider**; progress requires `progressPercent ≥ 60`, final requires `progressPercent = 100` and progress stage
+  `paid`) `→ approved` (**seeker**) `→ paid` (**seeker**, demo). A revision request sends `submitted → in_progress`
+  and increments `revisionsUsed` (rejected when exhausted). Marking `final` paid completes the contract
+  (`completed`, `completedAt`). `paid` is the only settled state, so reputation math is unchanged (milestones = stages).
+- **UI payment state** is derived: Not Due / Due / Awaiting Approval (`submitted`) / Paid / Disputed (contract
+  `disputed` and stage not paid).
+- **Progress** (`progressPercent`) only moves forward through 25 → 60 → 100 (provider); moving past 60 requires the
+  progress stage `approved`/`paid`.
+- **Edits:** every change is a proposal the *other* party approves. `kind` is `edit` before `progressPercent` reaches
+  60, `amendment` at/after 60, `dispute_correction` while `disputed` (amendment/correction require a `note`; price cannot
+  change once any stage is `paid`). Edits 1–2 free, then 2.5% of `agreedPrice` per edit, running total capped at 7.5%
+  (`editFeesTotal`) — a demo calculation, not charged. Approving a price/deadline change recomputes unpaid stage
+  amounts/due dates.
+- **Cancellation** is a request (`cancellationRequest`) the other party accepts (→ `cancelled`) or declines; nothing is
+  terminated or charged automatically (up-to-5% early-termination language is informational only).
+- **Dispute** (`active → disputed`; reasons: Work differs from agreed scope, Missed deadline, Communication issue,
+  Payment disagreement, Revision disagreement, Other) can be withdrawn by the raiser (restores `previousStatus`).
 
 | Service fn | Endpoint | Request | Response |
 |---|---|---|---|
 | `getContractsForUser(userId)` | `GET /contracts` | — | `Contract[]` (user is seeker or provider) |
 | `getContractByAskId(askId)` | `GET /asks/:askId/contract` | — | `Contract \| null` |
-| `createContract({ askId, offerId, seekerId, providerId, agreedPrice, currency, deliverables, deliveryDays })` | `POST /asks/:askId/contract` (ideally part of accept-offer) | as listed | `Contract` (idempotent per ask). Frontend builds ≤3 milestones from deliverables, amounts split evenly (remainder on last), `dueDate` spread across `deliveryDays`, all `upcoming` — backend should replicate or accept milestones explicitly |
-| `updateMilestoneStatus(contractId, milestoneId, status)` | `PATCH /contracts/:id/milestones/:mid` | `{ status }` (role-gated per flow above) | updated `Contract \| null` |
-| `markContractCompleted(contractId)` | `POST /contracts/:id/complete` | — | `Contract` (`status:'completed'`, `completedAt`) |
+| `createContract({ askId, offerId, seekerId, providerId, agreedPrice, currency, deliverables, deliveryDays, scope?, revisionsIncluded? })` | `POST /asks/:askId/contract` (ideally part of accept-offer) | as listed | `Contract` in `draft` (idempotent per ask). Frontend derives `deadline` from `deliveryDays`, `revisionsIncluded` from a "N revision/round" deliverable (default 2), and the three stages from `agreedPrice` |
+| `signContract(contractId, userId)` | `POST /contracts/:id/sign` | — | `Contract` (`awaiting_signatures` or `active`) |
+| `proposeContractChange(contractId, userId, { changes, note })` | `POST /contracts/:id/changes` | `changes`: any of `scope, deadline, revisionsIncluded, agreedPrice, ownership, portfolioPermission, confidentiality` | `Contract` (with `pendingChange`) |
+| `respondToChange(contractId, userId, decision)` | `POST /contracts/:id/changes/respond` | `decision: 'approve'\|'decline'\|'withdraw'` | `Contract` |
+| `updateProgress(contractId, userId, percent)` | `PATCH /contracts/:id/progress` | `{ percent }` (provider) | `Contract` |
+| `submitStage(contractId, userId, stage)` | `POST /contracts/:id/stages/:stage/submit` | stage `progress\|final` (provider) | `Contract` |
+| `reviewStage(contractId, userId, stage, decision)` | `POST /contracts/:id/stages/:stage/review` | `decision: 'approve'\|'revision'` (seeker) | `Contract` |
+| `markStagePaid(contractId, userId, stage)` | `POST /contracts/:id/stages/:stage/paid` | seeker, demo mark only | `Contract` |
+| `requestCancellation(contractId, userId)` / `respondToCancellation(contractId, userId, decision)` | `POST /contracts/:id/cancellation` / `…/cancellation/respond` | `decision: 'accept'\|'decline'\|'withdraw'` | `Contract` |
+| `raiseDispute(contractId, userId, { reason, description? })` / `withdrawDispute(contractId, userId)` | `POST /contracts/:id/dispute` / `DELETE …` | as listed | `Contract` |
+| `updateMilestoneStatus(contractId, milestoneId, status)` | `PATCH /contracts/:id/milestones/:mid` | `{ status }` (low-level, no role gating — superseded by the stage actions above) | updated `Contract \| null` |
+| `markContractCompleted(contractId)` | `POST /contracts/:id/complete` | — | `Contract` (`status:'completed'`, `completedAt`; normally set automatically when the final stage is paid) |
 | `rateContract(contractId, { rating, review })` | `POST /contracts/:id/rating` | `{ rating: number(0–5), review?: string }` | `Contract` |
 | `getProviderReputation(userId)` | `GET /users/:id/reputation` | — | see below |
+
+Every mutating service call throws an `Error` with a user-facing message on a role/state violation (backend: 4xx with
+a message). Contracts are mock-only: held in memory and mirrored to localStorage (`uask.mock.contracts.v1`) so demo progress survives a reload. The Contract page has a demo-only "acting as ASK Side / Respond Side" switch (it just passes the other party's id to these same calls); a real backend derives the actor from auth.
 
 ```
 Reputation {
@@ -301,7 +354,7 @@ The UI shows the upgrade teaser whenever `plan !== 'premium'`.
 - Role: `seeker | provider`
 - Ask status: `open | matched | in_review | accepted | closed`
 - Offer status: `pending | shortlisted | accepted | rejected`
-- Contract status: `active | completed`
+- Contract status: `draft | awaiting_signatures | active | completed | cancelled | disputed`
 - Milestone status: `upcoming | in_progress | submitted | approved | paid`
 - Connection status (derived): `self | none | connected`
 - Notification type: `offer_received | offer_accepted | offer_rejected | offer_shortlisted | ask_matched | message`

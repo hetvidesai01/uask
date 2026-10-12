@@ -5,7 +5,11 @@ import { SNAPPY_SPRING } from '../../../utils/motion'
 // Covers both a contract's own status and a milestone's status — 'paid'
 // and 'completed' both mean "fully done," so they share a badge look.
 const STATUS_MAP = {
+  draft: { variant: 'closed', label: 'Draft' },
+  awaiting_signatures: { variant: 'in_review', label: 'Awaiting signatures' },
   active: { variant: 'matched', label: 'Active' },
+  cancelled: { variant: 'rejected', label: 'Cancelled' },
+  disputed: { variant: 'rejected', label: 'Disputed' },
   completed: { variant: 'accepted', label: 'Completed' },
   upcoming: { variant: 'closed', label: 'Upcoming' },
   in_progress: { variant: 'matched', label: 'In progress' },

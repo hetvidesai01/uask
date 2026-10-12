@@ -12,6 +12,7 @@ import { useToast } from '../../hooks/useToast'
 import { getThreads } from '../../services/messageService'
 import { getUserById } from '../../services/authService'
 import { getAskById } from '../../services/askService'
+import { getContractsForUser } from '../../services/contractService'
 import { getNotifications, markAllAsRead, markAsRead } from '../../services/notificationService'
 import styles from './Inbox.module.css'
 
@@ -40,6 +41,7 @@ export default function Inbox() {
   const [threads, setThreads] = useState([])
   const [participantsById, setParticipantsById] = useState({})
   const [askTitlesById, setAskTitlesById] = useState({})
+  const [contractsByAskId, setContractsByAskId] = useState({})
 
   // Notifications tab state — ported from the old Notifications page.
   const [notificationsStatus, setNotificationsStatus] = useState('loading')
@@ -55,14 +57,16 @@ export default function Inbox() {
       const participantIds = [...new Set(myThreads.flatMap((thread) => thread.participantIds))]
       const askIds = [...new Set(myThreads.map((thread) => thread.askId).filter(Boolean))]
 
-      const [participants, asks] = await Promise.all([
+      const [participants, asks, myContracts] = await Promise.all([
         Promise.all(participantIds.map((id) => getUserById(id))),
         Promise.all(askIds.map((id) => getAskById(id))),
+        getContractsForUser(user.id),
       ])
 
       setThreads(myThreads)
       setParticipantsById(Object.fromEntries(participants.filter(Boolean).map((p) => [p.id, p])))
       setAskTitlesById(Object.fromEntries(asks.filter(Boolean).map((a) => [a.id, a])))
+      setContractsByAskId(Object.fromEntries(myContracts.map((c) => [c.askId, c])))
       setMessagesStatus('done')
     } catch {
       setMessagesStatus('error')
@@ -166,6 +170,7 @@ export default function Inbox() {
             threads,
             participantsById,
             askTitlesById,
+            contractsByAskId,
             currentUser: user,
             onThreadRead: markThreadReadLocally,
             onMessageSent: touchThreadLocally,

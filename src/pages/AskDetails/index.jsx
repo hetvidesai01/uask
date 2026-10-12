@@ -16,6 +16,8 @@ import { useAuth } from '../../hooks/useAuth'
 import { getAskById } from '../../services/askService'
 import { getOffersForAsk } from '../../services/offerService'
 import { getUserById } from '../../services/authService'
+import { getContractByAskId } from '../../services/contractService'
+import ContractStatusBadge from '../../components/contract/ContractStatusBadge'
 import { formatRelativeDate } from '../../utils/formatDate'
 import { getProfileHeadline } from '../../utils/profileHeadline'
 import { staggerContainer, staggerItem } from '../../utils/motion'
@@ -46,6 +48,7 @@ export default function AskDetails() {
   const [requester, setRequester] = useState(null)
   const [offers, setOffers] = useState([])
   const [providersById, setProvidersById] = useState({})
+  const [contract, setContract] = useState(null)
 
   const load = useCallback(async () => {
     setStatus('loading')
@@ -56,9 +59,10 @@ export default function AskDetails() {
         return
       }
 
-      const [foundRequester, foundOffers] = await Promise.all([
+      const [foundRequester, foundOffers, foundContract] = await Promise.all([
         getUserById(foundAsk.requesterId),
         getOffersForAsk(askId),
+        getContractByAskId(askId),
       ])
 
       const providerIds = [...new Set(foundOffers.map((offer) => offer.providerId))]
@@ -70,6 +74,7 @@ export default function AskDetails() {
       setAsk(foundAsk)
       setRequester(foundRequester)
       setOffers(foundOffers)
+      setContract(foundContract)
       setProvidersById(providerMap)
       setStatus('done')
     } catch {
@@ -125,7 +130,9 @@ export default function AskDetails() {
 
   const isOwner = user && ask.requesterId === user.id
   const myOffer = offers.find((offer) => offer.providerId === user?.id)
-  const isAcceptedParty = ask.status === 'accepted' && (isOwner || myOffer?.status === 'accepted')
+  const isContractParty = Boolean(contract) && user && (contract.seekerId === user.id || contract.providerId === user.id)
+  const isAcceptedParty =
+    isContractParty || (ask.status === 'accepted' && (isOwner || myOffer?.status === 'accepted'))
   const { summary, requirements } = splitDescription(ask.description)
 
   return (
@@ -194,9 +201,12 @@ export default function AskDetails() {
           {isAcceptedParty ? (
             <Card className={styles.contractCta}>
               <div>
-                <h2 className={styles.sectionTitle}>This project is underway</h2>
+                <h2 className={styles.sectionTitle}>
+                  {contract?.status === 'completed' ? 'This project is complete' : 'This project is underway'}
+                </h2>
+                {contract && <ContractStatusBadge status={contract.status} />}
                 <p className={styles.ctaText}>
-                  An offer has been accepted — track the contract, milestones, and payments.
+                  A response has been selected — review the contract, sign, and track payments.
                 </p>
               </div>
               <Button as={Link} to={`/app/asks/${askId}/contract`}>

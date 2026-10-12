@@ -6,6 +6,7 @@ import AskStatusBadge from '../../components/ask/AskStatusBadge'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
+import ContractLink from '../../components/contract/ContractLink'
 import MessageBubble from '../../components/messages/MessageBubble'
 import MessageComposer from '../../components/messages/MessageComposer'
 import { useToast } from '../../hooks/useToast'
@@ -15,7 +16,7 @@ import styles from './Thread.module.css'
 
 export default function Thread() {
   const { threadId } = useParams()
-  const { threads, participantsById, askTitlesById, currentUser, onThreadRead, onMessageSent } =
+  const { threads, participantsById, askTitlesById, contractsByAskId, currentUser, onThreadRead, onMessageSent } =
     useOutletContext()
   const { showToast } = useToast()
 
@@ -121,6 +122,11 @@ export default function Thread() {
   const otherId = thread.participantIds.find((id) => id !== currentUser.id)
   const participant = participantsById[otherId]
   const ask = thread.askId ? askTitlesById[thread.askId] : null
+  const linkedContract = thread.askId ? contractsByAskId?.[thread.askId] : null
+  const contractForThread =
+    linkedContract && thread.participantIds.every((id) => id === linkedContract.seekerId || id === linkedContract.providerId)
+      ? linkedContract
+      : null
 
   return (
     <motion.div
@@ -149,6 +155,7 @@ export default function Thread() {
             </Link>
           )}
         </div>
+        <ContractLink contract={contractForThread} compact />
       </div>
 
       <div className={styles.messages} ref={scrollRef}>

@@ -10,6 +10,7 @@ Full spec lives in `UASK_FRONTEND_BLUEPRINT.md`. Read that first for anything no
 - If any frontend data shape changes (service return values, record fields, enums), **`API_CONTRACT.md` must be
   updated** in the same change. It documents exactly what the frontend expects from a backend.
 - **Next major phase: backend integration** (`services/http.js` swap — service signatures stay the same).
+- **Approved exception — Contract workflow revision:** the Contract experience (page, `components/contract/`, `contractService`/mocks, and its entry points on ASK Details, Dashboard and the Inbox thread header) was redesigned under explicit user authorization: draft → both sign → 25–50–25 demo payments, ~60% progress gate, revisions, tracked edits (2 free, then 2.5%/edit capped 7.5%, demo only), history, cancellation, disputes, ownership/confidentiality, Terms drawer, demo invoice. Prototype only — no escrow, real payments or penalties. Contracts persist in localStorage (`uask.mock.contracts.v1`); the Contract page has a demo "acting as ASK Side / Respond Side" switch. Everything else stays frozen. Test: log in as `priya@example.com` → `/app/asks/ask-7/contract`.
 - This supersedes the "Light redesign phases" plan below for scheduling purposes: don't start Phase 4+ redesign
   work unless explicitly requested.
 

@@ -1,0 +1,757 @@
+/* Contract experience — panels, signing, payment schedule, progress, history,
+   terms. Shares tokens with Contract.module.css; mobile-first. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  min-width: 0;
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.panelTitle {
+  font-size: var(--fs-2xl);
+}
+
+.metaText {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.fine {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+  line-height: var(--lh-normal);
+}
+
+.warnText {
+  font-size: var(--fs-sm);
+  color: var(--c-warning);
+  font-weight: 600;
+}
+
+.errorText {
+  font-size: var(--fs-sm);
+  color: var(--c-danger);
+  font-weight: 600;
+}
+
+.linkButton {
+  align-self: flex-start;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--c-red-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkButton:hover {
+  color: var(--c-red-deep);
+}
+
+.demoNote {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-faint);
+}
+
+.booster {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-red-accent);
+}
+
+/* ── Journey ─────────────────────────────────────────── */
+
+.journey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--sp-1);
+}
+
+.journeyStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  text-align: center;
+  min-width: 0;
+}
+
+/* connector to the next step */
+.journeyStep:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 11px;
+  left: calc(50% + 14px);
+  width: calc(100% - 28px);
+  height: 2px;
+  background-color: var(--c-border);
+}
+
+.journeyDone:not(:last-child)::after {
+  background-color: var(--c-red);
+}
+
+.journeyDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-3);
+  border: 1px solid var(--c-border-hover);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-surface);
+  line-height: 1;
+}
+
+.journeyDone .journeyDot {
+  background-color: var(--c-red);
+  border-color: var(--c-red);
+}
+
+.journeyCurrent .journeyDot {
+  background-color: var(--c-surface);
+  border-color: var(--c-red);
+  box-shadow: var(--glow-red-sm);
+}
+
+.journeyLabel {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-text-mute);
+}
+
+.journeyDone .journeyLabel,
+.journeyCurrent .journeyLabel {
+  color: var(--c-text);
+}
+
+.journeySub {
+  display: none;
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+}
+
+@media (min-width: 640px) {
+  .journeySub {
+    display: block;
+  }
+}
+
+/* ── Signing ─────────────────────────────────────────── */
+
+.partyGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+}
+
+@media (min-width: 640px) {
+  .partyGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.party {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background-color: var(--c-bg);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.partySigned {
+  border-color: var(--c-success);
+  background-color: var(--c-surface);
+}
+
+.partyTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.partyRole {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.partyName {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.youTag {
+  margin-left: var(--sp-2);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-red-deep);
+}
+
+.partyMeta {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.signRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+/* ── Payment schedule ────────────────────────────────── */
+
+.segmentBar {
+  display: flex;
+  gap: var(--sp-1);
+  height: 8px;
+}
+
+.segment {
+  flex-basis: 0;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  transition: background-color 0.4s ease;
+}
+
+.segmentPaid {
+  background-color: var(--c-red);
+}
+
+.stageGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--sp-3);
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background-color: var(--c-bg);
+  min-width: 0;
+}
+
+.stageTop {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.stagePercent {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  line-height: 1;
+  color: var(--c-red-accent);
+}
+
+.stageLabel {
+  font-weight: 700;
+}
+
+.stageAmount {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+
+.stageTrigger {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.stageHint {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+/* ── Progress ────────────────────────────────────────── */
+
+.progressWrap {
+  padding-bottom: var(--sp-5);
+}
+
+.progressBar {
+  height: 10px;
+  border-radius: var(--r-full);
+  background-color: var(--c-surface-2);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--grad-signal);
+}
+
+.ticks {
+  position: relative;
+  height: var(--sp-4);
+  margin-top: var(--sp-2);
+}
+
+.tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+}
+
+.tickStart {
+  transform: none;
+}
+
+.tickEnd {
+  transform: translateX(-100%);
+}
+
+.tickReached {
+  color: var(--c-red-accent);
+}
+
+.revisionRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.controlItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
+
+.reviewBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-left: 2px solid var(--c-red);
+  border-radius: var(--r-md);
+  background-color: var(--c-bg);
+}
+
+.reviewTitle {
+  font-weight: 700;
+}
+
+.reviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Accordion (contract details) ────────────────────── */
+
+.acc {
+  display: flex;
+  flex-direction: column;
+}
+
+.accItem {
+  border-top: 1px solid var(--c-border);
+}
+
+.accHeading {
+  margin: 0;
+}
+
+.accTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding-block: var(--sp-4);
+  text-align: left;
+}
+
+.accTitle {
+  flex: 1;
+  font-weight: 700;
+  font-size: var(--fs-base);
+}
+
+.accSummary {
+  font-size: var(--fs-sm);
+  color: var(--c-text-mute);
+}
+
+.chevron {
+  display: inline-block;
+  color: var(--c-text-mute);
+  transition: transform 0.25s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.accPanelWrap {
+  overflow: hidden;
+}
+
+.accPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-4);
+}
+
+.detailLine {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+
+.detailLine span {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-mute);
+}
+
+.scopeText {
+  line-height: var(--lh-normal);
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.feeRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.feeRow > span:first-child {
+  min-width: 0;
+}
+
+.feeMuted {
+  color: var(--c-text-mute);
+}
+
+.feeStrong {
+  font-weight: 700;
+}
+
+/* ── History ─────────────────────────────────────────── */
+
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.historyItem {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.historyDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: var(--r-full);
+  background-color: var(--c-red);
+}
+
+.historyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.historyAction {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.historyTime {
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+}
+
+/* ── Notices (pending change / cancellation / dispute) ── */
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-left: 3px solid var(--c-red);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.noticeTitle {
+  font-weight: 700;
+}
+
+.noticeActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.changeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+
+.changeList span {
+  font-weight: 700;
+  margin-right: var(--sp-2);
+}
+
+/* ── Completion ──────────────────────────────────────── */
+
+.completePanel {
+  border-color: var(--c-success);
+}
+
+.completeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-5);
+}
+
+@media (min-width: 900px) {
+  .completeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.subTitle {
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-lg);
+}
+
+.paymentHistory {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.paymentHistory li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.paymentTotal {
+  font-weight: 700;
+}
+
+.summaryList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryList > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.summaryList dt {
+  color: var(--c-text-mute);
+}
+
+.summaryList dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.completeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Modals ──────────────────────────────────────────── */
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.checkRow input {
+  margin-top: 4px;
+  accent-color: var(--c-red);
+}
+
+.feeBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background-color: var(--c-surface-2);
+  font-size: var(--fs-sm);
+}
+
+.feeBoxTitle {
+  font-weight: 700;
+}
+
+.modalActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.plainList {
+  margin: 0;
+  padding-left: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+
+.invoice {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Terms drawer ────────────────────────────────────── */
+
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+}
+
+.termsHeading {
+  font-size: var(--fs-xl);
+}
+
+.termsDemo {
+  font-weight: 700;
+  color: var(--c-red-accent);
+}
+
+.termsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.termsSectionTitle {
+  font-size: var(--fs-base);
+}
+
+.termsSection ul {
+  margin: 0;
+  padding-left: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
