@@ -174,7 +174,7 @@ export default function CreateAsk() {
       showToast('Your ASK is live.')
       navigate(`/app/asks/${created.id}`)
     } catch {
-      showToast('Something went wrong publishing your ASK. Please try again.', 'error')
+      showToast('We could not publish your ASK. Please try again.', 'error')
       setPublishing(false)
     }
   }

@@ -53,8 +53,8 @@ export default function SampleAsksSection() {
   return (
     <section className={`section ${styles.sampleAsks}`}>
       <div className="container" ref={ref}>
-        <h2 className={styles.heading}>Real ASKs, real momentum</h2>
-        <p className={styles.subheading}>A live look at what&apos;s actually being posted.</p>
+        <h2 className={styles.heading}>See what people are asking for</h2>
+        <p className={styles.subheading}>A peek at the kinds of requests being posted right now.</p>
 
         {samples.length > 0 ? (
           <motion.div
@@ -101,7 +101,7 @@ export default function SampleAsksSection() {
             <EmptyState
               icon="📭"
               title="No sample ASKs yet"
-              message="Check back soon — new requests are posted regularly."
+              message="Nothing here yet. Check back soon for new requests."
             />
           )
         )}

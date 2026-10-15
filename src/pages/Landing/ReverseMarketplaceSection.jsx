@@ -4,7 +4,7 @@ import { staggerContainer, staggerItem } from '../../utils/motion'
 import styles from './ReverseMarketplaceSection.module.css'
 
 const OLD_WAY = ['Search', 'Scroll', 'Message', 'Wait']
-const UASK_WAY = ['ASK', 'Let relevant people come to you']
+const UASK_WAY = ['Post an ASK', 'Offers come to you']
 
 export default function ReverseMarketplaceSection() {
   const [ref, isInView] = useInView()
@@ -13,7 +13,7 @@ export default function ReverseMarketplaceSection() {
     <section className={`section ${styles.section}`}>
       <div className="container">
         <h2 className={styles.heading}>This isn&apos;t another listings board.</h2>
-        <p className={styles.lead}>Most marketplaces make you go find people. UASK flips it.</p>
+        <p className={styles.lead}>Most marketplaces ask you to hunt for the right person. On UASK, they find you.</p>
 
         <motion.div
           ref={ref}

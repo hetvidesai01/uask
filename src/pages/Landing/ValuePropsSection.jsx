@@ -10,9 +10,9 @@ const COLUMNS = [
     title: 'For seekers',
     accent: 'red',
     points: [
-      'Post one ASK instead of messaging providers one by one.',
-      'Offers arrive with price and timeline already attached.',
-      'Compare everything side by side before you commit.',
+      'Write one ASK instead of messaging people one at a time.',
+      'Offers arrive with a price and timeline already included.',
+      'Put them side by side and take your time deciding.',
     ],
     cta: 'Post an ASK',
   },
@@ -20,9 +20,9 @@ const COLUMNS = [
     title: 'For providers',
     accent: 'pink',
     points: [
-      'See ASKs that match what you actually do.',
-      'Send a focused offer instead of chasing cold leads.',
-      'Build a track record that shows up on your profile.',
+      'See requests that fit the work you actually do.',
+      'Send a thoughtful offer instead of chasing cold leads.',
+      'Build a track record that shows on your profile.',
     ],
     cta: 'Start responding',
   },
@@ -34,7 +34,7 @@ export default function ValuePropsSection() {
   return (
     <section className={`section ${styles.section}`}>
       <div className="container">
-        <h2 className={styles.heading}>Built for both sides of the ask</h2>
+        <h2 className={styles.heading}>Made for both sides of an ASK</h2>
 
         <motion.div
           ref={ref}

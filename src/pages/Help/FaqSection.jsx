@@ -8,12 +8,12 @@ const FAQS = [
   {
     question: 'What is UASK?',
     answer:
-      "UASK is a reverse marketplace: instead of browsing endless listings, you post what you need — an ASK — and relevant providers come to you with offers.",
+      "UASK is a reverse marketplace. Instead of scrolling through endless listings, you post what you need (we call it an ASK) and the right providers come to you with offers.",
   },
   {
     question: 'How is UASK different from a normal marketplace?',
     answer:
-      'Traditional marketplaces make you search and compare listings yourself. On UASK you post one ASK and the matching happens for you — providers respond directly with tailored offers.',
+      'Most marketplaces leave the searching and comparing to you. On UASK you post one ASK and providers reply directly with offers made for your request.',
   },
   {
     question: 'Is posting an ASK free?',

@@ -31,7 +31,7 @@ const ASKER_STEPS = [
   },
   {
     title: 'Milestones & payment',
-    body: 'Work is broken into milestones. Approve each one as it’s completed to release payment.',
+    body: "Work is split into milestones. Approve each one when it's finished. Payments in this prototype are simulated.",
   },
   { title: 'Rate the provider', body: 'Once the work is done, leave a rating and review to help the next person choose well.' },
 ]
@@ -54,7 +54,7 @@ const PROVIDER_STEPS = [
     body: "Once accepted, you'll see the contract and its milestones — the agreed roadmap for the work.",
   },
   { title: 'Submit your work', body: 'Deliver against each milestone and mark it ready for review.' },
-  { title: 'Receive payment', body: 'Approved milestones release payment — no separate invoicing needed.' },
+  { title: 'Receive payment', body: "Once a milestone is approved, it's marked as paid (simulated in this prototype)." },
   {
     title: 'Receive ratings',
     body: 'After the contract closes, the requester rates your work — ratings build your public track record.',
@@ -80,10 +80,10 @@ export default function Help() {
       <section className={`section ${styles.hero}`}>
         <RevealGroup each className="container">
           <span className={styles.kicker}>Help center</span>
-          <h1 className={styles.heading}>Everything you need to use UASK well</h1>
+          <h1 className={styles.heading}>How can we help?</h1>
           <p className={styles.subtitle}>
-            One guide for both sides of the marketplace — how the flow works, answers to common questions, and a
-            step-by-step walkthrough whichever side of an ASK you're on.
+            How UASK works, answers to common questions, and a simple step-by-step guide, whichever side of an ASK
+            you're on.
           </p>
 
           <nav className={styles.quickNav} aria-label="Help sections">

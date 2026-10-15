@@ -234,7 +234,7 @@ export default function Profile() {
       setEditValues(null)
       showToast('Profile updated.')
     } catch {
-      showToast('Something went wrong saving your profile. Please try again.', 'error')
+      showToast('We could not save your profile. Please try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -254,7 +254,7 @@ export default function Profile() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load this profile"
-          message="Something went wrong loading this profile. Please try again."
+          message="We could not load this profile. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry
@@ -271,7 +271,7 @@ export default function Profile() {
         <EmptyState
           icon="🚫"
           title="Profile not found"
-          message="This user may not exist, or the link is incorrect."
+          message="We could not find this person. They may not exist, or the link may be wrong."
           action={
             <Button as={Link} to="/app/dashboard" variant="secondary">
               Back to dashboard

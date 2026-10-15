@@ -81,7 +81,7 @@ export default function DashboardPayments() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load your projects"
-          message="Something went wrong loading your payments and milestones. Please try again."
+          message="We could not load your payments and milestones. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry

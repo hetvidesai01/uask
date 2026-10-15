@@ -207,7 +207,7 @@ export default function CompareResponses() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load responses"
-          message="Something went wrong. Please try again."
+          message="That did not work. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry
@@ -224,7 +224,7 @@ export default function CompareResponses() {
         <EmptyState
           icon="🚫"
           title="ASK not found"
-          message="This ASK may have been removed, or the link is incorrect."
+          message="We could not find this ASK. It may have been removed, or the link may be wrong."
           action={
             <Button as={Link} to="/app/discover" variant="secondary">
               Back to Discover
@@ -262,7 +262,7 @@ export default function CompareResponses() {
         <EmptyState
           icon="📭"
           title="No responses yet"
-          message="Once providers respond to this ASK, you'll be able to compare them here."
+          message="When providers respond to this ASK, you can compare them here."
           action={
             <Button as={Link} to={`/app/asks/${askId}`} variant="secondary">
               Back to ASK

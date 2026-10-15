@@ -100,7 +100,7 @@ export default function AskDetails() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load this ASK"
-          message="Something went wrong loading this page. Please try again."
+          message="We could not load this page. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry
@@ -117,7 +117,7 @@ export default function AskDetails() {
         <EmptyState
           icon="🚫"
           title="ASK not found"
-          message="This ASK may have been removed, or the link is incorrect."
+          message="We could not find this ASK. It may have been removed, or the link may be wrong."
           action={
             <Button as={Link} to="/app/discover" variant="secondary">
               Back to Discover

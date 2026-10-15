@@ -7,23 +7,23 @@ import styles from './HowItWorksSection.module.css'
 const STEPS = [
   {
     label: 'ASK',
-    description: 'Post what you need — a short description, your budget, and a rough timeline. Takes a couple of minutes.',
+    description: 'Tell us what you need: a short description, your budget and a rough timeline. It takes a couple of minutes.',
   },
   {
     label: 'MATCH',
-    description: 'UASK surfaces your ASK to providers who actually work in that category, so the right people see it fast.',
+    description: 'Your ASK is shown to providers who work in that category, so the right people see it quickly.',
   },
   {
     label: 'RESPOND',
-    description: 'Interested providers send offers back — their price, timeline, and a short note on how they would approach it.',
+    description: "Interested providers reply with their price, timeline and a short note on how they'd tackle it.",
   },
   {
     label: 'COMPARE',
-    description: "Every offer lands in one place. Line them up side by side and pick whoever's the best fit — not just the cheapest.",
+    description: "Every offer lands in one place. Line them up side by side and choose the best fit, not just the cheapest.",
   },
   {
     label: 'CONNECT',
-    description: 'Accept an offer, and UASK sets up a contract with milestones so both sides know exactly what happens next.',
+    description: 'Accept an offer and UASK sets up a contract with milestones, so you both know what happens next.',
   },
 ]
 

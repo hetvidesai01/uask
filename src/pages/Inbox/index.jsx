@@ -123,7 +123,7 @@ export default function Inbox() {
       setNotifications((current) =>
         current.map((notification) => (notification.id === id ? { ...notification, read: false } : notification))
       )
-      showToast('Something went wrong. Please try again.', 'error')
+      showToast('That did not work. Please try again.', 'error')
     }
   }
 
@@ -135,7 +135,7 @@ export default function Inbox() {
       await markAllAsRead(user.id)
     } catch {
       setNotifications(previous)
-      showToast('Something went wrong marking notifications as read.', 'error')
+      showToast('We could not mark your notifications as read.', 'error')
     } finally {
       setMarkingAll(false)
     }
@@ -216,7 +216,7 @@ function MessagesTabPanel({
         <EmptyState
           icon="⚠️"
           title="Couldn't load your messages"
-          message="Something went wrong loading your conversations. Please try again."
+          message="We could not load your conversations. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={onRetry}>
               Retry
@@ -233,7 +233,7 @@ function MessagesTabPanel({
         <EmptyState
           icon="💬"
           title="No conversations yet"
-          message="Once you connect with a seeker or provider, your conversations will show up here."
+          message="Once you connect with someone, your conversations will appear here."
           action={
             <Button as={Link} to="/app/discover" variant="secondary">
               Discover ASKs
@@ -264,7 +264,7 @@ function MessagesTabPanel({
             <EmptyState
               icon="💬"
               title="Select a conversation"
-              message="Choose a thread from the list to see the full conversation."
+              message="Pick a conversation from the list to read it."
             />
           </div>
         )}

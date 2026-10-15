@@ -9,7 +9,7 @@ export default function NotFound() {
       <EmptyState
         icon="🧭"
         title="Page not found"
-        message="The page you're looking for doesn't exist, or the link is incorrect."
+        message="We could not find that page. It may have moved, or the link may be wrong."
         action={
           <Button as={Link} to="/" variant="secondary">
             Back home

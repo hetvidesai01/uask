@@ -76,7 +76,7 @@ export default function Connections() {
       showToast('Connection removed.')
       await load()
     } catch {
-      showToast('Something went wrong. Please try again.', 'error')
+      showToast('That did not work. Please try again.', 'error')
     } finally {
       setBusy(null)
     }
@@ -96,7 +96,7 @@ export default function Connections() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load connections"
-          message="Something went wrong loading your connections. Please try again."
+          message="We could not load your connections. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry

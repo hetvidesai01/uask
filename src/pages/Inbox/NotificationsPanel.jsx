@@ -54,7 +54,7 @@ export default function NotificationsPanel({
         <EmptyState
           icon="⚠️"
           title="Couldn't load your notifications"
-          message="Something went wrong loading your notifications. Please try again."
+          message="We could not load your notifications. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={onRetry}>
               Retry

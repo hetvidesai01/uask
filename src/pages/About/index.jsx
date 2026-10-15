@@ -18,16 +18,16 @@ export default function About() {
         <Reveal as="section" className={styles.hero}>
           <h1 className={styles.h1}>About UASK</h1>
           <p className={styles.lead}>
-            UASK is a reverse marketplace. Instead of searching through profiles, you post what you need and relevant
-            professionals come to you with an offer. You compare the responses and choose who to work with.
+            UASK is a reverse marketplace. Instead of scrolling through profiles, you tell us what you need and
+            professionals who fit send you offers. You compare them and choose who you want to work with.
           </p>
         </Reveal>
 
         <Reveal as="section" className={styles.section}>
           <h2 className={styles.h2}>Why UASK</h2>
           <p className={styles.body}>
-            Finding the right professional means searching many platforms and repeating yourself everywhere. UASK flips
-            it: describe the job once, and the right people respond.
+            Finding the right professional usually means checking several platforms and explaining the same thing
+            again and again. With UASK, you describe the job once and the right people reply.
           </p>
           <ol className={styles.flow} aria-label="How UASK works">
             {FLOW.map((step, index) => (
@@ -46,7 +46,7 @@ export default function About() {
         <Reveal as="section" className={styles.section}>
           <h2 className={styles.h2}>Our Vision</h2>
           <p className={styles.body}>
-            To make finding and working with the right professional simpler, faster and more transparent.
+            We want finding and working with the right professional to feel simple, quick and honest.
           </p>
         </Reveal>
 

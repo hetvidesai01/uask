@@ -32,6 +32,7 @@ export default function Signup() {
     confirmPassword: '',
     role: '',
   })
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -70,7 +71,11 @@ export default function Signup() {
     }
 
     if (!isRequired(values.role)) {
-      nextErrors.role = 'Choose how you plan to use UASK.'
+      nextErrors.role = 'Tell us how you plan to use UASK.'
+    }
+
+    if (!acceptedTerms) {
+      nextErrors.terms = 'You must agree to the Terms & Conditions and Privacy Policy to continue.'
     }
 
     return nextErrors
@@ -93,7 +98,7 @@ export default function Signup() {
       // No imperative navigate here — becoming authenticated flips the
       // `isAuthenticated` check above on the next render, which redirects.
     } catch {
-      showToast('Something went wrong creating your account. Please try again.', 'error')
+      showToast("We couldn't create your account just now. Please try again.", 'error')
       setSubmitting(false)
     }
   }
@@ -101,7 +106,7 @@ export default function Signup() {
   return (
     <AuthLayout
       title="Start with an ASK"
-      subtitle="One UASK account works both ways — post ASKs as a Seeker, respond to them as a Provider, or do both."
+      subtitle="One account does it all. Post ASKs when you need something, respond when you can help, or do both."
       footer={
         <>
           Already have an account? <Link to="/login">Log in</Link>
@@ -156,6 +161,30 @@ export default function Signup() {
             onChange={handleChange('role')}
             error={errors.role}
           />
+
+          <div className={styles.terms}>
+            <label className={styles.termsLabel}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(event) => {
+                  setAcceptedTerms(event.target.checked)
+                  setErrors((current) => ({ ...current, terms: undefined }))
+                }}
+                aria-invalid={Boolean(errors.terms)}
+                aria-describedby={errors.terms ? 'terms-error' : undefined}
+              />
+              <span>
+                I agree to the <Link to="/terms">Terms & Conditions</Link> and{' '}
+                <Link to="/privacy">Privacy Policy</Link>
+              </span>
+            </label>
+            {errors.terms && (
+              <p id="terms-error" className={styles.termsError} role="alert">
+                {errors.terms}
+              </p>
+            )}
+          </div>
 
           <Button type="submit" fullWidth loading={submitting}>
             Create account

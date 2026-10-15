@@ -96,7 +96,7 @@ export default function DiscoverPeopleTab() {
 
       {status === 'error' && (
         <div className={styles.centered}>
-          <EmptyState icon="⚠️" title="Couldn't load people" message="Something went wrong. Please try again." />
+          <EmptyState icon="⚠️" title="Couldn't load people" message="That did not work. Please try again in a moment." />
         </div>
       )}
 

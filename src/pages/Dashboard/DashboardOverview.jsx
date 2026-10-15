@@ -181,7 +181,7 @@ export default function DashboardOverview() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load your dashboard"
-          message="Something went wrong loading your activity. Please try again."
+          message="We could not load your activity. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry
@@ -235,7 +235,7 @@ export default function DashboardOverview() {
               <EmptyState
                 icon="🗂️"
                 title="No ASKs yet"
-                message="Post your first ASK to start getting responses from providers."
+                message="Post your first ASK and offers from providers will start arriving here."
                 action={
                   <Button as={Link} to="/app/asks/new" variant="secondary">
                     Post an ASK
@@ -260,7 +260,7 @@ export default function DashboardOverview() {
               <EmptyState
                 icon="📨"
                 title="No offers yet"
-                message="Discover open ASKs and submit a response to start providing."
+                message="Browse open ASKs and send your first response to get started."
                 action={
                   <Button as={Link} to="/app/discover" variant="secondary">
                     Discover ASKs

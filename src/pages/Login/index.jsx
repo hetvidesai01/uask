@@ -64,7 +64,7 @@ export default function Login() {
       // No imperative navigate here — becoming authenticated flips the
       // `isAuthenticated` check above on the next render, which redirects.
     } catch {
-      showToast('Something went wrong logging in. Please try again.', 'error')
+      showToast("We couldn't log you in just now. Please try again.", 'error')
       setSubmitting(false)
     }
   }
@@ -72,7 +72,7 @@ export default function Login() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Your next ASK, response or connection is waiting."
+      subtitle="Pick up where you left off. Your ASKs and offers are right here."
       footer={
         <>
           Don&apos;t have an account? <Link to="/signup">Sign up</Link>

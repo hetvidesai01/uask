@@ -93,8 +93,7 @@ export default function FlowSection() {
         <div className={styles.headingRow}>
           <h2 className={styles.heading}>How UASK works</h2>
           <p className={styles.subheading}>
-            One ASK goes out, providers respond, and UASK ranks the responses so you compare the strongest fits
-            first.
+            You post one ASK, providers send their offers, and you compare the best-matched ones first.
           </p>
         </div>
 

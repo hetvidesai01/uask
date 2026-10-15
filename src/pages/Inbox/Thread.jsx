@@ -71,7 +71,7 @@ export default function Thread() {
       setMessages((current) => [...current, newMessage])
       onMessageSent(threadId, newMessage.body)
     } catch {
-      showToast('Message failed to send. Please try again.', 'error')
+      showToast('Your message did not send. Please try again.', 'error')
     } finally {
       setSending(false)
     }
@@ -83,7 +83,7 @@ export default function Thread() {
         <EmptyState
           icon="🚫"
           title="Conversation not found"
-          message="This conversation may have been removed, or the link is incorrect."
+          message="We could not find this conversation. It may have been removed, or the link may be wrong."
           action={
             <Button as={Link} to="/app/inbox" variant="secondary">
               Back to inbox
@@ -108,7 +108,7 @@ export default function Thread() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load this conversation"
-          message="Something went wrong loading these messages. Please try again."
+          message="We could not load these messages. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry

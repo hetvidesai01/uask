@@ -28,7 +28,7 @@ export default function CtaSection() {
           <h2 className={styles.heading}>
             Ready to post your <em>first</em> ASK?
           </h2>
-          <p className={styles.subtitle}>It takes a couple of minutes, and providers come to you.</p>
+          <p className={styles.subtitle}>It only takes a couple of minutes, and then the offers start coming to you.</p>
 
           <div className={styles.actions}>
             <motion.div initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} variants={hoverLift}>

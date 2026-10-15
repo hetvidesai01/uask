@@ -10,6 +10,36 @@
   gap: var(--sp-4);
 }
 
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.termsLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--ink-mute);
+  cursor: pointer;
+}
+
+.termsLabel input {
+  margin-top: 0.25em;
+  accent-color: var(--red);
+}
+
+.termsLabel a {
+  color: var(--red);
+  text-decoration: underline;
+}
+
+.termsError {
+  color: var(--red);
+  font-size: var(--fs-sm);
+}
+
 @media (min-width: 640px) {
   .row {
     grid-template-columns: 1fr 1fr;

@@ -142,7 +142,7 @@ export default function Contract() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load this contract"
-          message="Something went wrong loading this page. Please try again."
+          message="We could not load this page. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry

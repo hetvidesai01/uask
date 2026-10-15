@@ -181,7 +181,7 @@ export default function RespondToAsk() {
       showToast('Your response was submitted.')
       navigate(`/app/asks/${askId}`)
     } catch {
-      showToast('Something went wrong submitting your response. Please try again.', 'error')
+      showToast('We could not send your response. Please try again.', 'error')
       setSubmitting(false)
     }
   }
@@ -200,7 +200,7 @@ export default function RespondToAsk() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load this ASK"
-          message="Something went wrong. Please try again."
+          message="That did not work. Please try again in a moment."
           action={
             <Button variant="secondary" onClick={load}>
               Retry
@@ -217,7 +217,7 @@ export default function RespondToAsk() {
         <EmptyState
           icon="🚫"
           title="ASK not found"
-          message="This ASK may have been removed, or the link is incorrect."
+          message="We could not find this ASK. It may have been removed, or the link may be wrong."
           action={
             <Button as={Link} to="/app/discover" variant="secondary">
               Back to Discover

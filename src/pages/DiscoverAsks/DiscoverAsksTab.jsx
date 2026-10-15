@@ -192,7 +192,7 @@ export default function DiscoverAsksTab() {
           <EmptyState
             icon="⚠️"
             title="Couldn't load ASKs"
-            message="Something went wrong loading results. Please try again."
+            message="We could not load the results. Please try again in a moment."
             action={
               <Button variant="secondary" onClick={() => setSearchParams(new URLSearchParams(searchParams))}>
                 Retry
@@ -207,7 +207,7 @@ export default function DiscoverAsksTab() {
           <EmptyState
             icon="🔍"
             title="No ASKs match your filters"
-            message="Try widening your search or clearing a few filters."
+            message="Try a broader search or clear a few filters."
             action={
               <Button variant="secondary" onClick={resetFilters}>
                 Clear all filters

@@ -8,6 +8,8 @@ import Landing from './pages/Landing'
 import Help from './pages/Help'
 import About from './pages/About'
 import Collaborators from './pages/Collaborators'
+import Terms from './pages/Legal/Terms'
+import Privacy from './pages/Legal/Privacy'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
@@ -47,6 +49,8 @@ function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/about" element={<About />} />
           <Route path="/collaborators" element={<Collaborators />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>

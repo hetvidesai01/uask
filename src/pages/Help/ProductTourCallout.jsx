@@ -29,8 +29,8 @@ export default function ProductTourCallout() {
             <span className={styles.kicker}>Guided tour</span>
             <h2 className={styles.heading}>New to the app shell?</h2>
             <p className={styles.copy}>
-              Replay the short walkthrough of Discover, Create ASK, Inbox, Dashboard and Profile — it opens the
-              moment you land back in the app.
+              Want a quick refresher? Replay the short tour of Discover, Create ASK, Inbox, Dashboard and Profile.
+              It starts as soon as you're back in the app.
             </p>
           </div>
 

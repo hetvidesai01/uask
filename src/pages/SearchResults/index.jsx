@@ -101,7 +101,7 @@ export default function SearchResults() {
         <EmptyState
           icon="⚠️"
           title="Couldn't load results"
-          message="Something went wrong running this search. Please try again."
+          message="We could not run this search. Please try again in a moment."
         />
       )}
 

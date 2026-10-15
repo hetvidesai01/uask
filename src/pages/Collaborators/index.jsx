@@ -5,7 +5,7 @@ import styles from './Collaborators.module.css'
 // Placeholder data only — clearly not real partnerships. Replace with real
 // collaborators (and add `href` where they have a site) before launch.
 const COLLABORATORS = [
-  { name: 'Community Partner', type: 'Community Partner', description: 'Placeholder — a local community that helps its members find trusted professionals.' },
+  { name: 'Community Partner', type: 'Community Partner', description: 'Placeholder: a local community helping its members find professionals they can trust.' },
   { name: 'Creative Partner', type: 'Creative Partner', description: 'Placeholder — a creative collective working with designers, writers and makers.' },
   { name: 'Technology Partner', type: 'Technology Partner', description: 'Placeholder — a tools and platform partner supporting how UASK works.' },
   { name: 'Campus Partner', type: 'Campus Partner', description: 'Placeholder — a college network connecting students with real project work.' },

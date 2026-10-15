@@ -57,8 +57,8 @@ export default function HeroSection() {
             transition={{ staggerChildren: 0.12, delayChildren: 0.55 }}
           >
             <motion.p className={styles.subtitle} variants={staggerItem}>
-              Post what you need — qualified providers see it and respond with real offers. No
-              searching, no cold outreach.
+              Tell us what you need, and skilled people who do that work will send you offers. No endless
+              searching, no awkward cold messages.
             </motion.p>
 
             <motion.div className={styles.actions} variants={staggerItem}>

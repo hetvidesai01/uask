@@ -55,7 +55,7 @@ export default function ContactSection() {
       <div className={styles.contactIntro}>
         <h2 className={styles.h2}>Have a question? Let&apos;s talk.</h2>
         <p className={styles.body}>
-          Questions, feedback or ideas — we read every message. Write to us and we&apos;ll get back to you.
+          Got a question, some feedback or an idea? Write to us. We read every message and will get back to you.
         </p>
         <p className={styles.contactEmail}>hello@uask.example</p>
       </div>
