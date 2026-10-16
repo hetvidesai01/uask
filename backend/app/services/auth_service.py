@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.exceptions import ConflictError, UnauthorizedError
+from app.core.exceptions import ConflictError, UnauthorizedError, ValidationError
 from app.core.security import (
     create_access_token,
     generate_refresh_token,
@@ -45,11 +45,21 @@ def _user_response(user: User) -> UserResponse:
 
 
 def signup(db: Session, payload: SignupRequest) -> tuple[UserResponse, str, str]:
-    """Create user, issue tokens. Returns (user, access_token, refresh_token)."""
+    """Create user, issue tokens. Returns (user, access_token, refresh_token).
+
+    Legal acceptance is authoritative here — the frontend checkbox is UX
+    only. Both Terms and Privacy must be explicitly accepted.
+    """
+    if not (payload.terms_accepted and payload.privacy_accepted):
+        raise ValidationError(
+            "Terms and Privacy Policy must be accepted to create an account."
+        )
+
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing is not None:
         raise ConflictError("Email already registered.", code="EMAIL_TAKEN")
 
+    settings = get_settings()
     now = datetime.now(UTC)
     user = User(
         name=payload.name.strip(),
@@ -58,6 +68,12 @@ def signup(db: Session, payload: SignupRequest) -> tuple[UserResponse, str, str]
         roles=payload.roles,
         joined_at=now,
         updated_at=now,
+        # Server-managed audit record: the timestamp is always ours, the
+        # versions come from config — never from the client.
+        terms_accepted_at=now,
+        terms_version=settings.TERMS_VERSION,
+        privacy_accepted_at=now,
+        privacy_version=settings.PRIVACY_VERSION,
     )
     db.add(user)
     try:

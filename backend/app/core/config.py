@@ -84,6 +84,10 @@ class Settings(BaseSettings):
     # Platform/client fees default to 0 — never invented. Set to expose them.
     CONTRACT_PLATFORM_FEE_PCT: float = 0.0
     CONTRACT_PROVIDER_COMMISSION_PCT: float = 0.0
+    # Signup legal acceptance — prototype document versions recorded at
+    # signup so the backend can prove which version a user accepted.
+    TERMS_VERSION: str = "demo-2026-10"
+    PRIVACY_VERSION: str = "demo-2026-10"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

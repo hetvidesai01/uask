@@ -33,6 +33,8 @@ def _signup(client: TestClient, roles: list[str]) -> tuple[dict, str]:
             "name": "Contact Tester",
             "email": email,
             "password": "password123",
+            "termsAccepted": True,
+            "privacyAccepted": True,
             "roles": roles,
         },
     )

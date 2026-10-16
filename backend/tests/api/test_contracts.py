@@ -104,6 +104,8 @@ def _signup(
             "name": name,
             "email": email,
             "password": "password123",
+            "termsAccepted": True,
+            "privacyAccepted": True,
             "roles": roles,
         },
     )

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import Field, field_serializer, field_validator
+from pydantic import Field, computed_field, field_serializer, field_validator
 
 from app.core.enums import UserRole
 from app.schemas.base import CamelModel
@@ -137,6 +137,23 @@ class UserResponse(UserBase):
     linkedin: str | None = None
     instagram: str | None = None
     contact_email: str | None = None
+    # Legal-acceptance audit inputs — populated from the User row but never
+    # serialized (system-managed timestamps stay server-side).
+    terms_accepted_at: datetime | None = Field(default=None, exclude=True)
+    privacy_accepted_at: datetime | None = Field(default=None, exclude=True)
+    terms_version: str | None = None
+    privacy_version: str | None = None
+
+    @computed_field
+    @property
+    def terms_accepted(self) -> bool:
+        """Derived from the server-recorded timestamp — never a stored flag."""
+        return self.terms_accepted_at is not None
+
+    @computed_field
+    @property
+    def privacy_accepted(self) -> bool:
+        return self.privacy_accepted_at is not None
 
     @field_serializer("rating")
     def _serialize_rating(self, value: Decimal) -> float:

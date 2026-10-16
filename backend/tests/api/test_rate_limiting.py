@@ -27,6 +27,8 @@ def _signup(client: TestClient, *, name: str = "Limiter") -> dict:
             "name": name,
             "email": f"{uuid.uuid4().hex[:12]}@example.com",
             "password": "password123",
+            "termsAccepted": True,
+            "privacyAccepted": True,
             "roles": ["seeker"],
         },
     )
@@ -68,6 +70,8 @@ def test_signup_bucket_is_separate_from_login(
         "name": "Signup Limit",
         "email": f"{uuid.uuid4().hex[:12]}@example.com",
         "password": "password123",
+        "termsAccepted": True,
+        "privacyAccepted": True,
         "roles": ["seeker"],
     }
     assert client.post(f"{API}/auth/signup", json=payload).status_code == 201

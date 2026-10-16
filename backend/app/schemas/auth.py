@@ -14,6 +14,10 @@ class SignupRequest(CamelModel):
     email: str = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
     roles: list[UserRole] = Field(min_length=1)
+    # Legal acceptance. The frontend checkbox is UX only — the service
+    # rejects signup unless both are true (default False = missing fails).
+    terms_accepted: bool = False
+    privacy_accepted: bool = False
 
     @field_validator("email")
     @classmethod

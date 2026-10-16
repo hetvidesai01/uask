@@ -86,6 +86,21 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+    # Legal-acceptance audit fields — set once by the signup service, never
+    # writable through profile updates. Nullable: accounts created before
+    # this phase simply predate the record and stay usable.
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    terms_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    privacy_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    privacy_version: Mapped[str | None] = mapped_column(
+        String(40), nullable=True,
+    )
 
     asks: Mapped[list["Ask"]] = relationship(  # noqa: F821
         back_populates="requester",

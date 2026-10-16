@@ -185,6 +185,8 @@ def test_signup_never_logs_password_tokens_or_secrets(
                 "email": "logchecker@example.com",
                 "password": password,
                 "roles": ["seeker"],
+                "termsAccepted": True,
+                "privacyAccepted": True,
             },
         )
     assert resp.status_code == 201, resp.text

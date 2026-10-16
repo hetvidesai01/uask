@@ -122,6 +122,8 @@ def signup_payload() -> dict:
         "email": "test@example.com",
         "password": "password123",
         "roles": ["seeker"],
+        "termsAccepted": True,
+        "privacyAccepted": True,
     }
 
 
@@ -132,6 +134,8 @@ def provider_payload() -> dict:
         "email": "provider@example.com",
         "password": "password123",
         "roles": ["provider"],
+        "termsAccepted": True,
+        "privacyAccepted": True,
     }
 
 
@@ -142,4 +146,6 @@ def both_roles_payload() -> dict:
         "email": "both@example.com",
         "password": "password123",
         "roles": ["seeker", "provider"],
+        "termsAccepted": True,
+        "privacyAccepted": True,
     }
