@@ -288,12 +288,12 @@ def test_production_app_hides_interactive_docs():
 
 
 def test_staging_env_exposes_docs_when_opted_in():
-    """DOCS_ENABLED=true keeps Swagger available on a ENV=production host."""
+    """ENABLE_DOCS=true keeps Swagger available on a ENV=production host."""
     backend = Path(app_main.__file__).resolve().parents[1]
     env = {
         **os.environ,
         "ENV": "production",
-        "DOCS_ENABLED": "true",
+        "ENABLE_DOCS": "true",
         "JWT_SECRET": "p" * 48,
         "LOG_LEVEL": "WARNING",
     }

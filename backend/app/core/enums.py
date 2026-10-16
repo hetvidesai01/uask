@@ -36,26 +36,85 @@ class OfferStatus(StrEnum):
 
 
 class ContractStatus(StrEnum):
-    """Contract lifecycle. Both states are terminal-friendly: `completed`
-    never reverts, `active` is the only state where milestones move."""
+    """Contract lifecycle for the redesigned frontend flow.
 
-    active = "active"
-    completed = "completed"
-
-
-class MilestoneStatus(StrEnum):
-    """Role-gated milestone flow.
-
-    provider: upcoming -> in_progress -> submitted (or straight to submitted)
-    seeker:   submitted -> approved -> paid
-    `paid` is terminal. Mock payment state — no gateway involved.
+    draft                — created by the accept transaction; terms not yet
+                           signed by either side.
+    awaiting_signatures  — at least one side signed, waiting for the other.
+    active               — both sides signed; payment stages move.
+    completed            — final stage paid and completed; terminal.
+    cancelled            — mutually cancelled; terminal.
+    disputed             — an open dispute is on the contract.
     """
 
-    upcoming = "upcoming"
-    in_progress = "in_progress"
-    submitted = "submitted"
-    approved = "approved"
+    draft = "draft"
+    awaiting_signatures = "awaiting_signatures"
+    active = "active"
+    completed = "completed"
+    cancelled = "cancelled"
+    disputed = "disputed"
+
+
+class PaymentStageStatus(StrEnum):
+    """Payment-stage (milestone) states for the 25/50/25 prototype schedule.
+
+    not_due           — stage not yet eligible.
+    due               — eligible; the ASK side may mark it paid.
+    awaiting_approval — provider submitted work for this stage, the ASK side
+                        has not yet approved it.
+    paid              — ASK side marked paid (mock payment state, terminal).
+    disputed          — an open dispute targets this stage.
+    """
+
+    not_due = "not_due"
+    due = "due"
+    awaiting_approval = "awaiting_approval"
     paid = "paid"
+    disputed = "disputed"
+
+
+# Kept as an alias so older imports keep working; new code should use
+# PaymentStageStatus. The DB enum type is `milestone_status`.
+MilestoneStatus = PaymentStageStatus
+
+
+class StageKind(StrEnum):
+    """Which of the three fixed payment stages a milestone row is."""
+
+    initial = "initial"
+    progress = "progress"
+    final = "final"
+
+
+class OwnershipOption(StrEnum):
+    transfers_after_final_payment = "transfers_after_final_payment"
+    custom = "custom"
+
+
+class PortfolioPermission(StrEnum):
+    allowed = "allowed"
+    not_allowed = "not_allowed"
+    ask_before_using = "ask_before_using"
+
+
+class DisputeReason(StrEnum):
+    scope_mismatch = "scope_mismatch"
+    missed_deadline = "missed_deadline"
+    communication_issue = "communication_issue"
+    payment_disagreement = "payment_disagreement"
+    revision_disagreement = "revision_disagreement"
+    other = "other"
+
+
+class DisputeStatus(StrEnum):
+    open = "open"
+    resolved = "resolved"
+
+
+class AmendmentStatus(StrEnum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
 
 
 class NotificationType(StrEnum):

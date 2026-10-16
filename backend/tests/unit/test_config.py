@@ -139,14 +139,14 @@ def test_docs_default_matches_environment():
 
 
 def test_docs_flag_forces_docs_on_in_production():
-    settings = _settings(ENV="production", DOCS_ENABLED=True)
+    settings = _settings(ENV="production", ENABLE_DOCS=True)
     assert settings.docs_exposed is True
 
 
 def test_docs_flag_forces_docs_off_in_development():
-    settings = _settings(ENV="development", DOCS_ENABLED=False)
+    settings = _settings(ENV="development", ENABLE_DOCS=False)
     assert settings.docs_exposed is False
 
 
 def test_empty_docs_flag_string_means_unset():
-    assert _settings(DOCS_ENABLED="").DOCS_ENABLED is None
+    assert _settings(ENABLE_DOCS="").ENABLE_DOCS is None

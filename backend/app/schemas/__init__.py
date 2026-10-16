@@ -16,10 +16,17 @@ from app.schemas.connection import (
     ConnectionStatusResponse,
 )
 from app.schemas.contract import (
+    AmendmentCreate,
+    CancellationRequest,
     CompletedContractResponse,
+    ContractAmendmentResponse,
+    ContractDisputeResponse,
+    ContractHistoryResponse,
     ContractResponse,
+    DisputeCreate,
     MilestoneResponse,
     MilestoneStatusUpdate,
+    ProgressSubmit,
     RatingCreate,
     ReputationResponse,
 )
@@ -47,6 +54,7 @@ from app.schemas.user import (
 )
 
 __all__ = [
+    "AmendmentCreate",
     "AskCreate",
     "AskResponse",
     "AskSort",
@@ -54,6 +62,7 @@ __all__ = [
     "AskUpdate",
     "AttachmentRef",
     "AuthResponse",
+    "CancellationRequest",
     "CamelModel",
     "CompletedContractResponse",
     "ConnectionCountResponse",
@@ -62,7 +71,11 @@ __all__ = [
     "ConnectionStatus",
     "ConnectionStatusResponse",
     "ContactDetails",
+    "ContractAmendmentResponse",
+    "ContractDisputeResponse",
+    "ContractHistoryResponse",
     "ContractResponse",
+    "DisputeCreate",
     "ErrorResponse",
     "LastMessagePreview",
     "LoginRequest",
@@ -81,6 +94,7 @@ __all__ = [
     "Page",
     "PageMeta",
     "PasswordUpdate",
+    "ProgressSubmit",
     "RankedResponse",
     "RatingCreate",
     "RefreshResponse",

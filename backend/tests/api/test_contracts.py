@@ -1,4 +1,10 @@
-"""Backend Contract Alignment Phase 4 — contracts, milestones, rating, reputation."""
+"""Backend Contract Alignment — contracts, payment stages, rating, reputation.
+
+Covers the redesigned flow: draft -> both sign -> active -> 25/50/25 stages
+-> completion, plus the terms snapshot and derived reputation. Signing /
+progress / revision / edit / dispute / cancellation specifics live in
+test_contract_workflow.py.
+"""
 
 import uuid
 from dataclasses import dataclass
@@ -23,6 +29,33 @@ CONTRACT_KEYS = {
     "createdAt",
     "completedAt",
     "milestones",
+    # Terms snapshot
+    "scope",
+    "finalDeadline",
+    "includedRevisionCount",
+    "revisionsUsed",
+    "ownershipOption",
+    "portfolioPermission",
+    "confidentialityAgreed",
+    "termsVersion",
+    # Signatures
+    "askSideSignedAt",
+    "respondSideSignedAt",
+    # Derived progress + edit accounting
+    "projectProgress",
+    "contractEditCount",
+    "calculatedEditFee",
+    # Prototype fee breakdown
+    "projectValue",
+    "platformFee",
+    "providerCommission",
+    # Cancellation + dispute summary
+    "cancellationRequested",
+    "cancellationReason",
+    "cancellationRequestedAt",
+    "cancellationProgressSnapshot",
+    "cancellationTerminationEstimatePct",
+    "hasOpenDispute",
 }
 MILESTONE_KEYS = {
     "id",
@@ -32,6 +65,7 @@ MILESTONE_KEYS = {
     "amount",
     "dueDate",
     "status",
+    "kind",
 }
 COMPLETED_KEYS = {
     "id",
@@ -130,42 +164,29 @@ def _accept(client: TestClient, headers: dict, offer_id: str) -> dict:
     return resp.json()
 
 
-@dataclass
-class Ctx:
-    seeker_headers: dict
-    seeker_id: str
-    provider_headers: dict
-    provider_id: str
-    ask: dict
-    offer: dict
-    contract: dict
+def _sign(client: TestClient, headers: dict, contract_id: str) -> dict:
+    resp = client.post(f"{API}/contracts/{contract_id}/sign", headers=headers)
+    assert resp.status_code == 200, resp.text
+    return resp.json()
 
 
-def _setup_contract(client: TestClient, **offer_overrides) -> Ctx:
-    seeker_headers, seeker_id = _signup(client, ["seeker"], name="Seeker Owner")
-    provider_headers, provider_id = _signup(
-        client, ["provider"], name="Working Provider"
-    )
-    ask = _create_ask(client, seeker_headers)
-    offer = _create_offer(client, provider_headers, ask["id"], **offer_overrides)
-    _accept(client, seeker_headers, offer["id"])
+def _stage(client: TestClient, ctx: "Ctx", kind: str) -> dict:
     resp = client.get(
-        f"{API}/asks/{ask['id']}/contract", headers=seeker_headers
+        f"{API}/contracts/{ctx.contract['id']}", headers=ctx.seeker_headers
     )
     assert resp.status_code == 200, resp.text
-    return Ctx(
-        seeker_headers=seeker_headers,
-        seeker_id=seeker_id,
-        provider_headers=provider_headers,
-        provider_id=provider_id,
-        ask=ask,
-        offer=offer,
-        contract=resp.json(),
-    )
+    for milestone in resp.json()["milestones"]:
+        if milestone["kind"] == kind:
+            return milestone
+    raise AssertionError(f"no {kind} stage")
 
 
-def _patch_milestone(
-    client: TestClient, headers: dict, contract_id: str, milestone_id: str, status: str
+def _patch_stage(
+    client: TestClient,
+    headers: dict,
+    contract_id: str,
+    milestone_id: str,
+    status: str,
 ):
     return client.patch(
         f"{API}/contracts/{contract_id}/milestones/{milestone_id}",
@@ -189,8 +210,109 @@ def _rate(
     )
 
 
-def _milestone(client: TestClient, ctx: Ctx, index: int = 0) -> dict:
-    return ctx.contract["milestones"][index]
+def _pay_stage(client: TestClient, ctx: "Ctx", kind: str) -> float:
+    stage = _stage(client, ctx, kind)
+    resp = _patch_stage(
+        client,
+        ctx.seeker_headers,
+        ctx.contract["id"],
+        stage["id"],
+        "paid",
+    )
+    assert resp.status_code == 200, resp.text
+    return float(stage["amount"])
+
+
+def _stage_id_by_kind(
+    client: TestClient, headers: dict, contract_id: str, kind: str
+) -> str:
+    body = client.get(f"{API}/contracts/{contract_id}", headers=headers).json()
+    for milestone in body["milestones"]:
+        if milestone["kind"] == kind:
+            return milestone["id"]
+    raise AssertionError(f"no {kind} stage")
+
+
+def _drive_full_flow(
+    client: TestClient,
+    seeker_headers: dict,
+    provider_headers: dict,
+    contract_id: str,
+) -> float:
+    """Drive the whole 25/50/25 schedule: pay initial, then for each of the
+    progress/final stages the provider submits work, the seeker approves,
+    and the seeker marks the due stage paid. Returns the total paid."""
+
+    def pay(kind: str) -> float:
+        stage_id = _stage_id_by_kind(
+            client, seeker_headers, contract_id, kind
+        )
+        resp = _patch_stage(
+            client, seeker_headers, contract_id, stage_id, "paid"
+        )
+        assert resp.status_code == 200, resp.text
+        return float(resp.json()["amount"])
+
+    total = pay("initial")
+    for progress, kind in ((60, "progress"), (100, "final")):
+        resp = client.post(
+            f"{API}/contracts/{contract_id}/progress",
+            json={"progress": progress},
+            headers=provider_headers,
+        )
+        assert resp.status_code == 200, resp.text
+        resp = client.post(
+            f"{API}/contracts/{contract_id}/progress/approve",
+            headers=seeker_headers,
+        )
+        assert resp.status_code == 200, resp.text
+        total += pay(kind)
+    return total
+
+
+@dataclass
+class Ctx:
+    seeker_headers: dict
+    seeker_id: str
+    provider_headers: dict
+    provider_id: str
+    ask: dict
+    offer: dict
+    contract: dict
+
+
+def _setup_accepted(client: TestClient, **offer_overrides) -> Ctx:
+    """Accept an offer -> contract draft created (not yet signed)."""
+    seeker_headers, seeker_id = _signup(client, ["seeker"], name="Seeker Owner")
+    provider_headers, provider_id = _signup(
+        client, ["provider"], name="Working Provider"
+    )
+    ask = _create_ask(client, seeker_headers)
+    offer = _create_offer(client, provider_headers, ask["id"], **offer_overrides)
+    _accept(client, seeker_headers, offer["id"])
+    resp = client.get(
+        f"{API}/asks/{ask['id']}/contract", headers=seeker_headers
+    )
+    assert resp.status_code == 200, resp.text
+    return Ctx(
+        seeker_headers=seeker_headers,
+        seeker_id=seeker_id,
+        provider_headers=provider_headers,
+        provider_id=provider_id,
+        ask=ask,
+        offer=offer,
+        contract=resp.json(),
+    )
+
+
+def _setup_contract(client: TestClient, **offer_overrides) -> Ctx:
+    """Accept + both sign -> contract active, initial stage due."""
+    ctx = _setup_accepted(client, **offer_overrides)
+    _sign(client, ctx.seeker_headers, ctx.contract["id"])
+    # _sign returns the response body (a dict) directly.
+    ctx.contract = _sign(client, ctx.provider_headers, ctx.contract["id"])
+    assert ctx.contract["status"] == "active"
+    return ctx
 
 
 # --------------------------------------------------------------------------
@@ -198,8 +320,8 @@ def _milestone(client: TestClient, ctx: Ctx, index: int = 0) -> dict:
 # --------------------------------------------------------------------------
 
 
-def test_contract_created_from_accepted_offer(client: TestClient):
-    ctx = _setup_contract(client)
+def test_accepted_offer_creates_draft_not_active(client: TestClient):
+    ctx = _setup_accepted(client)
     contract = ctx.contract
 
     assert set(contract.keys()) == CONTRACT_KEYS
@@ -210,16 +332,33 @@ def test_contract_created_from_accepted_offer(client: TestClient):
     assert contract["agreedPrice"] == 450
     assert contract["currency"] == "INR"
     assert contract["deliverables"] == ctx.offer["deliverables"]
-    assert contract["status"] == "active"
+    # Draft, not active — signing has not happened.
+    assert contract["status"] == "draft"
+    assert contract["askSideSignedAt"] is None
+    assert contract["respondSideSignedAt"] is None
+    assert contract["projectProgress"] == 0
     assert contract["rating"] is None
     assert contract["review"] is None
     assert contract["completedAt"] is None
     assert isinstance(contract["createdAt"], str)
-    assert len(contract["milestones"]) >= 1
+    # Terms snapshot present.
+    assert contract["termsVersion"] == "demo-2026-10"
+    assert contract["includedRevisionCount"] == 2
+    assert contract["revisionsUsed"] == 0
+    assert contract["ownershipOption"] == "transfers_after_final_payment"
+    assert contract["portfolioPermission"] == "ask_before_using"
+    assert contract["confidentialityAgreed"] is False
+    assert contract["contractEditCount"] == 0
+    assert contract["calculatedEditFee"] == 0.0
+    assert contract["projectValue"] == 450.0
+    assert contract["cancellationRequested"] is False
+    assert contract["hasOpenDispute"] is False
+    # Three fixed payment stages, none due yet.
+    assert len(contract["milestones"]) == 3
     for milestone in contract["milestones"]:
         assert set(milestone.keys()) == MILESTONE_KEYS
         assert milestone["contractId"] == contract["id"]
-        assert milestone["status"] == "upcoming"
+        assert milestone["status"] == "not_due"
 
 
 def test_contract_preserves_offer_currency(client: TestClient):
@@ -235,49 +374,38 @@ def test_contract_preserves_offer_currency(client: TestClient):
     assert contract["agreedPrice"] == offer["price"]
 
 
-def test_initial_milestones_split_amount_and_dates(client: TestClient):
+def test_payment_stages_split_25_50_25(client: TestClient):
     ctx = _setup_contract(
         client,
         price=100,
         deliveryDays=6,
         deliverables=["Draft", "Final files", "Handoff"],
     )
-    milestones = ctx.contract["milestones"]
+    stages = ctx.contract["milestones"]
 
-    assert len(milestones) == 3
-    assert [m["title"] for m in milestones] == [
-        "Draft",
-        "Final files",
-        "Handoff",
-    ]
-    # Even split; remainder credited to the final milestone.
-    assert [m["amount"] for m in milestones] == [33.33, 33.33, 33.34]
-    assert round(sum(m["amount"] for m in milestones), 2) == 100
-    # Due dates spread across deliveryDays from the offer creation date.
-    today = datetime.now(UTC).date().isoformat()
-    assert today < milestones[0]["dueDate"] <= milestones[2]["dueDate"]
-    assert all(m["dueDate"] is not None for m in milestones)
-    assert [m["status"] for m in milestones] == ["upcoming"] * 3
+    assert [s["kind"] for s in stages] == ["initial", "progress", "final"]
+    # 25% / 50% / remainder; sums exactly to the agreed price.
+    assert [s["amount"] for s in stages] == [25.0, 50.0, 25.0]
+    assert round(sum(s["amount"] for s in stages), 2) == 100
+    # Titles describe the schedule, not the deliverables.
+    assert stages[0]["title"] == "Initial payment (25%)"
+    assert stages[1]["title"] == "Progress payment (50%)"
+    assert stages[2]["title"] == "Final payment (25%)"
 
 
-def test_initial_milestones_capped_at_three(client: TestClient):
-    ctx = _setup_contract(
-        client,
-        price=400,
-        deliverables=["One", "Two", "Three", "Four", "Five"],
-    )
-    milestones = ctx.contract["milestones"]
-    assert len(milestones) == 3
-    assert [m["title"] for m in milestones] == ["One", "Two", "Three"]
-    assert round(sum(m["amount"] for m in milestones), 2) == 400
+def test_payment_stage_remainder_lands_on_final(client: TestClient):
+    # 447 * 25% = 111.75; 447 * 50% = 223.50; remainder 111.75.
+    ctx = _setup_contract(client, price=447)
+    stages = ctx.contract["milestones"]
+    assert [s["amount"] for s in stages] == [111.75, 223.5, 111.75]
+    assert round(sum(s["amount"] for s in stages), 2) == 447
 
 
-def test_initial_milestones_without_deliverables(client: TestClient):
-    ctx = _setup_contract(client, price=250, deliverables=[])
-    milestones = ctx.contract["milestones"]
-    assert len(milestones) == 1
-    assert milestones[0]["amount"] == 250
-    assert milestones[0]["title"] == "Project delivery"
+def test_payment_stages_always_three(client: TestClient):
+    ctx = _setup_contract(client, price=400, deliverables=[])
+    stages = ctx.contract["milestones"]
+    assert len(stages) == 3
+    assert round(sum(s["amount"] for s in stages), 2) == 400
 
 
 def test_one_contract_per_ask_even_after_failed_reaccept(
@@ -353,7 +481,7 @@ def test_contracts_require_auth(client: TestClient):
 def test_contract_access_is_participant_only(client: TestClient):
     ctx = _setup_contract(client)
     stranger_headers, _ = _signup(client, ["seeker"], name="Nosy Stranger")
-    milestone_id = ctx.contract["milestones"][0]["id"]
+    stage_id = ctx.contract["milestones"][0]["id"]
 
     resp = client.get(
         f"{API}/asks/{ctx.ask['id']}/contract", headers=stranger_headers
@@ -361,12 +489,18 @@ def test_contract_access_is_participant_only(client: TestClient):
     assert resp.status_code == 403
     assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
 
-    resp = _patch_milestone(
+    resp = client.get(
+        f"{API}/contracts/{ctx.contract['id']}", headers=stranger_headers
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
+
+    resp = _patch_stage(
         client,
         stranger_headers,
         ctx.contract["id"],
-        milestone_id,
-        "in_progress",
+        stage_id,
+        "paid",
     )
     assert resp.status_code == 403
     assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
@@ -386,220 +520,118 @@ def test_contract_access_is_participant_only(client: TestClient):
 
 
 # --------------------------------------------------------------------------
-# Milestone workflow — role-gated, paid is terminal
+# Payment stage (mark paid) — ASK side only, only when due
 # --------------------------------------------------------------------------
 
 
-def test_provider_submits_seeker_approves_and_pays(client: TestClient):
+def test_only_ask_side_can_mark_stage_paid(client: TestClient):
     ctx = _setup_contract(client)
-    contract_id = ctx.contract["id"]
-    milestone_id = ctx.contract["milestones"][0]["id"]
+    initial = ctx.contract["milestones"][0]
+    assert initial["status"] == "due"  # became due on activation
 
-    resp = _patch_milestone(
-        client,
-        ctx.provider_headers,
-        contract_id,
-        milestone_id,
-        "in_progress",
-    )
-    assert resp.status_code == 200, resp.text
-    assert resp.json()["status"] == "in_progress"
-    assert set(resp.json().keys()) == MILESTONE_KEYS
-
-    resp = _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "submitted"
-
-    resp = _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "approved"
-    )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "approved"
-
-    resp = _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "paid"
-    )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "paid"
-
-
-def test_provider_can_submit_straight_from_upcoming(client: TestClient):
-    ctx = _setup_contract(client)
-    milestone_id = ctx.contract["milestones"][0]["id"]
-    resp = _patch_milestone(
+    resp = _patch_stage(
         client,
         ctx.provider_headers,
         ctx.contract["id"],
-        milestone_id,
-        "submitted",
-    )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "submitted"
-
-
-def test_seeker_cannot_submit_on_behalf_of_provider(client: TestClient):
-    ctx = _setup_contract(client)
-    milestone_id = ctx.contract["milestones"][0]["id"]
-
-    resp = _patch_milestone(
-        client,
-        ctx.seeker_headers,
-        ctx.contract["id"],
-        milestone_id,
-        "in_progress",
-    )
-    assert resp.status_code == 403
-    assert _error_code(resp) == "PROVIDER_ONLY"
-
-    resp = _patch_milestone(
-        client,
-        ctx.seeker_headers,
-        ctx.contract["id"],
-        milestone_id,
-        "submitted",
-    )
-    assert resp.status_code == 403
-    assert _error_code(resp) == "PROVIDER_ONLY"
-
-
-def test_provider_cannot_approve_or_pay(client: TestClient):
-    ctx = _setup_contract(client)
-    contract_id = ctx.contract["id"]
-    milestone_id = ctx.contract["milestones"][0]["id"]
-
-    _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    resp = _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "approved"
-    )
-    assert resp.status_code == 403
-    assert _error_code(resp) == "SEEKER_ONLY"
-
-    _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "approved"
-    )
-    resp = _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "paid"
+        initial["id"],
+        "paid",
     )
     assert resp.status_code == 403
     assert _error_code(resp) == "SEEKER_ONLY"
 
 
-def test_invalid_transitions_are_rejected(client: TestClient):
+def test_paying_non_due_stage_is_rejected(client: TestClient):
     ctx = _setup_contract(client)
-    contract_id = ctx.contract["id"]
-    milestone_id = ctx.contract["milestones"][0]["id"]
+    progress = ctx.contract["milestones"][1]
+    assert progress["status"] == "not_due"
 
-    # seeker jumping ahead from upcoming
-    resp = _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "approved"
-    )
-    assert resp.status_code == 409
-    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
-
-    # skipping approval: submitted -> paid
-    _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    resp = _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "paid"
-    )
-    assert resp.status_code == 409
-    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
-
-    # a no-op status write is not a transition
-    resp = _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    assert resp.status_code == 409
-    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
-
-
-def test_paid_milestone_is_terminal(client: TestClient):
-    ctx = _setup_contract(client)
-    contract_id = ctx.contract["id"]
-    milestone_id = ctx.contract["milestones"][0]["id"]
-
-    _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "approved"
-    )
-    _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "paid"
-    )
-
-    for role_headers, target in (
-        (ctx.provider_headers, "in_progress"),
-        (ctx.provider_headers, "submitted"),
-        (ctx.seeker_headers, "approved"),
-        (ctx.seeker_headers, "paid"),
-    ):
-        resp = _patch_milestone(
-            client, role_headers, contract_id, milestone_id, target
-        )
-        assert resp.status_code == 409, target
-        assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
-
-
-def test_milestone_unknown_ids(client: TestClient):
-    ctx = _setup_contract(client)
-
-    resp = _patch_milestone(
+    resp = _patch_stage(
         client,
-        ctx.provider_headers,
+        ctx.seeker_headers,
+        ctx.contract["id"],
+        progress["id"],
+        "paid",
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
+
+
+def test_paying_initial_stage_advances_progress_to_25(client: TestClient):
+    ctx = _setup_contract(client)
+    amount = _pay_stage(client, ctx, "initial")
+
+    resp = client.get(
+        f"{API}/contracts/{ctx.contract['id']}", headers=ctx.seeker_headers
+    )
+    body = resp.json()
+    assert body["projectProgress"] == 25
+    assert body["milestones"][0]["status"] == "paid"
+    assert amount == 112.5  # 450 * 25%
+
+
+def test_paid_stage_is_terminal(client: TestClient):
+    ctx = _setup_contract(client)
+    _pay_stage(client, ctx, "initial")
+    initial = ctx.contract["milestones"][0]
+    resp = _patch_stage(
+        client,
+        ctx.seeker_headers,
+        ctx.contract["id"],
+        initial["id"],
+        "paid",
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
+
+
+def test_stage_unknown_ids(client: TestClient):
+    ctx = _setup_contract(client)
+
+    resp = _patch_stage(
+        client,
+        ctx.seeker_headers,
         str(uuid.uuid4()),
         ctx.contract["milestones"][0]["id"],
-        "in_progress",
+        "paid",
     )
     assert resp.status_code == 404
     assert _error_code(resp) == "CONTRACT_NOT_FOUND"
 
-    resp = _patch_milestone(
+    resp = _patch_stage(
         client,
-        ctx.provider_headers,
+        ctx.seeker_headers,
         ctx.contract["id"],
         str(uuid.uuid4()),
-        "in_progress",
+        "paid",
     )
     assert resp.status_code == 404
     assert _error_code(resp) == "MILESTONE_NOT_FOUND"
 
 
-def test_completed_contract_freezes_milestones(client: TestClient):
-    ctx = _setup_contract(client)
-    assert _complete(client, ctx.seeker_headers, ctx.contract["id"]).status_code == 200
+# --------------------------------------------------------------------------
+# Completion gating
+# --------------------------------------------------------------------------
 
-    resp = _patch_milestone(
-        client,
-        ctx.provider_headers,
-        ctx.contract["id"],
-        ctx.contract["milestones"][0]["id"],
-        "in_progress",
-    )
+
+def test_cannot_complete_before_final_stage_paid(client: TestClient):
+    ctx = _setup_contract(client)
+    resp = _complete(client, ctx.seeker_headers, ctx.contract["id"])
     assert resp.status_code == 409
-    assert _error_code(resp) == "CONTRACT_NOT_ACTIVE"
+    assert _error_code(resp) == "CONTRACT_NOT_COMPLETE"
 
 
-# --------------------------------------------------------------------------
-# Completion
-# --------------------------------------------------------------------------
-
-
-def test_only_seeker_can_complete_contract(client: TestClient):
+def test_only_ask_side_can_complete_contract(client: TestClient):
     ctx = _setup_contract(client)
-    contract_id = ctx.contract["id"]
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
 
-    resp = _complete(client, ctx.provider_headers, contract_id)
+    resp = _complete(client, ctx.provider_headers, ctx.contract["id"])
     assert resp.status_code == 403
     assert _error_code(resp) == "SEEKER_ONLY"
 
     before = datetime.now(UTC)
-    resp = _complete(client, ctx.seeker_headers, contract_id)
+    resp = _complete(client, ctx.seeker_headers, ctx.contract["id"])
     assert resp.status_code == 200, resp.text
     body = resp.json()
     assert body["status"] == "completed"
@@ -609,7 +641,7 @@ def test_only_seeker_can_complete_contract(client: TestClient):
     assert body["rating"] is None
 
     # Re-completing is an invalid transition.
-    resp = _complete(client, ctx.seeker_headers, contract_id)
+    resp = _complete(client, ctx.seeker_headers, ctx.contract["id"])
     assert resp.status_code == 409
     assert _error_code(resp) == "CONTRACT_NOT_ACTIVE"
 
@@ -618,6 +650,24 @@ def test_only_seeker_can_complete_contract(client: TestClient):
     assert ask.json()["status"] == "accepted"
     offer = client.get(f"{API}/offers/{ctx.offer['id']}", headers=ctx.seeker_headers)
     assert offer.json()["status"] == "accepted"
+
+
+def test_completed_contract_freezes_stages(client: TestClient):
+    ctx = _setup_contract(client)
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
+    assert _complete(client, ctx.seeker_headers, ctx.contract["id"]).status_code == 200
+
+    resp = _patch_stage(
+        client,
+        ctx.seeker_headers,
+        ctx.contract["id"],
+        ctx.contract["milestones"][0]["id"],
+        "paid",
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "CONTRACT_NOT_ACTIVE"
 
 
 # --------------------------------------------------------------------------
@@ -633,8 +683,11 @@ def test_only_completed_contract_can_be_rated(client: TestClient):
     assert _error_code(resp) == "CONTRACT_NOT_COMPLETED"
 
 
-def test_only_seeker_can_rate(client: TestClient):
+def test_only_ask_side_can_rate(client: TestClient):
     ctx = _setup_contract(client)
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
     _complete(client, ctx.seeker_headers, ctx.contract["id"])
 
     resp = _rate(client, ctx.provider_headers, ctx.contract["id"], {"rating": 5})
@@ -644,6 +697,9 @@ def test_only_seeker_can_rate(client: TestClient):
 
 def test_rating_range_and_review_length_validation(client: TestClient):
     ctx = _setup_contract(client)
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
     _complete(client, ctx.seeker_headers, ctx.contract["id"])
 
     for payload in (
@@ -661,6 +717,9 @@ def test_rating_success_is_set_once_and_derives_profile(
 ):
     ctx = _setup_contract(client)
     contract_id = ctx.contract["id"]
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
     _complete(client, ctx.seeker_headers, contract_id)
 
     resp = _rate(
@@ -693,6 +752,9 @@ def test_rating_success_is_set_once_and_derives_profile(
 
 def test_rating_without_review_is_allowed(client: TestClient):
     ctx = _setup_contract(client)
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
     _complete(client, ctx.seeker_headers, ctx.contract["id"])
     resp = _rate(client, ctx.seeker_headers, ctx.contract["id"], {"rating": 5})
     assert resp.status_code == 200
@@ -732,6 +794,9 @@ def test_derived_average_rating_across_contracts(client: TestClient):
         contract = client.get(
             f"{API}/asks/{ask['id']}/contract", headers=seeker_headers
         ).json()
+        _sign(client, seeker_headers, contract["id"])
+        _sign(client, provider_headers, contract["id"])
+        _drive_full_flow(client, seeker_headers, provider_headers, contract["id"])
         _complete(client, seeker_headers, contract["id"])
         _rate(client, seeker_headers, contract["id"], {"rating": rating})
 
@@ -776,29 +841,13 @@ def test_reputation_unknown_user(client: TestClient):
     assert _error_code(resp) == "USER_NOT_FOUND"
 
 
-def _pay_milestone(client: TestClient, ctx: Ctx, index: int = 0) -> float:
-    milestone = ctx.contract["milestones"][index]
-    milestone_id = milestone["id"]
-    contract_id = ctx.contract["id"]
-    _patch_milestone(
-        client, ctx.provider_headers, contract_id, milestone_id, "submitted"
-    )
-    _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "approved"
-    )
-    resp = _patch_milestone(
-        client, ctx.seeker_headers, contract_id, milestone_id, "paid"
-    )
-    assert resp.status_code == 200, resp.text
-    return float(milestone["amount"])
-
-
 def test_reputation_revenue_and_booster_after_full_payment(
     client: TestClient,
 ):
-    ctx = _setup_contract(client)  # 450 split into 3 × 150
-    for index in range(3):
-        _pay_milestone(client, ctx, index)
+    ctx = _setup_contract(client)  # 450 -> 112.5 / 225 / 112.5
+    total = _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
     _complete(client, ctx.seeker_headers, ctx.contract["id"])
     _rate(client, ctx.seeker_headers, ctx.contract["id"], {"rating": 5})
 
@@ -808,9 +857,10 @@ def test_reputation_revenue_and_booster_after_full_payment(
     )
     body = resp.json()
     assert body["revenue"] == 450.0
+    assert total == 450.0
     assert body["completedMilestoneCount"] == 3
     assert body["totalMilestoneCount"] == 3
-    # round(3/3 * 20) — every milestone paid.
+    # round(3/3 * 20) — every stage paid.
     assert body["profileBoosterPct"] == 20
     assert body["completedContractCount"] == 1
     assert body["averageRating"] == 5.0
@@ -818,14 +868,14 @@ def test_reputation_revenue_and_booster_after_full_payment(
 
 
 def test_reputation_partial_payment_booster(client: TestClient):
-    ctx = _setup_contract(client)  # 450 split into 3 × 150
-    paid_amount = _pay_milestone(client, ctx, 0)
+    ctx = _setup_contract(client)  # 450 -> 112.5 / 225 / 112.5
+    paid_amount = _pay_stage(client, ctx, "initial")
 
     body = client.get(
         f"{API}/users/{ctx.provider_id}/reputation",
         headers=ctx.provider_headers,
     ).json()
-    assert body["revenue"] == paid_amount == 150.0
+    assert body["revenue"] == paid_amount == 112.5
     assert body["completedMilestoneCount"] == 1
     assert body["totalMilestoneCount"] == 3
     # round(1/3 * 20) = round(6.67) = 7
@@ -838,7 +888,7 @@ def test_reputation_partial_payment_booster(client: TestClient):
 
 def test_reputation_excludes_other_providers(client: TestClient):
     ctx = _setup_contract(client)
-    _pay_milestone(client, ctx, 0)
+    _pay_stage(client, ctx, "initial")
     bystander_headers, bystander_id = _signup(
         client, ["provider"], name="Bystander Provider"
     )
@@ -856,6 +906,13 @@ def test_reputation_excludes_other_providers(client: TestClient):
 # --------------------------------------------------------------------------
 
 
+def _full_flow(client: TestClient, ctx: Ctx) -> None:
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, ctx.contract["id"]
+    )
+    _complete(client, ctx.seeker_headers, ctx.contract["id"])
+
+
 def test_completed_contracts_history(client: TestClient):
     ctx = _setup_contract(client)
     first_contract = ctx.contract
@@ -867,18 +924,24 @@ def test_completed_contracts_history(client: TestClient):
     contract2 = client.get(
         f"{API}/asks/{ask2['id']}/contract", headers=ctx.seeker_headers
     ).json()
+    _sign(client, ctx.seeker_headers, contract2["id"])
+    _sign(client, ctx.provider_headers, contract2["id"])
 
     # an active contract must not appear yet
     ask3 = _create_ask(client, ctx.seeker_headers, title="Still active ask")
     offer3 = _create_offer(client, ctx.provider_headers, ask3["id"], price=100)
     _accept(client, ctx.seeker_headers, offer3["id"])
 
-    _complete(client, ctx.seeker_headers, first_contract["id"])
+    _full_flow(client, ctx)
     _rate(
         client,
         ctx.seeker_headers,
         first_contract["id"],
         {"rating": 4, "review": "Solid delivery."},
+    )
+
+    _drive_full_flow(
+        client, ctx.seeker_headers, ctx.provider_headers, contract2["id"]
     )
     _complete(client, ctx.seeker_headers, contract2["id"])
 

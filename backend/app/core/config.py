@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "json"
     # None = default (docs hidden when ENV=production). Staging sets true,
     # hardened prod can force false — either way the choice is explicit.
-    DOCS_ENABLED: bool | None = None
+    ENABLE_DOCS: bool | None = None
     COOKIE_SECURE: bool = False
     COOKIE_DOMAIN: str | None = None
     # Trust X-Forwarded-For (Render/Railway/nginx) for per-client rate keys.
@@ -69,6 +69,21 @@ class Settings(BaseSettings):
     RATE_LIMIT_UPLOAD_WINDOW_SECONDS: int = 60
     RATE_LIMIT_MESSAGE_MAX: int = 120
     RATE_LIMIT_MESSAGE_WINDOW_SECONDS: int = 60
+    # Contract prototype terms + demo fees. Every percentage lives here so
+    # nothing is invented in the service layer. The edit/cancellation fees
+    # are informational only — no money ever moves.
+    CONTRACT_TERMS_VERSION: str = "demo-2026-10"
+    CONTRACT_DEFAULT_INCLUDED_REVISIONS: int = 2
+    # First N contract edits cost nothing; each further edit bills
+    # CONTRACT_EDIT_FEE_PCT, capped at CONTRACT_EDIT_FEE_CAP_PCT total.
+    CONTRACT_FREE_EDITS: int = 2
+    CONTRACT_EDIT_FEE_PCT: float = 2.5
+    CONTRACT_EDIT_FEE_CAP_PCT: float = 7.5
+    # Early-termination estimate cap (informational, never collected).
+    CONTRACT_CANCELLATION_FEE_CAP_PCT: float = 5.0
+    # Platform/client fees default to 0 — never invented. Set to expose them.
+    CONTRACT_PLATFORM_FEE_PCT: float = 0.0
+    CONTRACT_PROVIDER_COMMISSION_PCT: float = 0.0
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
@@ -88,7 +103,7 @@ class Settings(BaseSettings):
                 return "postgresql+psycopg://" + url[len(legacy) :]
         return url
 
-    @field_validator("DOCS_ENABLED", mode="before")
+    @field_validator("ENABLE_DOCS", mode="before")
     @classmethod
     def _empty_docs_flag_is_unset(cls, value: object) -> object:
         if isinstance(value, str) and not value.strip():
@@ -177,10 +192,10 @@ class Settings(BaseSettings):
 
     @property
     def docs_exposed(self) -> bool:
-        """Interactive API docs: an explicit DOCS_ENABLED wins, else the
+        """Interactive API docs: an explicit ENABLE_DOCS wins, else the
         production default hides them (staging opts in with true)."""
-        if self.DOCS_ENABLED is not None:
-            return self.DOCS_ENABLED
+        if self.ENABLE_DOCS is not None:
+            return self.ENABLE_DOCS
         return not self.is_production
 
     @property

@@ -1,4 +1,4 @@
-"""Unit tests for deterministic initial-milestone generation (no DB)."""
+"""Unit tests for deterministic 25/50/25 payment-stage generation (no DB)."""
 
 import uuid
 from datetime import date, datetime, timedelta
@@ -6,11 +6,9 @@ from decimal import Decimal
 
 from app.models.offer import Offer
 from app.services.contract_service import (
-    MAX_MILESTONES,
-    _due_dates,
-    _milestone_titles,
-    _split_amount,
-    initial_milestones,
+    _split_25_50_25,
+    _stage_due_dates,
+    initial_stages,
 )
 
 NOW = datetime(2026, 10, 3, 9, 0, 0)
@@ -32,73 +30,82 @@ def _offer(**overrides) -> Offer:
     return Offer(**payload)
 
 
-def test_split_is_even_with_remainder_on_final_milestone():
-    parts = _split_amount(Decimal("100"), 3)
-    assert parts == [
-        Decimal("33.33"),
-        Decimal("33.33"),
-        Decimal("33.34"),
-    ]
+def test_split_is_25_50_with_remainder_on_final():
+    parts = _split_25_50_25(Decimal("100"))
+    assert parts == [Decimal("25.00"), Decimal("50.00"), Decimal("25.00")]
     assert sum(parts) == Decimal("100")
 
 
-def test_split_even_amount_has_no_remainder():
-    parts = _split_amount(Decimal("450"), 3)
-    assert parts == [Decimal("150")] * 3
+def test_split_remainder_lands_on_final():
+    # 447 * 0.25 = 111.75; 447 * 0.50 = 223.50; remainder 111.75.
+    parts = _split_25_50_25(Decimal("447"))
+    assert parts == [Decimal("111.75"), Decimal("223.50"), Decimal("111.75")]
+    assert sum(parts) == Decimal("447")
 
 
-def test_split_keeps_penny_precision():
-    parts = _split_amount(Decimal("0.01"), 3)
+def test_split_always_sums_to_total():
+    for raw in ("0.01", "0.07", "9.99", "123.45", "1000", "450"):
+        total = Decimal(raw)
+        parts = _split_25_50_25(total)
+        assert sum(parts) == total, raw
+
+
+def test_split_penny_precision_no_shortfall():
+    parts = _split_25_50_25(Decimal("0.01"))
     assert sum(parts) == Decimal("0.01")
-    assert parts[-1] == Decimal("0.01")
+    # initial (0.0025) rounds to 0.00; progress (0.005) rounds up to 0.01;
+    # final takes the (zero) remainder. The total is never short.
+    assert parts[0] == Decimal("0.00")
+    assert parts[1] == Decimal("0.01")
+    assert parts[2] == Decimal("0.00")
 
 
 def test_due_dates_spread_across_delivery_window():
-    dues = _due_dates(date(2026, 10, 3), 6, 3)
+    dues = _stage_due_dates(date(2026, 10, 3), 6)
     assert dues == [
         date(2026, 10, 5),
         date(2026, 10, 7),
         date(2026, 10, 9),
     ]
-    assert _due_dates(date(2026, 10, 3), 1, 1) == [date(2026, 10, 4)]
+    assert _stage_due_dates(date(2026, 10, 3), 1) == [date(2026, 10, 4)] * 3
 
 
-def test_titles_take_up_to_three_deliverables():
-    assert _milestone_titles(["One", "Two", "Three", "Four"]) == [
-        "One",
-        "Two",
-        "Three",
+def test_initial_stages_are_deterministic_25_50_25():
+    stages = initial_stages(_offer())
+    assert len(stages) == 3
+    assert [m.position for m in stages] == [0, 1, 2]
+    assert [m.kind.value for m in stages] == ["initial", "progress", "final"]
+    assert [m.title for m in stages] == [
+        "Initial payment (25%)",
+        "Progress payment (50%)",
+        "Final payment (25%)",
     ]
-    assert _milestone_titles([]) == ["Project delivery"]
-    assert _milestone_titles(None) == ["Project delivery"]
-    assert _milestone_titles(["  spaced   out  "]) == ["spaced out"]
-    assert _milestone_titles(["Same", "Same"]) == ["Same"]
-
-
-def test_initial_milestones_are_deterministic():
-    milestones = initial_milestones(_offer())
-    assert len(milestones) == MAX_MILESTONES
-    assert [m.position for m in milestones] == [0, 1, 2]
-    assert [m.title for m in milestones] == ["Draft", "Final files", "Handoff"]
-    assert all(m.status.value == "upcoming" for m in milestones)
-    assert all(m.description is None for m in milestones)
-    assert sum(m.amount for m in milestones) == Decimal("450")
-    assert [m.due_date for m in milestones] == [
+    assert all(m.status.value == "not_due" for m in stages)
+    assert all(m.description is None for m in stages)
+    assert sum(m.amount for m in stages) == Decimal("450")
+    assert [m.amount for m in stages] == [
+        Decimal("112.50"),
+        Decimal("225.00"),
+        Decimal("112.50"),
+    ]
+    assert [m.due_date for m in stages] == [
         date(2026, 10, 5),
         date(2026, 10, 7),
         date(2026, 10, 9),
     ]
 
     # Same input, same output — no randomness anywhere.
-    again = initial_milestones(_offer())
+    again = initial_stages(_offer())
     assert [(m.title, m.amount, m.due_date) for m in again] == [
-        (m.title, m.amount, m.due_date) for m in milestones
+        (m.title, m.amount, m.due_date) for m in stages
     ]
 
 
-def test_initial_milestones_single_fallback():
-    milestones = initial_milestones(_offer(deliverables=[], price=Decimal("75")))
-    assert len(milestones) == 1
-    assert milestones[0].title == "Project delivery"
-    assert milestones[0].amount == Decimal("75")
-    assert milestones[0].due_date == NOW.date() + timedelta(days=6)
+def test_initial_stages_small_amount():
+    stages = initial_stages(_offer(deliverables=[], price=Decimal("75")))
+    assert len(stages) == 3
+    assert sum(m.amount for m in stages) == Decimal("75")
+    assert stages[0].amount == Decimal("18.75")
+    assert stages[1].amount == Decimal("37.50")
+    assert stages[2].amount == Decimal("18.75")
+    assert stages[0].due_date == NOW.date() + timedelta(days=2)

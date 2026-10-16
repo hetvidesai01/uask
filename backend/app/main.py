@@ -38,7 +38,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 # API docs follow settings.docs_exposed: hidden in production by default,
-# staging/production can force them on/off with DOCS_ENABLED (AGENTS.md P8).
+# staging/production can force them on/off with ENABLE_DOCS (AGENTS.md P8).
 app = FastAPI(
     title="UASK API",
     lifespan=_lifespan,
