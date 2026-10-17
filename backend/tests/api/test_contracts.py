@@ -66,6 +66,7 @@ MILESTONE_KEYS = {
     "dueDate",
     "status",
     "kind",
+    "paidAt",
 }
 COMPLETED_KEYS = {
     "id",

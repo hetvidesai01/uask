@@ -268,6 +268,10 @@ class Milestone(Base, TimestampMixin):
         nullable=False,
         server_default=StageKind.initial.value,
     )
+    # Server-generated UTC instant the stage became `paid`; null until then.
+    paid_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     contract: Mapped[Contract] = relationship(back_populates="milestones")

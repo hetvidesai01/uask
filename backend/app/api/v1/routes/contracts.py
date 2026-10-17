@@ -9,6 +9,7 @@ from app.core.pagination import Page
 from app.models.user import User
 from app.schemas.contract import (
     AmendmentCreate,
+    CancellationDecision,
     CancellationRequest,
     CompletedContractResponse,
     ContractAmendmentResponse,
@@ -282,9 +283,32 @@ def approve_cancellation(
     db: DbDep,
     current_user: CurrentUser,
 ) -> ContractResponse:
-    """The other participant approves -> contract becomes cancelled."""
+    """The other participant approves -> contract becomes cancelled.
+
+    Back-compat alias for POST .../cancellation-request/respond
+    {decision: "approve"} — same single code path.
+    """
     return contract_service.approve_cancellation(
         db, contract_id, current_user=current_user
+    )
+
+
+@router.post(
+    "/contracts/{contract_id}/cancellation-request/respond",
+    response_model=ContractResponse,
+)
+def respond_to_cancellation(
+    contract_id: UUID,
+    payload: CancellationDecision,
+    db: DbDep,
+    current_user: CurrentUser,
+) -> ContractResponse:
+    """approve — other participant only, contract becomes cancelled;
+    decline — other participant only; withdraw — original requester only.
+    Decline and withdraw clear the pending request without touching the
+    contract's workflow state."""
+    return contract_service.respond_cancellation(
+        db, contract_id, payload.decision, current_user=current_user
     )
 
 
@@ -357,6 +381,26 @@ def reject_amendment(
         contract_id,
         amendment_id,
         approve=False,
+        current_user=current_user,
+    )
+
+
+@router.post(
+    "/contracts/{contract_id}/amendments/{amendment_id}/withdraw",
+    response_model=ContractAmendmentResponse,
+)
+def withdraw_amendment(
+    contract_id: UUID,
+    amendment_id: UUID,
+    db: DbDep,
+    current_user: CurrentUser,
+) -> ContractAmendmentResponse:
+    """The proposer retracts their own pending amendment — no contract
+    term is applied or changed."""
+    return contract_service.withdraw_amendment(
+        db,
+        contract_id,
+        amendment_id,
         current_user=current_user,
     )
 

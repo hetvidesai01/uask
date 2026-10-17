@@ -6,6 +6,7 @@ camelCase serialization of the new contract response.
 """
 
 import uuid
+from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 
@@ -294,6 +295,75 @@ def _submit(client, ctx, progress):
         f"{API}/contracts/{ctx['contract_id']}/progress",
         json={"progress": progress},
         headers=ctx["provider_headers"],
+    )
+
+
+# --------------------------------------------------------------------------
+# Payment-stage paidAt (server-generated, immutable)
+# --------------------------------------------------------------------------
+
+
+def test_unpaid_stages_have_null_paid_at(client: TestClient):
+    ctx = _full_active(client)
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    for stage in body["milestones"]:
+        assert stage["status"] != "paid"
+        assert stage["paidAt"] is None
+
+
+def test_marking_stage_paid_stamps_paid_at(client: TestClient):
+    ctx = _full_active(client)
+    before = datetime.now(UTC)
+    _pay(client, ctx, "initial")
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    stage = _stage(body, "initial")
+    assert stage["status"] == "paid"
+    assert stage["paidAt"] is not None
+    assert datetime.fromisoformat(stage["paidAt"]) >= before
+    # Only the paid stage is stamped.
+    assert _stage(body, "progress")["paidAt"] is None
+    assert _stage(body, "final")["paidAt"] is None
+
+
+def test_paid_at_is_immutable_once_set(client: TestClient):
+    ctx = _full_active(client)
+    _pay(client, ctx, "initial")
+    stamp = _stage(
+        _contract(client, ctx["seeker_headers"], ctx["contract_id"]), "initial"
+    )["paidAt"]
+
+    # Re-marking a paid stage is an invalid transition, so the original
+    # timestamp can never be replaced.
+    stage = _stage(
+        _contract(client, ctx["seeker_headers"], ctx["contract_id"]), "initial"
+    )
+    resp = _patch_stage(
+        client, ctx["seeker_headers"], ctx["contract_id"], stage["id"], "paid"
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "INVALID_STATUS_TRANSITION"
+    after = _stage(
+        _contract(client, ctx["seeker_headers"], ctx["contract_id"]), "initial"
+    )
+    assert after["paidAt"] == stamp
+
+
+def test_client_cannot_set_paid_at_manually(client: TestClient):
+    ctx = _full_active(client)
+    stage = _stage(
+        _contract(client, ctx["seeker_headers"], ctx["contract_id"]), "initial"
+    )
+    resp = client.patch(
+        f"{API}/contracts/{ctx['contract_id']}/milestones/{stage['id']}",
+        json={"status": "paid", "paidAt": "2000-01-01T00:00:00Z"},
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    # The client-sent value is ignored; the server stamps its own instant.
+    assert body["paidAt"] != "2000-01-01T00:00:00Z"
+    assert datetime.fromisoformat(body["paidAt"]) > datetime(
+        2020, 1, 1, tzinfo=UTC
     )
 
 
@@ -638,6 +708,202 @@ def test_only_amendable_fields_accepted(client: TestClient):
 
 
 # --------------------------------------------------------------------------
+# Pre-signing amendments: signature reset + withdrawal
+# --------------------------------------------------------------------------
+
+
+def _awaiting_signatures(client: TestClient) -> dict:
+    """Two users, accepted offer, only the ASK side has signed."""
+    seeker_headers, seeker_id = _signup(client, ["seeker"], "Seeker")
+    provider_headers, provider_id = _signup(client, ["provider"], "Provider")
+    ask = _create_ask(client, seeker_headers)
+    offer = _create_offer(client, provider_headers, ask["id"], price=400)
+    _accept(client, seeker_headers, offer["id"])
+    resp = client.get(f"{API}/asks/{ask['id']}/contract", headers=seeker_headers)
+    contract_id = resp.json()["id"]
+    _sign(client, seeker_headers, contract_id)
+    return {
+        "seeker_headers": seeker_headers,
+        "provider_headers": provider_headers,
+        "contract_id": contract_id,
+    }
+
+
+def test_pre_signing_amendment_approval_resets_signatures(client: TestClient):
+    ctx = _awaiting_signatures(client)
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "awaiting_signatures"
+    assert body["askSideSignedAt"] is not None
+    assert body["respondSideSignedAt"] is None
+
+    # Terms are amended before both sides signed.
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Pre-signing amended scope"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/approve",
+        headers=ctx["provider_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["scope"] == "Pre-signing amended scope"
+    # The old signatures no longer cover the amended terms.
+    assert body["askSideSignedAt"] is None
+    assert body["respondSideSignedAt"] is None
+    assert body["status"] == "draft"
+
+    # One new signature is not enough to activate.
+    _sign(client, ctx["provider_headers"], ctx["contract_id"])
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "awaiting_signatures"
+
+    # The second new signature activates against the amended terms.
+    _sign(client, ctx["seeker_headers"], ctx["contract_id"])
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "active"
+    assert _stage(body, "initial")["status"] == "due"
+
+    # The reset is on the audit trail.
+    hist = client.get(
+        f"{API}/contracts/{ctx['contract_id']}/history",
+        headers=ctx["seeker_headers"],
+    ).json()
+    actions = [item["action"] for item in hist["items"]]
+    assert "signatures_reset" in actions
+
+
+def test_rejected_pre_signing_amendment_keeps_signatures(client: TestClient):
+    ctx = _awaiting_signatures(client)
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Nope"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/reject",
+        headers=ctx["provider_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "awaiting_signatures"
+    assert body["askSideSignedAt"] is not None
+    assert body["scope"] != "Nope"
+
+    # The remaining signature still activates normally.
+    _sign(client, ctx["provider_headers"], ctx["contract_id"])
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "active"
+
+
+def test_active_amendment_approval_keeps_signatures(client: TestClient):
+    ctx = _full_active(client)
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Post-activation tweak"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/approve",
+        headers=ctx["provider_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["status"] == "active"
+    assert body["askSideSignedAt"] is not None
+    assert body["respondSideSignedAt"] is not None
+
+
+def test_proposer_can_withdraw_pending_amendment(client: TestClient):
+    ctx = _full_active(client)
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Changed my mind"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/withdraw",
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "withdrawn"
+    assert resp.json()["resolvedBy"] == ctx["seeker_id"]
+
+    # No contract term changed and no edit was counted.
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["scope"] != "Changed my mind"
+    assert body["contractEditCount"] == 0
+    assert body["status"] == "active"
+
+    # The pending slot is free again for a fresh proposal.
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "A real change"}},
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+
+def test_only_proposer_can_withdraw_amendment(client: TestClient):
+    ctx = _full_active(client)
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Seeker proposal"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+    withdraw = (
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/withdraw"
+    )
+
+    # The other participant cannot withdraw someone else's proposal.
+    resp = client.post(withdraw, headers=ctx["provider_headers"])
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_AMENDMENT_PROPOSER"
+
+    # A non-participant cannot reach the amendment at all.
+    stranger_headers, _ = _signup(client, ["seeker"], "Stranger")
+    resp = client.post(withdraw, headers=stranger_headers)
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
+
+    # The proposal is still pending after the failed attempts.
+    resp = client.get(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.json()["items"][0]["status"] == "pending"
+
+
+def test_decided_amendment_cannot_be_withdrawn(client: TestClient):
+    ctx = _full_active(client)
+    amend = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments",
+        json={"changes": {"scope": "Doomed proposal"}},
+        headers=ctx["seeker_headers"],
+    ).json()
+    client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/approve",
+        headers=ctx["provider_headers"],
+    )
+
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/amendments/{amend['id']}/withdraw",
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "AMENDMENT_NOT_PENDING"
+
+    # The approved terms remain applied.
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["scope"] == "Doomed proposal"
+
+
+# --------------------------------------------------------------------------
 # Disputes
 # --------------------------------------------------------------------------
 
@@ -782,6 +1048,163 @@ def test_unrelated_user_cannot_request_cancellation(client: TestClient):
     )
     assert resp.status_code == 403
     assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
+
+
+# --------------------------------------------------------------------------
+# Cancellation decisions: approve / decline / withdraw
+# --------------------------------------------------------------------------
+
+
+def _pending_cancellation(client: TestClient) -> dict:
+    """Active contract with a pending cancellation requested by the seeker."""
+    ctx = _full_active(client)
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/cancellation-request",
+        json={"reason": "changed plans"},
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+    return ctx
+
+
+def _respond_cancellation(
+    client: TestClient, headers: dict, contract_id: str, decision: str
+):
+    return client.post(
+        f"{API}/contracts/{contract_id}/cancellation-request/respond",
+        json={"decision": decision},
+        headers=headers,
+    )
+
+
+def test_respond_approve_cancels_contract(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["provider_headers"], ctx["contract_id"], "approve"
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "cancelled"
+
+
+def test_requester_cannot_approve_own_cancellation(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["seeker_headers"], ctx["contract_id"], "approve"
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CANCELLATION_APPROVER"
+
+
+def test_requester_cannot_decline_own_cancellation(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["seeker_headers"], ctx["contract_id"], "decline"
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CANCELLATION_APPROVER"
+
+
+def test_other_participant_can_decline_cancellation(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["provider_headers"], ctx["contract_id"], "decline"
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    # Contract continues untouched; the request is cleared.
+    assert body["status"] == "active"
+    assert body["cancellationRequested"] is False
+    assert body["cancellationReason"] is None
+    assert body["cancellationRequestedAt"] is None
+    assert body["cancellationProgressSnapshot"] is None
+    assert body["cancellationTerminationEstimatePct"] is None
+
+    # A fresh cancellation request is possible again.
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/cancellation-request",
+        json={"reason": "second thoughts"},
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+
+def test_requester_can_withdraw_cancellation(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["seeker_headers"], ctx["contract_id"], "withdraw"
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["status"] == "active"
+    assert body["cancellationRequested"] is False
+    assert body["cancellationReason"] is None
+    assert body["cancellationRequestedAt"] is None
+
+    # A fresh cancellation request is possible again.
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/cancellation-request",
+        json={"reason": "still cancelling"},
+        headers=ctx["seeker_headers"],
+    )
+    assert resp.status_code == 200, resp.text
+
+
+def test_other_participant_cannot_withdraw_cancellation(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["provider_headers"], ctx["contract_id"], "withdraw"
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CANCELLATION_REQUESTER"
+
+    # The request survives the failed attempt.
+    body = _contract(client, ctx["seeker_headers"], ctx["contract_id"])
+    assert body["cancellationRequested"] is True
+
+
+def test_cancelled_contract_rejects_new_cancellation_request(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = _respond_cancellation(
+        client, ctx["provider_headers"], ctx["contract_id"], "approve"
+    )
+    assert resp.json()["status"] == "cancelled"
+
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/cancellation-request",
+        json={"reason": "again"},
+        headers=ctx["provider_headers"],
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "CONTRACT_NOT_ACTIVE"
+
+
+def test_respond_without_pending_request_rejected(client: TestClient):
+    ctx = _full_active(client)
+    resp = _respond_cancellation(
+        client, ctx["provider_headers"], ctx["contract_id"], "decline"
+    )
+    assert resp.status_code == 409
+    assert _error_code(resp) == "NO_CANCELLATION_REQUEST"
+
+
+def test_respond_requires_participant(client: TestClient):
+    ctx = _pending_cancellation(client)
+    stranger_headers, _ = _signup(client, ["seeker"], "Stranger")
+    resp = _respond_cancellation(
+        client, stranger_headers, ctx["contract_id"], "approve"
+    )
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_CONTRACT_PARTICIPANT"
+
+
+def test_respond_rejects_unknown_decision(client: TestClient):
+    ctx = _pending_cancellation(client)
+    resp = client.post(
+        f"{API}/contracts/{ctx['contract_id']}/cancellation-request/respond",
+        json={"decision": "maybe"},
+        headers=ctx["provider_headers"],
+    )
+    assert resp.status_code == 422
 
 
 # --------------------------------------------------------------------------

@@ -115,6 +115,7 @@ class AmendmentStatus(StrEnum):
     pending = "pending"
     approved = "approved"
     rejected = "rejected"
+    withdrawn = "withdrawn"
 
 
 class NotificationType(StrEnum):

@@ -504,6 +504,10 @@ def update_milestone(
         )
 
     milestone.status = MilestoneStatus.paid
+    # One-way transition: stamp the server-side payment instant. Never
+    # overwritten — a paid stage cannot be re-marked (409 above).
+    if milestone.paid_at is None:
+        milestone.paid_at = datetime.now(UTC)
     if milestone.kind == StageKind.initial:
         contract.project_progress = 25
     contract_repo.add_history(
@@ -908,31 +912,90 @@ def request_cancellation(
     return resp
 
 
-def approve_cancellation(
-    db: Session, contract_id: UUID, *, current_user: User
+def _clear_cancellation_request(contract: Contract) -> None:
+    """Drop a pending cancellation request so the contract can continue
+    (and a later, fresh request becomes possible)."""
+    contract.cancellation_requested_by = None
+    contract.cancellation_reason = None
+    contract.cancellation_requested_at = None
+    contract.cancellation_progress_snapshot = None
+
+
+def respond_cancellation(
+    db: Session,
+    contract_id: UUID,
+    decision: str,
+    *,
+    current_user: User,
 ) -> ContractResponse:
-    """The other participant approves -> the contract becomes cancelled."""
+    """Resolve a pending cancellation request.
+
+    approve  — only the OTHER participant: the contract becomes cancelled.
+    decline  — only the OTHER participant: the request is cleared, the
+               contract stays in its current workflow state.
+    withdraw — only the ORIGINAL requester: the request is cleared.
+
+    Nothing is refunded, the contract is never deleted, and the early
+    termination estimate is never calculated as owed.
+    """
     contract = _contract_or_404(db, contract_id)
     _require_participant(contract, current_user)
-    if contract.cancellation_requested_at is None:
+    # A closed contract has no live request to decide, even though the
+    # recorded fields survive the approval for the audit trail.
+    if contract.cancellation_requested_at is None or contract.status in (
+        ContractStatus.completed,
+        ContractStatus.cancelled,
+    ):
         raise ConflictError(
             "There is no pending cancellation request.",
             code="NO_CANCELLATION_REQUEST",
         )
-    if contract.cancellation_requested_by == current_user.id:
-        raise ForbiddenError(
-            "Only the other participant can approve this cancellation.",
-            code="NOT_CANCELLATION_APPROVER",
+    requester = contract.cancellation_requested_by
+
+    if decision == "approve":
+        if requester == current_user.id:
+            raise ForbiddenError(
+                "Only the other participant can approve this cancellation.",
+                code="NOT_CANCELLATION_APPROVER",
+            )
+        contract.status = ContractStatus.cancelled
+        contract_repo.add_history(
+            db, contract.id, "cancellation_approved", actor_id=current_user.id
+        )
+    elif decision == "decline":
+        if requester == current_user.id:
+            raise ForbiddenError(
+                "Only the other participant can decline this cancellation.",
+                code="NOT_CANCELLATION_APPROVER",
+            )
+        _clear_cancellation_request(contract)
+        contract_repo.add_history(
+            db, contract.id, "cancellation_declined", actor_id=current_user.id
+        )
+    else:  # withdraw
+        if requester != current_user.id:
+            raise ForbiddenError(
+                "Only the requester can withdraw this cancellation.",
+                code="NOT_CANCELLATION_REQUESTER",
+            )
+        _clear_cancellation_request(contract)
+        contract_repo.add_history(
+            db, contract.id, "cancellation_withdrawn", actor_id=current_user.id
         )
 
-    contract.status = ContractStatus.cancelled
-    contract_repo.add_history(
-        db, contract.id, "cancellation_approved", actor_id=current_user.id
-    )
     db.flush()
     resp = _contract_response(db, contract)
     db.commit()
     return resp
+
+
+def approve_cancellation(
+    db: Session, contract_id: UUID, *, current_user: User
+) -> ContractResponse:
+    """Back-compat alias for respond {decision: approve} — same logic."""
+    return respond_cancellation(
+        db, contract_id, "approve", current_user=current_user
+    )
 
 
 # --------------------------------------------------------------------------
@@ -997,13 +1060,18 @@ def propose_amendment(
     current_user: User,
 ) -> ContractAmendmentResponse:
     """Either participant proposes a terms change. It does NOT touch the live
-    contract until the other participant approves. Locked after 60% progress
-    unless a dispute is open (dispute-related correction)."""
+    contract until the other participant approves. Allowed while the contract
+    is still signing (draft/awaiting_signatures) as well as active; locked
+    after 60% progress unless a dispute is open (dispute-related correction)."""
     contract = _contract_or_404(db, contract_id)
     _require_participant(contract, current_user)
-    if contract.status != ContractStatus.active:
+    if contract.status not in (
+        ContractStatus.draft,
+        ContractStatus.awaiting_signatures,
+        ContractStatus.active,
+    ):
         raise InvalidTransitionError(
-            "Amendments require an active contract.",
+            "Amendments require a live (signing or active) contract.",
             code="CONTRACT_NOT_ACTIVE",
         )
     if contract.project_progress >= 60 and not contract_repo.has_open_dispute(
@@ -1111,6 +1179,69 @@ def decide_amendment(
                 "fields": sorted(amendment.changes.keys()),
             },
         )
+        # Pre-signing approval: the terms just changed, so signatures made
+        # against the old terms no longer count — both sides must sign the
+        # amended contract again. Active contracts keep their signatures.
+        if contract.status in (
+            ContractStatus.draft,
+            ContractStatus.awaiting_signatures,
+        ):
+            contract.ask_side_signed_at = None
+            contract.respond_side_signed_at = None
+            contract.status = ContractStatus.draft
+            contract_repo.add_history(
+                db,
+                contract.id,
+                "signatures_reset",
+                actor_id=current_user.id,
+                details={"editNumber": amendment.edit_number},
+            )
+    db.flush()
+    resp = ContractAmendmentResponse.model_validate(amendment)
+    db.commit()
+    return resp
+
+
+def withdraw_amendment(
+    db: Session,
+    contract_id: UUID,
+    amendment_id: UUID,
+    *,
+    current_user: User,
+) -> ContractAmendmentResponse:
+    """The proposer retracts their own pending amendment.
+
+    Only the proposer may withdraw, only while the amendment is still
+    pending, and no contract term is applied or changed.
+    """
+    contract = _contract_or_404(db, contract_id)
+    _require_participant(contract, current_user)
+    amendment = contract_repo.get_amendment(db, contract.id, amendment_id)
+    if amendment is None:
+        raise NotFoundError(
+            "Amendment not found.", code="AMENDMENT_NOT_FOUND"
+        )
+    if amendment.status != AmendmentStatus.pending:
+        raise InvalidTransitionError(
+            "This amendment has already been decided.",
+            code="AMENDMENT_NOT_PENDING",
+        )
+    if amendment.proposed_by != current_user.id:
+        raise ForbiddenError(
+            "Only the proposer can withdraw this amendment.",
+            code="NOT_AMENDMENT_PROPOSER",
+        )
+
+    amendment.status = AmendmentStatus.withdrawn
+    amendment.resolved_by = current_user.id
+    amendment.resolved_at = datetime.now(UTC)
+    contract_repo.add_history(
+        db,
+        contract.id,
+        "terms_amended",
+        actor_id=current_user.id,
+        details={"editNumber": amendment.edit_number, "phase": "withdrawn"},
+    )
     db.flush()
     resp = ContractAmendmentResponse.model_validate(amendment)
     db.commit()

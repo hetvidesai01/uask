@@ -92,6 +92,17 @@ class CancellationRequest(CamelModel):
         return v
 
 
+class CancellationDecision(CamelModel):
+    """POST /contracts/{id}/cancellation-request/respond body.
+
+    approve  — the OTHER participant agrees; the contract becomes cancelled.
+    decline  — the OTHER participant rejects; the request is cleared.
+    withdraw — the requester retracts; the request is cleared.
+    """
+
+    decision: Literal["approve", "decline", "withdraw"]
+
+
 class AmendmentCreate(CamelModel):
     """POST /contracts/{id}/amendments body — either participant.
 
@@ -124,6 +135,9 @@ class MilestoneResponse(CamelModel):
     due_date: date | None = None
     status: PaymentStageStatus
     kind: StageKind
+    # Server-generated when the stage becomes `paid`; null until then and
+    # never writable by the client.
+    paid_at: datetime | None = None
 
     @field_serializer("amount")
     def _serialize_amount(self, value: Decimal) -> float:
