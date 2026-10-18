@@ -40,7 +40,7 @@ services:
       - key: CORS_ORIGINS
         value: http://localhost:5173 # local Vite dev origin
       - key: FRONTEND_URL
-        sync: false # future deployed frontend origin (also CORS-allowed)
+        value: https://reversemarketplace-eight.vercel.app # deployed frontend (merged into CORS with localhost)
       - key: COOKIE_SECURE
         value: "true"
       - key: BEHIND_PROXY
