@@ -60,11 +60,14 @@ export default function Login() {
 
     setSubmitting(true)
     try {
-      await login({ email: values.email })
+      await login({ email: values.email, password: values.password })
       // No imperative navigate here — becoming authenticated flips the
       // `isAuthenticated` check above on the next render, which redirects.
-    } catch {
-      showToast("We couldn't log you in just now. Please try again.", 'error')
+    } catch (error) {
+      showToast(
+        error?.message || "We couldn't log you in just now. Please try again.",
+        'error',
+      )
       setSubmitting(false)
     }
   }

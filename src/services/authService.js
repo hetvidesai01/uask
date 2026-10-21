@@ -1,15 +1,12 @@
+import { http, refreshSession, setAccessToken } from './http'
 import { users as seedUsers } from '../mocks/users'
 
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
-// Login/signup/profile edits mutate `users` at runtime (see login, signup,
-// updateUser below). Without persisting that array, it would silently
-// reset to the seed data on every reload — AuthContext's own localStorage
-// key (`uask.auth.user`) still remembers who's logged in, but a user
-// created via signup, or via logging in with an email that doesn't match
-// one of the 3 seeded accounts, would no longer exist in `users` after a
-// refresh. getUserById(currentUser.id) would then return null, and the
-// Profile page would show "Profile not found" for that user's own profile.
+// Mock user store. Since Phase 1 of the frontend integration, auth itself is
+// real (login/signup/logout/restoreSession below go to the backend) — this
+// array now only backs the not-yet-integrated profile/people helpers
+// (getUserById, getAllUsers, updateUser), which a later phase replaces.
 const USERS_STORAGE_KEY = 'uask.mock.users'
 
 function loadUsers() {
@@ -32,24 +29,68 @@ function persistUsers() {
 
 const users = loadUsers()
 
-// Builds a human-readable display name from an email's local part for a
-// mock login that doesn't match a seeded user (see login() below). Splits
-// on any run of non-letter characters (dots, underscores, digits, etc.) so
-// "jane.doe99@x.com" becomes "Jane Doe" instead of a raw, digit-laden
-// handle like "Janedoe99".
-function nameFromEmail(email) {
-  const [handle] = email.split('@')
-  const words = handle
-    .split(/[^a-zA-Z]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-
-  return words.length > 0 ? words.join(' ') : 'UASK User'
+// The backend sends null for unset optional fields; the UI was built against
+// empty strings, so normalize on the way in to keep rendering unchanged.
+function normalizeUser(user) {
+  if (!user) return null
+  return {
+    ...user,
+    avatarUrl: user.avatarUrl ?? '',
+    bio: user.bio ?? '',
+    location: user.location ?? '',
+    categories: user.categories ?? [],
+  }
 }
 
-function findByEmail(email) {
-  return users.find((user) => user.email.toLowerCase() === email.toLowerCase())
+// --- Real backend auth (access token in memory, session in the refresh cookie)
+
+export async function login({ email, password }) {
+  const data = await http.post('/auth/login', { email, password }, { auth: false })
+  setAccessToken(data.accessToken)
+  return normalizeUser(data.user)
 }
+
+export async function signup({
+  name,
+  email,
+  password,
+  roles,
+  termsAccepted,
+  privacyAccepted,
+}) {
+  const data = await http.post(
+    '/auth/signup',
+    { name, email, password, roles, termsAccepted, privacyAccepted },
+    { auth: false },
+  )
+  setAccessToken(data.accessToken)
+  return normalizeUser(data.user)
+}
+
+export async function logout() {
+  try {
+    await http.post('/auth/logout')
+  } catch {
+    // Token already invalid/expired — local sign-out proceeds regardless.
+  } finally {
+    setAccessToken(null)
+  }
+}
+
+// Startup/session restore: exchange the HttpOnly refresh cookie for an access
+// token, then load the real user from /auth/me. Returns the user, or null when
+// there is no valid session (stale localStorage users are cleared by callers).
+export async function restoreSession() {
+  try {
+    await refreshSession()
+    return normalizeUser(await http.get('/auth/me'))
+  } catch {
+    setAccessToken(null)
+    return null
+  }
+}
+
+// --- Still mock-backed (users/profiles integrate in a later phase)
 
 export async function getUserById(id) {
   await delay(150)
@@ -63,33 +104,6 @@ export async function getAllUsers() {
   return [...users]
 }
 
-// Mock login: no backend, so any password is accepted. If the email
-// matches one of the seeded mock users, that profile is returned;
-// otherwise a minimal profile is fabricated from the email.
-export async function login({ email }) {
-  await delay()
-
-  const existing = findByEmail(email)
-  if (existing) return existing
-
-  const newUser = {
-    id: crypto.randomUUID(),
-    name: nameFromEmail(email),
-    email,
-    avatarUrl: '',
-    roles: ['seeker'],
-    bio: '',
-    location: '',
-    categories: [],
-    rating: null,
-    reviewCount: 0,
-    joinedAt: new Date().toISOString(),
-  }
-  users.push(newUser)
-  persistUsers()
-  return newUser
-}
-
 export async function updateUser(id, data) {
   await delay()
 
@@ -99,25 +113,4 @@ export async function updateUser(id, data) {
   Object.assign(user, data)
   persistUsers()
   return user
-}
-
-export async function signup({ name, email, roles }) {
-  await delay()
-
-  const newUser = {
-    id: crypto.randomUUID(),
-    name,
-    email,
-    avatarUrl: '',
-    roles,
-    bio: '',
-    location: '',
-    categories: [],
-    rating: null,
-    reviewCount: 0,
-    joinedAt: new Date().toISOString(),
-  }
-  users.push(newUser)
-  persistUsers()
-  return newUser
 }

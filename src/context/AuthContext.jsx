@@ -42,25 +42,46 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const login = async ({ email }) => {
-    const loggedInUser = await authService.login({ email })
+  const login = async (credentials) => {
+    const loggedInUser = await authService.login(credentials)
     setUser(loggedInUser)
     return loggedInUser
   }
 
-  const signup = async ({ name, email, roles }) => {
-    const newUser = await authService.signup({ name, email, roles })
+  const signup = async (credentials) => {
+    const newUser = await authService.signup(credentials)
     setUser(newUser)
     return newUser
   }
 
-  const logout = () => setUser(null)
+  // Instant local sign-out; the server-side token revocation + cookie clear
+  // happens best-effort in the background.
+  const logout = () => {
+    authService.logout()
+    setUser(null)
+  }
 
   const updateProfile = async (data) => {
     const updated = await authService.updateUser(user.id, data)
-    setUser(updated)
+    // Mock-profile phase: a missing user (not yet in the backend-backed store)
+    // must never clear the signed-in session.
+    if (updated) setUser(updated)
     return updated
   }
+
+  // Session restore on boot: the refresh cookie (HttpOnly) is exchanged for an
+  // access token, then /auth/me loads the real user. A failed restore clears
+  // any stale cached user from the pre-backend mock era.
+  useEffect(() => {
+    let cancelled = false
+    authService.restoreSession().then((restoredUser) => {
+      if (!cancelled) setUser(restoredUser)
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <AuthContext.Provider

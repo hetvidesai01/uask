@@ -6,7 +6,7 @@ import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
-import { isRequired, isValidEmail, minLength } from '../../utils/validators'
+import { isRequired, isValidEmail, isStrongPassword } from '../../utils/validators'
 import styles from './Signup.module.css'
 
 const ROLE_OPTIONS = [
@@ -60,8 +60,9 @@ export default function Signup() {
 
     if (!isRequired(values.password)) {
       nextErrors.password = 'Choose a password.'
-    } else if (!minLength(values.password, 6)) {
-      nextErrors.password = 'Password must be at least 6 characters.'
+    } else if (!isStrongPassword(values.password)) {
+      nextErrors.password =
+        'Password must be at least 8 characters and include a letter and a digit.'
     }
 
     if (!isRequired(values.confirmPassword)) {
@@ -93,12 +94,19 @@ export default function Signup() {
       await signup({
         name: values.name.trim(),
         email: values.email,
+        password: values.password,
         roles: rolesFromSelection(values.role),
+        termsAccepted: acceptedTerms,
+        privacyAccepted: acceptedTerms,
       })
       // No imperative navigate here — becoming authenticated flips the
       // `isAuthenticated` check above on the next render, which redirects.
-    } catch {
-      showToast("We couldn't create your account just now. Please try again.", 'error')
+    } catch (error) {
+      showToast(
+        error?.message ||
+          "We couldn't create your account just now. Please try again.",
+        'error',
+      )
       setSubmitting(false)
     }
   }
