@@ -16,7 +16,6 @@ import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { getAskById } from '../../services/askService'
 import { getOffersForAsk, updateOfferStatus, acceptOffer } from '../../services/offerService'
-import { getUserById } from '../../services/authService'
 import { rankResponses } from '../../services/matchingService'
 import { formatCurrency } from '../../utils/formatCurrency'
 import styles from './CompareResponses.module.css'
@@ -45,9 +44,10 @@ export default function CompareResponses() {
 
   const [status, setStatus] = useState('loading')
   const [ask, setAsk] = useState(null)
-  // The primary matching intelligence for this prototype: responses to
-  // THIS ask, ranked by fit — see services/matchingService.js. Sorted by
-  // score descending, so "ranked by default" falls out of load order.
+  // Responses to THIS ask, ranked by the backend matching engine
+  // (GET /asks/{askId}/ranked-responses — owner-only, deterministic, see
+  // services/matchingService.js). Already sorted score-descending, so
+  // "ranked by default" falls out of load order.
   const [rankedResults, setRankedResults] = useState([])
   const [selectedIds, setSelectedIds] = useState([])
   const [actioningId, setActioningId] = useState(null)
@@ -66,11 +66,9 @@ export default function CompareResponses() {
         return
       }
 
-      const foundOffers = await getOffersForAsk(askId)
-      const providerIds = [...new Set(foundOffers.map((offer) => offer.providerId))]
-      const providers = await Promise.all(providerIds.map((id) => getUserById(id)))
-
-      const results = await rankResponses(foundAsk, foundOffers, providers)
+      // Ranking is the backend's job — one owner-only call scores every
+      // submitted response; no client-side offer/provider joins needed.
+      const results = await rankResponses(askId)
 
       setAsk(foundAsk)
       setRankedResults(results)
