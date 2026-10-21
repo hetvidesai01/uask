@@ -199,9 +199,9 @@ def _seed(session: Session) -> None:
         "Frank Osei",
         "frank@uask.dev",
         [UserRole.seeker, UserRole.provider],
-        bio="Handyman and studio owner — happy to hire and to help.",
+        bio="Studio owner — happy to hire and to help.",
         location="Austin, TX",
-        categories=("Home services", "Errands"),
+        categories=("Design", "Writing"),
         rating="4.5",
         review_count=8,
     )
@@ -209,7 +209,7 @@ def _seed(session: Session) -> None:
 
     # --- asks ----------------------------------------------------------
     # 5 open, 1 accepted (work in progress), 1 closed (finished),
-    # 1 cancelled — all 8 categories.
+    # 1 cancelled — one ASK per canonical category (Writing twice).
     ask_logo = _make_ask(
         alice,
         title="Design a logo and brand kit for a new bakery",
@@ -261,15 +261,16 @@ def _seed(session: Session) -> None:
         location="Austin, TX",
         is_remote=True,
     )
-    ask_clean = _make_ask(
+    ask_marketing = _make_ask(
         bob,
-        title="Deep clean a 2-bedroom apartment before move-out",
+        title="Set up Google Business and local search ads for our food truck",
         description=(
-            "Move-out is on the 30th. Two-bedroom apartment, mostly "
-            "swept already — needs kitchen, bathrooms, baseboards, and "
-            "inside the oven and fridge."
+            "Our food truck just got a new lot in Round Rock. I need "
+            "someone to claim and verify our Google Business profile, "
+            "then set up a small local search campaign for the opening "
+            "month."
         ),
-        category="Home services",
+        category="Marketing",
         budget_min="150",
         budget_max="400",
         status=AskStatus.open,
@@ -329,32 +330,32 @@ def _seed(session: Session) -> None:
         location="Austin, TX",
         is_remote=False,
     )
-    ask_errand = _make_ask(
+    ask_resume = _make_ask(
         bob,
-        title="Assemble two bookshelves and haul away packaging",
+        title="Polish my resume and cover letter for a career switch",
         description=(
-            "Two flat-pack bookshelves arrived today. I need someone "
-            "with tools to assemble both and take the cardboard and "
-            "packing material away."
+            "I am moving from warehouse work into office administration. "
+            "I need my resume rewritten around admin skills plus a short "
+            "cover-letter template I can adapt."
         ),
-        category="Errands",
+        category="Writing",
         budget_min="80",
         budget_max="250",
         status=AskStatus.open,
         created_days_ago=7,
         deadline_days=21,
         location="Dallas, TX",
-        is_remote=False,
+        is_remote=True,
     )
     asks = [
         ask_logo,
         ask_write,
         ask_booking,
-        ask_clean,
+        ask_marketing,
         ask_photo,
         ask_tutor,
         ask_party,
-        ask_errand,
+        ask_resume,
     ]
 
     # --- offers --------------------------------------------------------
@@ -547,15 +548,16 @@ def _seed(session: Session) -> None:
             days_after_ask=2,
         ),
         _make_offer(
-            ask_errand,
+            ask_resume,
             frank,
             price="130",
             delivery_days=3,
             pitch=(
-                "I have a van and a full tool kit — I can assemble "
-                "both shelves and take all the packaging away."
+                "I hire for my own studio and review resumes every "
+                "cycle — I can rewrite yours around the admin skills "
+                "employers look for."
             ),
-            deliverables=("2 shelves assembled", "Packaging removed"),
+            deliverables=("Rewritten resume", "Cover-letter template"),
             status=OfferStatus.pending,
             days_after_ask=1,
         ),

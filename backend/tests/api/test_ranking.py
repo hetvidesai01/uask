@@ -284,7 +284,7 @@ def test_scores_sorted_descending_and_stable(client: TestClient):
         categories=["Design"],
         bio="Occasional design work.",
     )
-    _profile(client, poor_headers, categories=["Errands"])
+    _profile(client, poor_headers, categories=["Events"])
 
     _offer(client, good_headers, ask["id"], price=250, deliveryDays=5)
     _offer(client, mid_headers, ask["id"], price=450, deliveryDays=9)
@@ -363,7 +363,7 @@ def test_labels_at_api_thresholds(client: TestClient):
         avatarUrl="https://cdn.example.com/ideal.png",
     )
     _profile(client, partial_headers, categories=["Design"])
-    _profile(client, weak_headers, categories=["Errands"])
+    _profile(client, weak_headers, categories=["Events"])
     _profile(client, competitor_headers, categories=["Design"])
 
     _offer(client, ideal_headers, ideal_ask["id"], price=300, deliveryDays=3)
@@ -434,7 +434,7 @@ def test_category_relevance_ranks_higher(client: TestClient):
     ask = _create_ask(client, owner_headers, category="Design")
 
     _profile(client, matched_headers, categories=["Design"])
-    _profile(client, other_headers, categories=["Errands"])
+    _profile(client, other_headers, categories=["Events"])
     _offer(client, matched_headers, ask["id"], price=300)
     _offer(client, other_headers, ask["id"], price=300)
 

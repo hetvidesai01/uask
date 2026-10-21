@@ -142,7 +142,7 @@ def test_score_stays_in_zero_to_one_hundred():
     worst = m.score_offer(
         _ask(budget_min=None, budget_max=None),
         _offer(price=Decimal("9000"), currency="USD", delivery_days=365),
-        _provider(categories=["Errands"]),
+        _provider(categories=["Events"]),
     )
     for result in (ideal, worst):
         assert 0 <= result.score <= 100

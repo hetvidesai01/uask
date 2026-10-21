@@ -145,6 +145,27 @@ def test_update_own_profile(client: TestClient):
     assert profile["bio"] == "Freelance baker and weekend photographer."
 
 
+def test_update_profile_marketing_category_accepted_legacy_rejected(client: TestClient):
+    headers, user_id = _signup(client, ["seeker"])
+
+    resp = client.patch(
+        f"{API}/users/{user_id}",
+        json={"categories": ["marketing"]},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["categories"] == ["Marketing"]
+
+    for retired in ("Home services", "Errands"):
+        resp = client.patch(
+            f"{API}/users/{user_id}",
+            json={"categories": [retired]},
+            headers=headers,
+        )
+        assert resp.status_code == 422, (retired, resp.text)
+        assert _error_code(resp) == "VALIDATION_ERROR"
+
+
 def test_update_own_profile_partial(client: TestClient):
     headers, user_id = _signup(client, ["seeker"], name="Before Name")
     resp = client.patch(

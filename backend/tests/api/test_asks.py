@@ -195,6 +195,26 @@ def test_create_ask_validation_errors(client: TestClient):
         assert _error_code(resp) == "VALIDATION_ERROR"
 
 
+def test_create_ask_marketing_category_accepted_legacy_rejected(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+
+    # Marketing is in the canonical set (API_CONTRACT.md) and must be
+    # accepted case-insensitively, stored as the canonical label.
+    resp = client.post(
+        f"{API}/asks", json=_ask_payload(category="marketing"), headers=headers
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["category"] == "Marketing"
+
+    # Retired legacy labels are now rejected like any unknown category.
+    for retired in ("Home services", "Errands"):
+        resp = client.post(
+            f"{API}/asks", json=_ask_payload(category=retired), headers=headers
+        )
+        assert resp.status_code == 422, (retired, resp.text)
+        assert _error_code(resp) == "VALIDATION_ERROR"
+
+
 # --------------------------------------------------------------------------
 # GET /asks — envelope, filters, sort, pagination
 # --------------------------------------------------------------------------

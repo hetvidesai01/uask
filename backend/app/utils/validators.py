@@ -1,4 +1,13 @@
-"""Fixed value lists shared by Ask and User schemas."""
+"""Fixed value lists shared by Ask and User schemas.
+
+``ALLOWED_CATEGORIES`` is the single source of truth for the canonical
+category taxonomy (a professional/project marketplace). It must stay in
+lockstep with the label list mirrored in the frontend
+(``src/mocks/categories.js``) and with the contract written out in
+``API_CONTRACT.md`` (ASK ``category``); ``tests/unit/test_validators.py``
+pins the exact tuple. Legacy labels ("Home services", "Errands") were
+retired and are intentionally rejected.
+"""
 
 import re
 
@@ -8,11 +17,10 @@ ALLOWED_CATEGORIES: tuple[str, ...] = (
     "Design",
     "Writing",
     "Development",
-    "Home services",
     "Photography",
+    "Marketing",
     "Tutoring",
     "Events",
-    "Errands",
 )
 
 _CATEGORY_BY_KEY = {c.lower(): c for c in ALLOWED_CATEGORIES}
