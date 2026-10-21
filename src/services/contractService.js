@@ -1,575 +1,556 @@
 import { contracts } from '../mocks/contracts'
 import { http } from './http'
 import { isBackendId } from './userService'
-import {
-  PROGRESS_CHECKPOINTS,
-  PROGRESS_LOCK_PERCENT,
-  computeStageAmounts,
-  getChangeKind,
-  getEditPreview,
-  getStage,
-} from '../utils/contractMath'
+import { getChangeKind, getEditPreview } from '../utils/contractMath'
+
+// Contract service — backend adapter for the Contract page and the
+// dashboard/inbox contract lists (Phase 6).
+//
+// Everything the UI sees is shaped here: backend camelCase contract rows are
+// mapped into the page's model — nested `signatures`, `progressPercent`,
+// `deadline`, ownership/portfolio value renames, the page's workflow stage
+// vocabulary (upcoming/in_progress/submitted/approved/paid), history
+// sentences, and the pendingChange / dispute / cancellation notices.
+// Components never see backend shapes.
+//
+// Two read depths:
+//   - shallow (list) for dashboards/inbox: GET /contracts only;
+//   - deep for the single-contract page: the contract plus its amendments,
+//     disputes and history loaded in parallel, since the page renders the
+//     pending-change card, dispute/cancellation notices and history inline.
+//
+// Demo-prototype semantics come from the backend and are never claimed
+// otherwise: `paid` is a demo label (no escrow, no gateway, no money moves),
+// edit fees are informational only, and all role/state gates are enforced
+// server-side — the `userId`/`actorId` arguments the page passes are ignored
+// (the signer/actor is always the authenticated user; the demo "act as"
+// switch can therefore surface backend 403 messages when acting as the other
+// side, and the UI copy is preserved as-is).
+//
+// TEMPORARY: `mocks/contracts` still backs getProviderReputation /
+// getCompletedContractsForProvider for seeded (non-UUID) demo people. The
+// contract workflow itself is backend-only: non-UUID ask ids resolve to
+// `null` (the page's existing "No contract yet" state).
 
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 
-// Mock-only service. Contracts live in memory (like asks/offers); every
-// mutating call returns a fresh copy so React state sees a new reference.
-// Demo prototype: no escrow, no real payments, no real signatures — every
-// "payment" is a status change. Role checks here mirror what a backend must
-// enforce (seeker = "ASK Side", provider = "Respond Side").
-//
-// Persistence: the array is mirrored to localStorage so demo progress (signing,
-// payments, edits) survives a reload. Bump the key version when the mock
-// contract shape changes.
-const STORAGE_KEY = 'uask.mock.contracts.v1'
+// History is served oldest-first with a 100-row page size; the deep read
+// walks every page (capped) so long contracts still show their full trail.
+const MAX_HISTORY_PAGES = 10
 
-try {
-  const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
-  if (Array.isArray(stored) && stored.length > 0) contracts.splice(0, contracts.length, ...stored)
-} catch {
-  // Storage unavailable or corrupt — fall back to the seeded mocks.
+// The cancellation modal has no reason field (unchanged UI) but the backend
+// requires one — this adapter-synthesized note is what gets recorded.
+const CANCELLATION_REASON = 'Cancellation requested from the contract page.'
+
+// ── Backend → page value maps ────────────────────────────────────────────
+
+const STAGE_PERCENT = { initial: 25, progress: 50, final: 25 }
+// Backend titles carry the percent ("Initial payment (25%)"); the page adds
+// the percent itself, so the adapter supplies the bare mock-era titles.
+const STAGE_TITLE = {
+  initial: 'Initial Payment',
+  progress: 'Progress Payment',
+  final: 'Final Payment',
 }
 
-function persist() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(contracts))
-  } catch {
-    // Non-fatal: the demo just won't survive a reload.
+const OWNERSHIP_TO_PAGE = {
+  transfers_after_final_payment: 'transfer_on_final_payment',
+  custom: 'custom',
+}
+const OWNERSHIP_TO_BACKEND = {
+  transfer_on_final_payment: 'transfers_after_final_payment',
+  custom: 'custom',
+}
+const PORTFOLIO_TO_PAGE = {
+  allowed: 'allowed',
+  not_allowed: 'not_allowed',
+  ask_before_using: 'ask_first',
+}
+const PORTFOLIO_TO_BACKEND = {
+  allowed: 'allowed',
+  not_allowed: 'not_allowed',
+  ask_first: 'ask_before_using',
+}
+
+// Dispute reasons: the page's select holds human labels, the backend enum is
+// snake_case — mapped in both directions, never displayed raw.
+const DISPUTE_REASON_TO_LABEL = {
+  scope_mismatch: 'Work differs from agreed scope',
+  missed_deadline: 'Missed deadline',
+  communication_issue: 'Communication issue',
+  payment_disagreement: 'Payment disagreement',
+  revision_disagreement: 'Revision disagreement',
+  other: 'Other',
+}
+const DISPUTE_REASON_TO_BACKEND = Object.fromEntries(
+  Object.entries(DISPUTE_REASON_TO_LABEL).map(([code, label]) => [label, code]),
+)
+
+const AMEND_FIELD_LABELS = {
+  scope: 'scope',
+  deliverables: 'deliverables',
+  finalDeadline: 'deadline',
+  includedRevisionCount: 'included revisions',
+  ownershipOption: 'deliverable ownership',
+  portfolioPermission: 'portfolio permission',
+  confidentialityAgreed: 'confidentiality',
+}
+
+// Page change keys → backend amendable fields (see API_CONTRACT.md §9).
+// Price/currency are NOT amendable on the backend — agreedPrice is rejected
+// with a clear message in proposeContractChange before any request.
+const PAGE_CHANGES_TO_BACKEND = {
+  scope: { key: 'scope' },
+  deadline: { key: 'finalDeadline', map: (value) => String(value).slice(0, 10) },
+  revisionsIncluded: { key: 'includedRevisionCount' },
+  ownership: { key: 'ownershipOption', map: (value) => OWNERSHIP_TO_BACKEND[value] ?? value },
+  portfolioPermission: {
+    key: 'portfolioPermission',
+    map: (value) => PORTFOLIO_TO_BACKEND[value] ?? value,
+  },
+  confidentiality: { key: 'confidentialityAgreed' },
+}
+
+// ── Row → page model ─────────────────────────────────────────────────────
+
+// Backend stage statuses (not_due/due/awaiting_approval/paid/disputed) are
+// translated into the page's internal workflow vocabulary so
+// getStageDisplayStatus and the action gating keep working unchanged:
+//   not_due → upcoming, due → upcoming (initial) / approved (progress+final,
+//   i.e. payable), awaiting_approval → submitted, paid → paid.
+// `disputed` maps to upcoming because the stage badge is overridden at
+// contract level whenever contract.status === 'disputed'.
+function toWorkflowStatus(status, kind) {
+  if (status === 'paid') return 'paid'
+  if (status === 'awaiting_approval') return 'submitted'
+  if (status === 'due') return kind === 'initial' ? 'upcoming' : 'approved'
+  return 'upcoming'
+}
+
+const toIsoDate = (value) => (value ? (/T/.test(value) ? value : `${value}T00:00:00.000Z`) : null)
+
+// Display-only fee rate derived from the backend's authoritative amounts —
+// a 0 platformFee shows as a 0% demo rate; percentages are never invented.
+const ratePct = (amount, total) => (total > 0 ? Math.round(((amount ?? 0) / total) * 1000) / 10 : 0)
+
+function mapMilestone(milestone) {
+  const kind = milestone.kind
+  return {
+    id: milestone.id,
+    stage: kind,
+    title: STAGE_TITLE[kind] ?? milestone.title,
+    description: milestone.description ?? null,
+    percent: STAGE_PERCENT[kind] ?? 0,
+    amount: milestone.amount,
+    dueDate: toIsoDate(milestone.dueDate),
+    status: toWorkflowStatus(milestone.status, kind),
+    paidAt: milestone.paidAt ?? null,
   }
 }
 
-// Every read and mutation returns through here, so this is also where the
-// current in-memory state is saved.
-const snapshot = (contract) => {
-  persist()
-  return structuredClone(contract)
+// Backend history {actorId, action, details, createdAt} → the page's
+// {actor, action, at} rows with the existing mock-era sentences, so the
+// history list reads exactly as before.
+function describeHistoryAction(entry) {
+  const details = entry.details ?? {}
+  switch (entry.action) {
+    case 'contract_generated':
+      return 'Contract generated from ASK and accepted response'
+    case 'contract_signed':
+      return 'Agreed & signed the contract (demo e-acceptance)'
+    case 'contract_activated':
+      return 'Both parties signed — contract active'
+    case 'payment_stage_changed':
+      return `Marked ${STAGE_TITLE[details.stage] ?? 'a payment stage'} as paid (demo)`
+    case 'progress_submitted':
+      return details.progress === 60 ? 'Submitted the 60% progress milestone' : 'Submitted the final work'
+    case 'progress_approved':
+      return details.progress === 60 ? 'Approved the progress milestone' : 'Approved the final work'
+    case 'revision_requested': {
+      const what = details.stage === 'progress' ? 'progress milestone' : 'final work'
+      return `Requested a revision on the ${what} (${details.revisionsUsed} of ${details.includedRevisionCount} used)`
+    }
+    case 'terms_amended': {
+      if (details.phase === 'rejected') return 'Declined the proposed change'
+      if (details.phase === 'withdrawn') return 'Withdrew the proposed change'
+      if (details.phase === 'applied') {
+        const labels = (details.fields ?? []).map((field) => AMEND_FIELD_LABELS[field] ?? field)
+        return labels.length ? `Contract change approved: changed ${labels.join(', ')}` : 'Contract change approved'
+      }
+      return 'Proposed a contract change'
+    }
+    case 'signatures_reset':
+      return 'Terms changed — signatures reset'
+    case 'dispute_raised':
+      return `Raised a dispute: ${DISPUTE_REASON_TO_LABEL[details.reason] ?? details.reason ?? 'dispute'}`
+    case 'dispute_resolved':
+      return 'Withdrew the dispute'
+    case 'cancellation_requested':
+      return 'Requested cancellation'
+    case 'cancellation_approved':
+      return 'Accepted the cancellation request — contract cancelled'
+    case 'cancellation_declined':
+      return 'Declined the cancellation request'
+    case 'cancellation_withdrawn':
+      return 'Withdrew the cancellation request'
+    case 'contract_completed':
+      return 'Contract completed'
+    default:
+      return entry.action ? String(entry.action).replace(/_/g, ' ') : 'Contract updated'
+  }
 }
 
-const DEMO_FEE_RATES = { clientPlatformFeePct: 2, freelancerCommissionPct: 8 }
-const ACTION_DELAY = 250
-
-const CHANGE_LABELS = {
-  scope: 'scope',
-  deadline: 'deadline',
-  revisionsIncluded: 'included revisions',
-  agreedPrice: 'agreed price',
-  ownership: 'deliverable ownership',
-  portfolioPermission: 'portfolio permission',
-  confidentiality: 'confidentiality',
+function mapHistoryEntry(entry, row) {
+  const actor =
+    entry.actorId == null
+      ? 'System'
+      : entry.actorId === row.seekerId
+        ? 'ASK Side'
+        : entry.actorId === row.providerId
+          ? 'Respond Side'
+          : 'System'
+  return {
+    id: entry.id,
+    actor,
+    action: describeHistoryAction(entry),
+    at: entry.createdAt,
+  }
 }
 
-function findContract(contractId) {
-  const contract = contracts.find((item) => item.id === contractId)
-  if (!contract) throw new Error('Contract not found.')
+// Backend amendment changes (backend field names) → the page's change keys.
+function toPageChanges(changes) {
+  const mapped = {}
+  for (const [key, value] of Object.entries(changes)) {
+    if (key === 'ownershipOption') mapped.ownership = OWNERSHIP_TO_PAGE[value] ?? value
+    else if (key === 'finalDeadline') mapped.deadline = value
+    else if (key === 'includedRevisionCount') mapped.revisionsIncluded = value
+    else if (key === 'portfolioPermission') mapped.portfolioPermission = PORTFOLIO_TO_PAGE[value] ?? value
+    else if (key === 'confidentialityAgreed') mapped.confidentiality = value
+    else mapped[key] = value // e.g. deliverables — rendered by the default row
+  }
+  return mapped
+}
+
+function buildPendingChange(contract, amendment) {
+  const kind = getChangeKind(contract)
+  const isEdit = kind === 'edit'
+  const preview = isEdit ? getEditPreview(contract) : null
+  return {
+    id: amendment.id,
+    kind,
+    changes: toPageChanges(amendment.changes ?? {}),
+    note: amendment.reason ?? null,
+    proposedBy: amendment.proposedBy === contract.seekerId ? 'seeker' : 'provider',
+    proposedAt: amendment.createdAt,
+    editNumber: isEdit ? amendment.editNumber : null,
+    fee: preview ? preview.fee : 0,
+  }
+}
+
+// The backend serializes the requester only implicitly (no cancellation
+// "by" field) — the pending request's actor is read from the history trail.
+function cancellationRequestBy(history, row) {
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    if (history[i].action === 'cancellation_requested') {
+      if (history[i].actorId == null) return null
+      return history[i].actorId === row.seekerId ? 'seeker' : 'provider'
+    }
+  }
+  return null
+}
+
+function mapContractRow(row, subs = {}) {
+  const rawHistory = subs.history ?? []
+  const pending = (subs.amendments ?? []).find((item) => item.status === 'pending') ?? null
+  const openDispute = (subs.disputes ?? []).find((item) => item.status === 'open') ?? null
+
+  const contract = {
+    id: row.id,
+    askId: row.askId,
+    offerId: row.offerId,
+    seekerId: row.seekerId,
+    providerId: row.providerId,
+    agreedPrice: row.agreedPrice,
+    currency: row.currency,
+    scope: row.scope ?? '',
+    deliverables: row.deliverables ?? [],
+    deadline: toIsoDate(row.finalDeadline),
+    revisionsIncluded: row.includedRevisionCount,
+    revisionsUsed: row.revisionsUsed,
+    status: row.status,
+    signatures: {
+      seeker: { signed: Boolean(row.askSideSignedAt), signedAt: row.askSideSignedAt ?? null },
+      provider: { signed: Boolean(row.respondSideSignedAt), signedAt: row.respondSideSignedAt ?? null },
+    },
+    progressPercent: row.projectProgress,
+    ownership: OWNERSHIP_TO_PAGE[row.ownershipOption] ?? 'transfer_on_final_payment',
+    portfolioPermission: PORTFOLIO_TO_PAGE[row.portfolioPermission] ?? 'ask_first',
+    confidentiality: Boolean(row.confidentialityAgreed),
+    fees: {
+      clientPlatformFeePct: ratePct(row.platformFee, row.projectValue),
+      freelancerCommissionPct: ratePct(row.providerCommission, row.projectValue),
+    },
+    editCount: row.contractEditCount,
+    editFeesTotal: row.calculatedEditFee,
+    pendingChange: null,
+    // Deep reads fill the requester from history; list reads (dashboards)
+    // never render the notice, so `by` may be null on the shallow map.
+    cancellationRequest: row.cancellationRequested
+      ? {
+          by: cancellationRequestBy(rawHistory, row),
+          at: row.cancellationRequestedAt ?? null,
+          reason: row.cancellationReason ?? null,
+          estimatePct: row.cancellationTerminationEstimatePct ?? null,
+        }
+      : null,
+    dispute: openDispute
+      ? {
+          id: openDispute.id,
+          reason: DISPUTE_REASON_TO_LABEL[openDispute.reason] ?? openDispute.reason,
+          description: openDispute.description ?? null,
+          raisedBy: openDispute.raisedBy === row.seekerId ? 'seeker' : 'provider',
+          raisedAt: openDispute.createdAt,
+        }
+      : null,
+    previousStatus: null,
+    rating: row.rating ?? null,
+    review: row.review ?? null,
+    createdAt: row.createdAt,
+    completedAt: row.completedAt ?? null,
+    milestones: (row.milestones ?? []).map(mapMilestone),
+    history: rawHistory.map((entry) => mapHistoryEntry(entry, row)),
+  }
+
+  if (pending) contract.pendingChange = buildPendingChange(contract, pending)
   return contract
 }
 
-function roleOf(contract, userId) {
-  if (contract.seekerId === userId) return 'seeker'
-  if (contract.providerId === userId) return 'provider'
-  throw new Error('Only the two parties on this contract can do that.')
+// ── Deep reads ───────────────────────────────────────────────────────────
+
+async function fetchAllHistory(contractId) {
+  const entries = []
+  for (let page = 1; page <= MAX_HISTORY_PAGES; page += 1) {
+    const result = await http.get(`/contracts/${contractId}/history?page=${page}&pageSize=100`)
+    entries.push(...(result?.items ?? []))
+    if (!result?.hasNext) break
+  }
+  return entries
 }
 
-function requireRole(contract, userId, expected, message) {
-  if (roleOf(contract, userId) !== expected) throw new Error(message)
-}
-
-const actorLabel = (role) => (role === 'seeker' ? 'ASK Side' : 'Respond Side')
-
-function log(contract, actor, action) {
-  contract.history.push({
-    id: `h-${contract.id}-${contract.history.length + 1}-${Date.now()}`,
-    actor,
-    action,
-    at: new Date().toISOString(),
+// Contract row + amendments + disputes + history in parallel → full page
+// model. Every mutating action returns through here, so the page always
+// swaps in complete, freshly derived state.
+async function loadContractDeep(row) {
+  const [amendments, disputes, history] = await Promise.all([
+    http.get(`/contracts/${row.id}/amendments?pageSize=100`),
+    http.get(`/contracts/${row.id}/disputes?pageSize=100`),
+    fetchAllHistory(row.id),
+  ])
+  return mapContractRow(row, {
+    amendments: amendments?.items ?? [],
+    disputes: disputes?.items ?? [],
+    history,
   })
 }
 
-function requireStatus(contract, allowed, message) {
-  if (!allowed.includes(contract.status)) throw new Error(message)
+async function refetchContract(contractId) {
+  return loadContractDeep(await http.get(`/contracts/${contractId}`))
 }
 
-export async function getContractsForUser(userId) {
-  await delay()
-  return contracts
-    .filter((contract) => contract.seekerId === userId || contract.providerId === userId)
-    .map(snapshot)
+async function fetchPendingAmendment(contractId) {
+  const result = await http.get(`/contracts/${contractId}/amendments?pageSize=100`)
+  const pending = (result?.items ?? []).find((item) => item.status === 'pending')
+  if (!pending) throw new Error('There is no pending change.')
+  return pending
 }
 
+// ── Reads ────────────────────────────────────────────────────────────────
+
+// `userId` is ignored — the backend scopes the list to the authenticated
+// user (either side), newest first. Shallow map: dashboards/inbox only need
+// status/price/milestones/links.
+export async function getContractsForUser(_userId) {
+  const result = await http.get('/contracts?pageSize=100')
+  return (result?.items ?? []).map((row) => mapContractRow(row))
+}
+
+// Deep read for the Contract page. Expected absence — no contract yet, or a
+// viewer who is not a participant (403) — resolves to `null` (the page's
+// existing "No contract yet" state); other failures propagate. Seeded
+// (non-UUID) ask ids skip the request entirely.
 export async function getContractByAskId(askId) {
-  await delay()
-  const found = contracts.find((contract) => contract.askId === askId)
-  return found ? snapshot(found) : null
-}
-
-function parseIncludedRevisions(deliverables) {
-  for (const item of deliverables) {
-    const match = /(\d+)\s*(?:revision|round)/i.exec(item)
-    if (match) return Number(match[1])
+  if (!isBackendId(askId)) return null
+  let row
+  try {
+    row = await http.get(`/asks/${askId}/contract`)
+  } catch (error) {
+    if (error?.status === 404 || error?.status === 403) return null
+    throw error
   }
-  return 2
-}
-
-function buildStages(contractId, price, createdAt, deadline) {
-  const amounts = computeStageAmounts(price)
-  const start = new Date(createdAt).getTime()
-  const end = new Date(deadline).getTime()
-  const span = Math.max(end - start, 0)
-  const dues = [start, start + Math.round(span * 0.6), end]
-  return [
-    ['initial', 'Initial Payment', 25, 'Paid on contract confirmation.'],
-    ['progress', 'Progress Payment', 50, 'Due at ~60% of the work, once approved by the ASK Side.'],
-    ['final', 'Final Payment', 25, 'Due once the final work is submitted and approved.'],
-  ].map(([stage, title, percent, description], index) => ({
-    id: `milestone-${contractId}-${index + 1}`,
-    stage,
-    title,
-    description,
-    percent,
-    amount: amounts[stage],
-    dueDate: new Date(dues[index]).toISOString(),
-    status: 'upcoming',
-    paidAt: null,
-  }))
-}
-
-// Mock-only contract creation, triggered when a seeker selects an offer
-// (see Compare Responses' "Accept & Start"). Generates a contract DRAFT from
-// the ASK + accepted response — it is not active until both parties sign.
-export async function createContract({
-  askId,
-  offerId,
-  seekerId,
-  providerId,
-  agreedPrice,
-  currency,
-  deliverables,
-  deliveryDays,
-  scope,
-  revisionsIncluded,
-}) {
-  await delay()
-
-  const existing = contracts.find((contract) => contract.askId === askId)
-  if (existing) return snapshot(existing)
-
-  const items = deliverables?.length > 0 ? deliverables : ['Project delivery']
-  const now = Date.now()
-  const createdAt = new Date(now).toISOString()
-  const deadline = new Date(now + Math.max(deliveryDays || 7, 1) * 86400000).toISOString()
-  const id = `contract-${contracts.length + 1}`
-
-  const contract = {
-    id,
-    askId,
-    offerId,
-    seekerId,
-    providerId,
-    agreedPrice,
-    currency,
-    scope: scope?.trim() || items.join(', '),
-    deliverables: items,
-    deadline,
-    revisionsIncluded: revisionsIncluded ?? parseIncludedRevisions(items),
-    revisionsUsed: 0,
-    status: 'draft',
-    signatures: {
-      seeker: { signed: false, signedAt: null },
-      provider: { signed: false, signedAt: null },
-    },
-    progressPercent: 0,
-    ownership: 'transfer_on_final_payment',
-    portfolioPermission: 'ask_first',
-    confidentiality: false,
-    fees: { ...DEMO_FEE_RATES },
-    editCount: 0,
-    editFeesTotal: 0,
-    pendingChange: null,
-    cancellationRequest: null,
-    dispute: null,
-    previousStatus: null,
-    rating: null,
-    review: null,
-    createdAt,
-    completedAt: null,
-    milestones: buildStages(id, agreedPrice, createdAt, deadline),
-    history: [],
-  }
-  log(contract, 'System', 'Contract generated from ASK and accepted response')
-
-  contracts.push(contract)
-  return snapshot(contract)
+  return loadContractDeep(row)
 }
 
 // ── Signing ──────────────────────────────────────────────────────────────
 
-export async function signContract(contractId, userId) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  requireStatus(contract, ['draft', 'awaiting_signatures'], 'This contract can no longer be signed.')
-  if (contract.pendingChange) throw new Error('Resolve the pending change before signing.')
-  if (contract.signatures[role].signed) throw new Error('You have already signed.')
-
-  contract.signatures[role] = { signed: true, signedAt: new Date().toISOString() }
-  log(contract, actorLabel(role), 'Agreed & signed the contract (demo e-acceptance)')
-
-  if (contract.signatures.seeker.signed && contract.signatures.provider.signed) {
-    contract.status = 'active'
-    log(contract, 'System', 'Both parties signed — contract active')
-  } else {
-    contract.status = 'awaiting_signatures'
-  }
-  return snapshot(contract)
+// POST /contracts/{id}/sign — the signer is the authenticated user; each
+// side signs only itself, idempotently (the mock's "already signed" error
+// can no longer occur — the page hides the button once signed anyway).
+export async function signContract(contractId, _userId) {
+  const row = await http.post(`/contracts/${contractId}/sign`)
+  return loadContractDeep(row)
 }
 
 // ── Editing / change proposals ───────────────────────────────────────────
 
-export async function proposeContractChange(contractId, userId, { changes, note }) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  requireStatus(
-    contract,
-    ['draft', 'awaiting_signatures', 'active', 'disputed'],
-    'This contract can no longer be changed.'
-  )
-  if (contract.pendingChange) throw new Error('There is already a change waiting for a response.')
-
-  const kind = getChangeKind(contract)
-  if ((kind === 'amendment' || kind === 'dispute_correction') && !note?.trim()) {
-    throw new Error('Add a short note explaining the amendment.')
+export async function proposeContractChange(contractId, _userId, { changes, note }) {
+  // Backend contract: price/currency are frozen for the life of the
+  // contract (422 on any proposal containing them). Surface that clearly
+  // instead of a generic validation toast.
+  if (changes && 'agreedPrice' in changes) {
+    throw new Error('The agreed price cannot be changed on this contract.')
   }
 
-  const diff = {}
-  for (const key of Object.keys(CHANGE_LABELS)) {
-    if (!(key in changes)) continue
-    const next = changes[key]
-    const prev = contract[key]
-    if (next === prev) continue
-    diff[key] = next
-  }
-  if (Object.keys(diff).length === 0) throw new Error('No changes to propose.')
-
-  if ('agreedPrice' in diff) {
-    if (contract.milestones.some((m) => m.status === 'paid')) {
-      throw new Error('The price cannot change after a payment is marked as paid.')
-    }
-    if (!(diff.agreedPrice > 0)) throw new Error('Enter a valid price.')
-  }
-  if ('revisionsIncluded' in diff && diff.revisionsIncluded < contract.revisionsUsed) {
-    throw new Error('Included revisions cannot be lower than revisions already used.')
-  }
-  if ('deadline' in diff && Number.isNaN(new Date(diff.deadline).getTime())) {
-    throw new Error('Enter a valid deadline.')
+  const mapped = {}
+  for (const [key, value] of Object.entries(changes ?? {})) {
+    const rule = PAGE_CHANGES_TO_BACKEND[key]
+    if (!rule) continue
+    mapped[rule.key] = rule.map ? rule.map(value) : value
   }
 
-  const { editNumber, fee } = getEditPreview(contract)
-  contract.pendingChange = {
-    id: `change-${Date.now()}`,
-    kind,
-    changes: diff,
-    note: note?.trim() || null,
-    proposedBy: role,
-    proposedAt: new Date().toISOString(),
-    editNumber: kind === 'edit' ? editNumber : null,
-    fee: kind === 'edit' ? fee : 0,
-  }
-  const labels = Object.keys(diff).map((key) => CHANGE_LABELS[key])
-  log(contract, actorLabel(role), `Proposed a change to ${labels.join(', ')}`)
-  return snapshot(contract)
+  await http.post(`/contracts/${contractId}/amendments`, {
+    changes: mapped,
+    ...(note?.trim() ? { reason: note.trim() } : {}),
+  })
+  // The proposal response is an amendment row — refetch the contract.
+  return refetchContract(contractId)
 }
 
-function applyChange(contract, pending) {
-  const { changes } = pending
-  Object.assign(contract, changes)
-
-  if ('agreedPrice' in changes || 'deadline' in changes) {
-    const amounts = computeStageAmounts(contract.agreedPrice)
-    const start = new Date(contract.createdAt).getTime()
-    const end = new Date(contract.deadline).getTime()
-    const progressDue = start + Math.max(end - start, 0) * 0.6
-    for (const stage of contract.milestones) {
-      if (stage.status !== 'paid') stage.amount = amounts[stage.stage]
-      if (stage.stage === 'progress') stage.dueDate = new Date(progressDue).toISOString()
-      if (stage.stage === 'final') stage.dueDate = new Date(end).toISOString()
-    }
-  }
-
-  if (pending.kind === 'edit') {
-    contract.editCount += 1
-    contract.editFeesTotal += pending.fee
-  }
-}
-
-// decision: 'approve' | 'decline' (other party) or 'withdraw' (proposer)
-export async function respondToChange(contractId, userId, decision) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  const pending = contract.pendingChange
-  if (!pending) throw new Error('There is no pending change.')
-
-  if (decision === 'withdraw') {
-    if (pending.proposedBy !== role) throw new Error('Only the proposer can withdraw this change.')
-    contract.pendingChange = null
-    log(contract, actorLabel(role), 'Withdrew the proposed change')
-    return snapshot(contract)
-  }
-
-  if (pending.proposedBy === role) throw new Error('The other party needs to respond to this change.')
-
-  if (decision === 'decline') {
-    contract.pendingChange = null
-    log(contract, actorLabel(role), 'Declined the proposed change')
-    return snapshot(contract)
-  }
-
-  applyChange(contract, pending)
-  contract.pendingChange = null
-  const labels = Object.keys(pending.changes).map((key) => CHANGE_LABELS[key])
-  const verb =
-    pending.kind === 'amendment'
-      ? 'Amendment approved'
-      : pending.kind === 'dispute_correction'
-        ? 'Dispute correction approved'
-        : `Contract edit #${pending.editNumber} approved`
-  log(contract, actorLabel(pending.proposedBy), `${verb}: changed ${labels.join(', ')}`)
-
-  // Terms changed before work began: both parties must agree again.
-  if (contract.status === 'draft' || contract.status === 'awaiting_signatures') {
-    const hadSignature = contract.signatures.seeker.signed || contract.signatures.provider.signed
-    contract.signatures = {
-      seeker: { signed: false, signedAt: null },
-      provider: { signed: false, signedAt: null },
-    }
-    contract.status = 'draft'
-    if (hadSignature) log(contract, 'System', 'Terms changed — signatures reset')
-  }
-  return snapshot(contract)
+// decision: 'approve' | 'decline' (other party) or 'withdraw' (proposer).
+// Backend keeps the amendment id server-side; the pending one is looked up
+// here rather than trusted from page state. Pre-signing approvals reset both
+// signatures server-side — the refetch shows the contract back in draft.
+export async function respondToChange(contractId, _userId, decision) {
+  const pending = await fetchPendingAmendment(contractId)
+  const action = decision === 'approve' ? 'approve' : decision === 'decline' ? 'reject' : 'withdraw'
+  await http.post(`/contracts/${contractId}/amendments/${pending.id}/${action}`)
+  return refetchContract(contractId)
 }
 
 // ── Progress & payment stages ────────────────────────────────────────────
 
-export async function updateProgress(contractId, userId, percent) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  requireRole(contract, userId, 'provider', 'Only the Respond Side can update project progress.')
-  requireStatus(contract, ['active'], 'Progress can only be updated while the contract is active.')
-  if (!PROGRESS_CHECKPOINTS.includes(percent)) throw new Error('Choose one of the progress checkpoints.')
-  if (percent <= contract.progressPercent) throw new Error('Progress can only move forward.')
-
-  const progressStage = getStage(contract, 'progress')
-  if (percent > PROGRESS_LOCK_PERCENT && progressStage.status !== 'approved' && progressStage.status !== 'paid') {
-    throw new Error('The ASK Side must approve the 60% progress milestone before work continues past it.')
+// `projectProgress` is derived server-side from workflow events only; the
+// backend accepts 60/100 submissions and stamps 25 itself when the Initial
+// Payment is marked paid. The 25% checkpoint button therefore reports why it
+// cannot be set by hand instead of sending an impossible request.
+export async function updateProgress(contractId, _userId, percent) {
+  if (percent === 25) {
+    throw new Error('The Initial Payment sets 25% progress automatically — it cannot be set by hand.')
   }
-
-  contract.progressPercent = percent
-  if (percent >= PROGRESS_LOCK_PERCENT && progressStage.status === 'upcoming') {
-    progressStage.status = 'in_progress'
+  if (percent !== 60 && percent !== 100) {
+    throw new Error('Choose one of the progress checkpoints.')
   }
-  log(contract, 'Respond Side', `Updated project progress to ${percent}%`)
-  return snapshot(contract)
+  const row = await http.post(`/contracts/${contractId}/progress`, { progress: percent })
+  return loadContractDeep(row)
 }
 
-export async function submitStage(contractId, userId, stageKey) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  requireRole(contract, userId, 'provider', 'Only the Respond Side can submit work.')
-  requireStatus(contract, ['active'], 'Work can only be submitted while the contract is active.')
-
-  const stage = getStage(contract, stageKey)
-  if (!stage || stageKey === 'initial') throw new Error('That payment stage is not submitted for approval.')
-  if (stage.status !== 'upcoming' && stage.status !== 'in_progress') throw new Error('Already submitted.')
-
-  if (stageKey === 'progress') {
-    if (contract.progressPercent < PROGRESS_LOCK_PERCENT) {
-      throw new Error('Update progress to 60% before submitting the progress milestone.')
-    }
-  } else {
-    if (getStage(contract, 'progress').status !== 'paid') {
-      throw new Error('The Progress Payment must be marked as paid before final submission.')
-    }
-    if (contract.progressPercent < 100) throw new Error('Update progress to 100% before final submission.')
-  }
-
-  stage.status = 'submitted'
-  log(
-    contract,
-    'Respond Side',
-    stageKey === 'progress' ? 'Submitted the 60% progress milestone' : 'Submitted the final work'
-  )
-  return snapshot(contract)
+// Kept for API compatibility with the page: submitting a stage IS the
+// progress submission on the backend (60 → progress stage, 100 → final).
+// Normally unreachable (the progress button already submits), but wired to
+// the same endpoint so a revision round's re-submission works if called.
+export async function submitStage(contractId, _userId, stageKey) {
+  if (stageKey === 'initial') throw new Error('That payment stage is not submitted for approval.')
+  const row = await http.post(`/contracts/${contractId}/progress`, {
+    progress: stageKey === 'progress' ? 60 : 100,
+  })
+  return loadContractDeep(row)
 }
 
-// decision: 'approve' | 'revision'
-export async function reviewStage(contractId, userId, stageKey, decision) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  requireRole(contract, userId, 'seeker', 'Only the ASK Side can review submitted work.')
-  requireStatus(contract, ['active'], 'Work can only be reviewed while the contract is active.')
-
-  const stage = getStage(contract, stageKey)
-  if (!stage || stage.status !== 'submitted') throw new Error('Nothing is waiting for approval.')
-  const what = stageKey === 'progress' ? 'progress milestone' : 'final work'
-
-  if (decision === 'approve') {
-    stage.status = 'approved'
-    log(contract, 'ASK Side', `Approved the ${what}`)
-  } else {
-    if (contract.revisionsUsed >= contract.revisionsIncluded) {
-      throw new Error('All included revisions are used. Additional work may require a contract change.')
-    }
-    contract.revisionsUsed += 1
-    stage.status = 'in_progress'
-    log(
-      contract,
-      'ASK Side',
-      `Requested a revision on the ${what} (${contract.revisionsUsed} of ${contract.revisionsIncluded} used)`
-    )
-  }
-  return snapshot(contract)
+// decision: 'approve' | 'revision' — reviewed stage is whichever submission
+// is awaiting review server-side (the page only shows the review box for it).
+export async function reviewStage(contractId, _userId, _stageKey, decision) {
+  const action = decision === 'approve' ? 'approve' : 'revision'
+  const row = await http.post(`/contracts/${contractId}/progress/${action}`)
+  return loadContractDeep(row)
 }
 
-// Marks a stage as paid in the demo. Completing the final stage completes
-// the contract. No money moves.
-export async function markStagePaid(contractId, userId, stageKey) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  requireRole(contract, userId, 'seeker', 'Only the ASK Side can mark a payment as paid.')
-  requireStatus(contract, ['active'], 'Payments can only be marked as paid while the contract is active.')
+// ASK side only, only from `due` — all enforced by the backend (403/409s
+// surface as toasts). `paid` is a demo label; nothing moves money.
+export async function markStagePaid(contractId, _userId, stageKey) {
+  const current = await http.get(`/contracts/${contractId}`)
+  const milestone = (current?.milestones ?? []).find((item) => item.kind === stageKey)
+  if (!milestone) throw new Error('Nothing to mark as paid.')
 
-  const stage = getStage(contract, stageKey)
-  if (!stage || stage.status === 'paid') throw new Error('Nothing to mark as paid.')
-  const payable = stageKey === 'initial' ? stage.status === 'upcoming' : stage.status === 'approved'
-  if (!payable) throw new Error('This payment is not due yet.')
-
-  const now = new Date().toISOString()
-  stage.status = 'paid'
-  stage.paidAt = now
-  log(contract, 'ASK Side', `Marked ${stage.title} as paid (demo)`)
-
+  let row = await http.patch(`/contracts/${contractId}/milestones/${milestone.id}`, { status: 'paid' })
   if (stageKey === 'final') {
-    contract.status = 'completed'
-    contract.completedAt = now
-    log(contract, 'System', 'Contract completed')
+    // Preserve the page's single-action completion: paying the final stage
+    // completes the contract, exactly as the old flow did. The backend
+    // still validates (seeker-only, active + final paid); if completion is
+    // not possible the paid contract is shown as-is.
+    try {
+      row = await http.post(`/contracts/${contractId}/complete`)
+    } catch {
+      // Keep the paid-but-not-completed contract; the page shows its status.
+    }
   }
-  return snapshot(contract)
+  return loadContractDeep(row)
 }
 
 // ── Cancellation & disputes ──────────────────────────────────────────────
 
-export async function requestCancellation(contractId, userId) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  requireStatus(contract, ['draft', 'awaiting_signatures', 'active'], 'This contract cannot be cancelled now.')
-  if (contract.cancellationRequest) throw new Error('A cancellation request is already open.')
-
-  contract.cancellationRequest = { by: role, at: new Date().toISOString() }
-  log(contract, actorLabel(role), 'Requested cancellation')
-  return snapshot(contract)
+export async function requestCancellation(contractId, _userId) {
+  const row = await http.post(`/contracts/${contractId}/cancellation-request`, {
+    reason: CANCELLATION_REASON,
+  })
+  return loadContractDeep(row)
 }
 
-// decision: 'accept' | 'decline' (other party) or 'withdraw' (requester)
-export async function respondToCancellation(contractId, userId, decision) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  const request = contract.cancellationRequest
-  if (!request) throw new Error('There is no cancellation request.')
-
-  if (decision === 'withdraw') {
-    if (request.by !== role) throw new Error('Only the requester can withdraw this.')
-    contract.cancellationRequest = null
-    log(contract, actorLabel(role), 'Withdrew the cancellation request')
-  } else {
-    if (request.by === role) throw new Error('The other party needs to respond to this request.')
-    contract.cancellationRequest = null
-    if (decision === 'accept') {
-      contract.status = 'cancelled'
-      contract.pendingChange = null
-      log(contract, actorLabel(role), 'Accepted the cancellation request — contract cancelled')
-    } else {
-      log(contract, actorLabel(role), 'Declined the cancellation request')
-    }
-  }
-  return snapshot(contract)
+// decision: 'accept' | 'decline' (other party) or 'withdraw' (requester) —
+// 'accept' maps to the backend's 'approve' decision.
+export async function respondToCancellation(contractId, _userId, decision) {
+  const mapped = decision === 'accept' ? 'approve' : decision
+  const row = await http.post(`/contracts/${contractId}/cancellation-request/respond`, {
+    decision: mapped,
+  })
+  return loadContractDeep(row)
 }
 
-export async function raiseDispute(contractId, userId, { reason, description }) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  requireStatus(contract, ['active'], 'A dispute can only be raised on an active contract.')
-  if (!reason) throw new Error('Select a reason for the dispute.')
-
-  contract.previousStatus = contract.status
-  contract.status = 'disputed'
-  contract.dispute = {
-    reason,
-    description: description?.trim() || null,
-    raisedBy: role,
-    raisedAt: new Date().toISOString(),
-  }
-  log(contract, actorLabel(role), `Raised a dispute: ${reason}`)
-  return snapshot(contract)
+export async function raiseDispute(contractId, _userId, { reason, description }) {
+  const code = reason ? DISPUTE_REASON_TO_BACKEND[reason] : null
+  if (!code) throw new Error('Select a reason for the dispute.')
+  const row = await http.post(`/contracts/${contractId}/disputes`, {
+    reason: code,
+    ...(description?.trim() ? { description: description.trim() } : {}),
+  })
+  return loadContractDeep(row)
 }
 
-export async function withdrawDispute(contractId, userId) {
-  await delay(ACTION_DELAY)
-  const contract = findContract(contractId)
-  const role = roleOf(contract, userId)
-  requireStatus(contract, ['disputed'], 'This contract is not in dispute.')
-  if (contract.dispute?.raisedBy !== role) throw new Error('Only the party who raised the dispute can withdraw it.')
-
-  contract.status = contract.previousStatus ?? 'active'
-  contract.previousStatus = null
-  contract.dispute = null
-  contract.pendingChange = null
-  log(contract, actorLabel(role), 'Withdrew the dispute')
-  return snapshot(contract)
+// The backend has no separate "withdraw dispute" — closing it goes through
+// the resolve endpoint (participants only; the UI keeps its raiser-only
+// withdraw button and copy). When no dispute remains open the contract
+// returns to active server-side.
+export async function withdrawDispute(contractId, _userId) {
+  const result = await http.get(`/contracts/${contractId}/disputes?pageSize=100`)
+  const open = (result?.items ?? []).find((item) => item.status === 'open')
+  if (!open) throw new Error('This contract is not in dispute.')
+  await http.post(`/contracts/${contractId}/disputes/${open.id}/resolve`)
+  return refetchContract(contractId)
 }
 
-// ── Low-level helpers (kept for API compatibility) ───────────────────────
+// ── Rating ───────────────────────────────────────────────────────────────
 
-export async function updateMilestoneStatus(contractId, milestoneId, status) {
-  await delay(150)
-
-  const contract = contracts.find((item) => item.id === contractId)
-  if (!contract) return null
-
-  const milestone = contract.milestones.find((item) => item.id === milestoneId)
-  if (!milestone) return null
-
-  milestone.status = status
-  return snapshot(contract)
-}
-
-export async function markContractCompleted(contractId) {
-  await delay(150)
-
-  const contract = contracts.find((item) => item.id === contractId)
-  if (!contract) return null
-
-  contract.status = 'completed'
-  contract.completedAt = new Date().toISOString()
-  return snapshot(contract)
-}
-
+// Seeker only, completed contract only, set once — backend-enforced; the
+// response is the contract row, so deep state comes straight back.
 export async function rateContract(contractId, { rating, review }) {
-  await delay()
-
-  const contract = contracts.find((item) => item.id === contractId)
-  if (!contract) return null
-
-  contract.rating = rating
-  contract.review = review || null
-  log(contract, 'ASK Side', `Rated the project ${Number(rating).toFixed(1)} / 5`)
-  return snapshot(contract)
+  const row = await http.post(`/contracts/${contractId}/rating`, {
+    rating,
+    ...(review ? { review } : {}),
+  })
+  return loadContractDeep(row)
 }
 
-// 'paid' is the only terminal milestone status — see mocks/contracts.js.
+// ── Reputation + completed history (Phase 2, unchanged) ──────────────────
+
+// 'paid' is the only terminal milestone status.
 function isSettled(milestoneStatus) {
   return milestoneStatus === 'paid'
 }
@@ -650,5 +631,5 @@ export async function getCompletedContractsForProvider(userId) {
     .filter((contract) => contract.providerId === userId && contract.status === 'completed')
     .slice()
     .sort((a, b) => new Date(b.completedAt ?? b.createdAt) - new Date(a.completedAt ?? a.createdAt))
-    .map(snapshot)
+    .map((contract) => structuredClone(contract))
 }
