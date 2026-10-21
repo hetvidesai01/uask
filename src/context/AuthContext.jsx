@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import * as authService from '../services/authService'
+import * as userService from '../services/userService'
 
 export const AuthContext = createContext(null)
 
@@ -61,10 +62,10 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  // Profile edit → PATCH /users/{id} (owner only, backend-enforced). The
+  // returned full user replaces the cached session user.
   const updateProfile = async (data) => {
-    const updated = await authService.updateUser(user.id, data)
-    // Mock-profile phase: a missing user (not yet in the backend-backed store)
-    // must never clear the signed-in session.
+    const updated = await userService.updateProfile(user.id, data)
     if (updated) setUser(updated)
     return updated
   }

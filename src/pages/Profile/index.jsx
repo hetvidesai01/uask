@@ -42,14 +42,16 @@ function toCompletedWorkItem(contract, asksById, clientsById) {
   return {
     id: contract.id,
     askId: contract.askId,
-    askTitle: ask?.title ?? 'View ASK',
+    askTitle: ask?.title ?? contract.askTitle ?? 'View ASK',
     askCategory: ask?.category,
     clientName: client?.name ?? 'Unknown client',
     agreedPrice: contract.agreedPrice,
     currency: contract.currency,
     completedAt: contract.completedAt,
-    paidMilestoneCount: contract.milestones.filter((m) => m.status === 'paid').length,
-    totalMilestoneCount: contract.milestones.length,
+    // Backend completed-contracts items carry no milestone rows — the
+    // section hides the counts line when they're absent.
+    paidMilestoneCount: contract.milestones?.filter((m) => m.status === 'paid').length ?? null,
+    totalMilestoneCount: contract.milestones?.length ?? null,
     rating: contract.rating,
     text: contract.review,
   }
@@ -100,7 +102,11 @@ export default function Profile() {
     setEditValues(null)
     setStatus('loading')
     try {
-      const found = await getUserById(targetId)
+      // Own profile: the session user IS the full backend user (from
+      // /auth/me) — including the private contact/social fields the edit
+      // form needs, which GET /users/{id} deliberately never returns.
+      // Other profiles: public UserProfile via the user service.
+      const found = isOwnProfile ? currentUser : await getUserById(targetId)
       if (!found) {
         setStatus('not_found')
         return
@@ -159,6 +165,10 @@ export default function Profile() {
     } catch {
       setStatus('error')
     }
+  // `isOwnProfile` is derived from `targetId`/`currentUser.id` (both listed);
+  // the `currentUser` object itself is only read on mount/navigation, and a
+  // profile save already refreshes `profileUser` locally.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetId, currentUser.id, refreshConnection])
 
   useEffect(() => {

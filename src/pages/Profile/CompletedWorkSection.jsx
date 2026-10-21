@@ -24,9 +24,11 @@ export default function CompletedWorkSection({ items }) {
           </p>
 
           <div className={styles.footerRow}>
-            <span className={styles.milestones}>
-              {item.paidMilestoneCount} / {item.totalMilestoneCount} milestones completed
-            </span>
+            {item.totalMilestoneCount != null && (
+              <span className={styles.milestones}>
+                {item.paidMilestoneCount} / {item.totalMilestoneCount} milestones completed
+              </span>
+            )}
             {item.rating != null ? (
               <span className={styles.rating}>★ {item.rating.toFixed(1)} / 5</span>
             ) : (

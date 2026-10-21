@@ -1,4 +1,6 @@
 import { contracts } from '../mocks/contracts'
+import { http } from './http'
+import { isBackendId } from './userService'
 import {
   PROGRESS_CHECKPOINTS,
   PROGRESS_LOCK_PERCENT,
@@ -572,15 +574,17 @@ function isSettled(milestoneStatus) {
   return milestoneStatus === 'paid'
 }
 
-// Aggregate reputation numbers for a provider, built from the same simple
-// milestone math already used on the Payments dashboard and the Contract
-// page (Profile Booster = completed/total milestones scaled to a modest
-// percentage, not a real ranking algorithm). Average rating and review
-// count fall back to `null`/`0` when the provider has no rated completed
-// contracts yet — the page decides whether to blend that with the user's
-// seeded baseline reputation, this service only reports what the contract
-// data itself shows.
+// Aggregate reputation numbers for a provider. Backend-backed for real
+// (UUID) users: GET /users/{id}/reputation is derived server-side from the
+// provider's own contracts (revenue, averageRating, reviewCount,
+// completedContractCount, completedMilestoneCount, totalMilestoneCount,
+// profileBoosterPct). Ratings are never writable from the client.
+// TEMPORARY: seeded mock ids keep the local contract-math fallback below.
 export async function getProviderReputation(userId) {
+  if (isBackendId(userId)) {
+    return http.get(`/users/${userId}/reputation`)
+  }
+
   await delay()
 
   const providerContracts = contracts.filter(
@@ -625,7 +629,21 @@ export async function getProviderReputation(userId) {
 // Raw completed contracts for a provider, most recently completed first —
 // the page joins these with ask/user data for the Completed Work and
 // Reviews sections (reviews are just the subset with a non-null rating).
+// Backend-backed for real users: GET /users/{id}/completed-contracts returns
+// a safe subset (id, askId, askTitle, agreedPrice, currency, status,
+// completedAt, rating, review — no seeker ids, no milestone rows), adapted
+// here to the shape the page joins on; the page's existing fallbacks cover
+// the missing joins (client name, milestone counts).
 export async function getCompletedContractsForProvider(userId) {
+  if (isBackendId(userId)) {
+    const page = await http.get(`/users/${userId}/completed-contracts`)
+    return (page?.items ?? []).map((item) => ({
+      ...item,
+      seekerId: null,
+      milestones: [],
+    }))
+  }
+
   await delay()
 
   return contracts
