@@ -33,14 +33,21 @@ export default function SampleAsksSection() {
     let cancelled = false
 
     async function load() {
-      const results = await getAsks({ sort: 'newest' })
-      const picked = results.slice(0, SAMPLE_COUNT)
-      const withRequesters = await Promise.all(
-        picked.map(async (ask) => ({ ask, requester: await getUserById(ask.requesterId) })),
-      )
-      if (!cancelled) {
-        setSamples(withRequesters)
-        setLoaded(true)
+      try {
+        const results = await getAsks({ sort: 'newest' })
+        const picked = results.slice(0, SAMPLE_COUNT)
+        const withRequesters = await Promise.all(
+          picked.map(async (ask) => ({ ask, requester: await getUserById(ask.requesterId) })),
+        )
+        if (!cancelled) {
+          setSamples(withRequesters)
+          setLoaded(true)
+        }
+      } catch {
+        // GET /asks requires auth — logged-out visitors get a 401 here.
+        // Fall through to the section's existing "no sample ASKs" empty
+        // state rather than leaving the marketing block permanently blank.
+        if (!cancelled) setLoaded(true)
       }
     }
 

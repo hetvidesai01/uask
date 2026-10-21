@@ -14,10 +14,9 @@ import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
-import { getAskById, updateAskStatus } from '../../services/askService'
-import { getOffersForAsk, updateOfferStatus } from '../../services/offerService'
+import { getAskById } from '../../services/askService'
+import { getOffersForAsk, updateOfferStatus, acceptOffer } from '../../services/offerService'
 import { getUserById } from '../../services/authService'
-import { createContract } from '../../services/contractService'
 import { rankResponses } from '../../services/matchingService'
 import { formatCurrency } from '../../utils/formatCurrency'
 import styles from './CompareResponses.module.css'
@@ -123,6 +122,8 @@ export default function CompareResponses() {
         updateOfferInResults(updated)
         showToast('Offer shortlisted.')
       }
+    } catch {
+      showToast('We could not shortlist this response. Please try again.', 'error')
     } finally {
       setActioningId(null)
     }
@@ -131,28 +132,27 @@ export default function CompareResponses() {
   async function handleAccept(offer) {
     setActioningId(offer.id)
     try {
-      const updated = await updateOfferStatus(offer.id, 'accepted')
+      // ONE backend call — the atomic accept transaction rejects competing
+      // offers, flips the ASK to accepted, opens the thread and mints the
+      // draft contract. Then re-read ask + responses for normalized state.
+      const updated = await acceptOffer(offer.id)
       if (updated) {
-        updateOfferInResults(updated)
-        const updatedAsk = await updateAskStatus(askId, 'accepted')
+        const [updatedAsk, refreshedOffers] = await Promise.all([
+          getAskById(askId),
+          getOffersForAsk(askId),
+        ])
         if (updatedAsk) setAsk(updatedAsk)
-        // Frontend/mock state transition only — creates the contract record
-        // so the Contract page is populated immediately, no real payment
-        // processing happens here.
-        await createContract({
-          askId,
-          offerId: updated.id,
-          seekerId: user.id,
-          providerId: updated.providerId,
-          agreedPrice: updated.price,
-          currency: updated.currency,
-          deliverables: updated.deliverables,
-          deliveryDays: updated.deliveryDays,
-          scope: ask?.description,
-        })
+        setRankedResults((current) =>
+          current.map((result) => {
+            const fresh = refreshedOffers.find((item) => item.id === result.offer.id)
+            return fresh ? { ...result, offer: fresh } : result
+          })
+        )
         showToast('Offer accepted — contract started.')
         navigate(`/app/asks/${askId}/contract`)
       }
+    } catch {
+      showToast('We could not accept this response. Please try again.', 'error')
     } finally {
       setActioningId(null)
     }
