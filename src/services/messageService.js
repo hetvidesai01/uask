@@ -1,123 +1,96 @@
-import { messages, threads } from '../mocks/messages'
+import { http } from './http'
 
-// Threads/messages created at runtime (e.g. starting a chat from a profile)
-// are persisted so they survive a reload; the seeded conversations stay
-// exactly as they are in mocks/messages.js.
-const EXTRA_STORAGE_KEY = 'uask.messages.extra'
-const extraThreads = []
-const extraMessages = []
+// Threads + messages are fully backend-owned:
+//   GET  /threads                          → inbox listing (envelope)
+//   GET  /threads/{id}                     → one thread
+//   POST /threads {participantId}          → 201 new / 200 existing (connected pair only)
+//   GET  /threads/{id}/messages            → cursor history {items, nextCursor, hasMore}
+//   POST /threads/{id}/messages            → 201 sent message
+//
+// Read behavior is IMPLICIT on the backend: fetching history marks it read
+// (server-side last-read pointer). There is no explicit mark-read endpoint
+// and none is invented — markThreadAsRead re-reads the thread so callers
+// get the authoritative unread state after history was fetched.
 
-try {
-  const stored = JSON.parse(window.localStorage.getItem(EXTRA_STORAGE_KEY) || 'null')
-  if (stored) {
-    extraThreads.push(...stored.threads)
-    extraMessages.push(...stored.messages)
-    threads.push(...stored.threads)
-    messages.push(...stored.messages)
-  }
-} catch {
-  // Storage unavailable or corrupt — fall back to the seeded data only.
-}
+const HISTORY_PAGE_LIMIT = 50
+// Safety valve for the cursor loop — 40 pages ≈ 2000 messages per thread.
+const MAX_HISTORY_PAGES = 40
 
-function persistExtras() {
-  try {
-    window.localStorage.setItem(
-      EXTRA_STORAGE_KEY,
-      JSON.stringify({ threads: extraThreads, messages: extraMessages })
-    )
-  } catch {
-    // Storage unavailable — the thread still works for this session.
+// Backend MessageResponse → the frontend message model. Shapes are
+// identical (id, threadId, senderId, body, attachments, read, createdAt).
+function normalizeMessage(message) {
+  if (!message) return null
+  return {
+    ...message,
+    attachments: message.attachments ?? [],
   }
 }
 
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
-
-export async function getThreads(userId) {
-  await delay()
-
-  return threads
-    .filter((thread) => thread.participantIds.includes(userId))
-    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+// Backend ThreadResponse → the frontend thread model. The one real
+// difference: backend `lastMessage` is an OBJECT {id, body, senderId,
+// createdAt} or null, while the frontend renders a plain preview STRING —
+// normalized here, so no component ever sees the object form.
+function normalizeThread(thread) {
+  if (!thread) return null
+  return {
+    ...thread,
+    participantIds: thread.participantIds ?? [],
+    lastMessage: thread.lastMessage?.body ?? '',
+    unreadCount: thread.unreadCount ?? 0,
+  }
 }
 
-// Reuses any existing thread between the two users (contract-related or
-// not) so opening "Message" never creates duplicates; otherwise starts an
-// empty direct thread with no ASK attached.
-export async function getOrCreateThread(userIdA, userIdB) {
-  await delay(150)
-
-  const existing = threads
-    .filter((thread) => thread.participantIds.includes(userIdA) && thread.participantIds.includes(userIdB))
-    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0]
-  if (existing) return existing
-
-  const thread = {
-    id: `thread-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    participantIds: [userIdA, userIdB],
-    askId: null,
-    lastMessage: '',
-    unreadCount: 0,
-    updatedAt: new Date().toISOString(),
-  }
-  threads.push(thread)
-  extraThreads.push(thread)
-  persistExtras()
-  return thread
+// GET /threads → envelope unwrapped, newest-activity first (backend
+// ordering). `userId` is ignored — the backend scopes the list to the
+// authenticated user; kept in the signature for existing callers.
+export async function getThreads(_userId) {
+  const page = await http.get('/threads?pageSize=100')
+  return (page?.items ?? []).map(normalizeThread)
 }
 
 export async function getThreadById(threadId) {
-  await delay()
-  return threads.find((thread) => thread.id === threadId) ?? null
+  return normalizeThread(await http.get(`/threads/${threadId}`))
 }
 
+// POST /threads {participantId} — connected pair only (403 NOT_CONNECTED,
+// 422 SELF_THREAD, 404 USER_NOT_FOUND); idempotent per pair (201 first
+// time, 200 when an existing thread — including an accept-created one —
+// is reused). `userIdA` is ignored; the pair is derived from auth + body.
+export async function getOrCreateThread(_userIdA, userIdB) {
+  return normalizeThread(await http.post('/threads', { participantId: userIdB }))
+}
+
+// Full history via cursor pagination: each page is oldest-first within the
+// newest-`limit`-older-than-cursor window, so older pages are PREPENDED to
+// build the complete ascending list the UI renders. Fetching history is
+// also what marks the thread read (see header).
 export async function getMessages(threadId) {
-  await delay()
+  const pages = []
+  let before
 
-  return messages
-    .filter((message) => message.threadId === threadId)
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+  for (let call = 0; call < MAX_HISTORY_PAGES; call += 1) {
+    const query = new URLSearchParams({ limit: String(HISTORY_PAGE_LIMIT) })
+    if (before) query.set('before', before)
+
+    const result = await http.get(`/threads/${threadId}/messages?${query.toString()}`)
+    pages.unshift(result?.items ?? [])
+
+    if (!result?.hasMore || !result?.nextCursor) break
+    before = result.nextCursor
+  }
+
+  return pages.flat().map(normalizeMessage)
 }
 
-export async function markThreadAsRead(threadId, userId) {
-  await delay(150)
-
-  messages
-    .filter((message) => message.threadId === threadId && message.senderId !== userId)
-    .forEach((message) => {
-      message.read = true
-    })
-
-  const thread = threads.find((item) => item.id === threadId)
-  if (thread) {
-    thread.unreadCount = 0
-  }
-
-  return thread ?? null
+// No explicit read endpoint exists — fetching history marks the thread
+// read server-side, so this just returns the authoritative thread state
+// (fresh unreadCount) after that happened. `userId` kept for callers.
+export async function markThreadAsRead(threadId, _userId) {
+  return getThreadById(threadId)
 }
 
-export async function sendMessage({ threadId, senderId, body }) {
-  await delay()
-
-  const newMessage = {
-    id: `message-${messages.length + 1}`,
-    threadId,
-    senderId,
-    body,
-    attachments: [],
-    createdAt: new Date().toISOString(),
-    read: true,
-  }
-  messages.push(newMessage)
-  if (extraThreads.some((item) => item.id === threadId)) {
-    extraMessages.push(newMessage)
-  }
-
-  const thread = threads.find((item) => item.id === threadId)
-  if (thread) {
-    thread.lastMessage = body
-    thread.updatedAt = newMessage.createdAt
-    if (extraThreads.includes(thread)) persistExtras()
-  }
-
-  return newMessage
+// POST /threads/{id}/messages — sender comes from the auth user, never
+// the body (the frontend `senderId` argument is dropped here).
+export async function sendMessage({ threadId, senderId: _senderId, body }) {
+  return normalizeMessage(await http.post(`/threads/${threadId}/messages`, { body }))
 }
