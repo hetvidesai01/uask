@@ -747,3 +747,154 @@ def test_deadline_sort_independent_of_created_at(client: TestClient, db: Session
     )
     ids = [i["id"] for i in resp.json()["items"]]
     assert ids == [b["id"], a["id"]]
+
+
+# --------------------------------------------------------------------------
+# PATCH /asks/{id}/status — owner-driven close/cancel (frontend compat)
+# --------------------------------------------------------------------------
+
+
+def _set_status_via_request(
+    client: TestClient, headers: dict, ask_id: str, new_status: str
+):
+    return client.patch(
+        f"{API}/asks/{ask_id}/status",
+        json={"status": new_status},
+        headers=headers,
+    )
+
+
+def test_owner_closes_open_ask(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    resp = _set_status_via_request(client, headers, created["id"], "closed")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "closed"
+    detail = client.get(f"{API}/asks/{created['id']}", headers=headers)
+    assert detail.json()["status"] == "closed"
+
+
+def test_owner_cancels_open_ask(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    resp = _set_status_via_request(client, headers, created["id"], "cancelled")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "cancelled"
+
+
+def test_close_accepted_ask_allowed(client: TestClient, db: Session):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    _set_status(db, created["id"], AskStatus.accepted)
+    resp = _set_status_via_request(client, headers, created["id"], "closed")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "closed"
+
+
+def test_cancel_accepted_ask_refused(client: TestClient, db: Session):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    _set_status(db, created["id"], AskStatus.accepted)
+    resp = _set_status_via_request(client, headers, created["id"], "cancelled")
+    assert resp.status_code == 409
+    assert _error_code(resp) == "ASK_NOT_EDITABLE"
+
+
+def test_terminal_ask_status_is_frozen(client: TestClient, db: Session):
+    headers, _ = _signup(client, ["seeker"])
+    closed = _create_ask(client, headers)
+    _set_status(db, closed["id"], AskStatus.closed)
+    resp = _set_status_via_request(client, headers, closed["id"], "open")
+    assert resp.status_code == 409
+    assert _error_code(resp) == "ASK_NOT_EDITABLE"
+
+    cancelled = _create_ask(client, headers)
+    _set_status(db, cancelled["id"], AskStatus.cancelled)
+    resp = _set_status_via_request(client, headers, cancelled["id"], "closed")
+    assert resp.status_code == 409
+    assert _error_code(resp) == "ASK_NOT_EDITABLE"
+
+
+def test_status_change_only_close_or_cancel(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    for target in ("accepted", "matched", "in_review"):
+        resp = _set_status_via_request(client, headers, created["id"], target)
+        assert resp.status_code == 409, (target, resp.text)
+        assert _error_code(resp) == "ASK_NOT_EDITABLE"
+
+
+def test_status_change_same_status_is_idempotent(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    resp = _set_status_via_request(client, headers, created["id"], "open")
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "open"
+
+
+def test_non_owner_cannot_change_status(client: TestClient):
+    headers_owner, _ = _signup(client, ["seeker"], name="Owner")
+    headers_other, _ = _signup(client, ["provider"], name="Other")
+    created = _create_ask(client, headers_owner)
+    resp = _set_status_via_request(client, headers_other, created["id"], "closed")
+    assert resp.status_code == 403
+    assert _error_code(resp) == "NOT_ASK_OWNER"
+
+
+def test_status_change_requires_auth(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    resp = client.patch(
+        f"{API}/asks/{created['id']}/status", json={"status": "closed"}
+    )
+    assert resp.status_code == 401
+
+
+def test_status_change_invalid_value_rejected(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    created = _create_ask(client, headers)
+    resp = _set_status_via_request(client, headers, created["id"], "archived")
+    assert resp.status_code == 422
+    assert _error_code(resp) == "VALIDATION_ERROR"
+
+
+def test_status_change_not_found(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    resp = _set_status_via_request(client, headers, str(uuid.uuid4()), "closed")
+    assert resp.status_code == 404
+    assert _error_code(resp) == "ASK_NOT_FOUND"
+
+
+# --------------------------------------------------------------------------
+# GET /asks?postedWithin= — frontend time-window filter (frontend compat)
+# --------------------------------------------------------------------------
+
+
+def test_filter_posted_within(client: TestClient, db: Session):
+    headers, _ = _signup(client, ["seeker"])
+    fresh = _create_ask(client, headers, title="A fresh ask for posting tests")
+    old = _create_ask(client, headers, title="An old ask for posting tests")
+    mid = _create_ask(client, headers, title="A mid-age ask for posting tests")
+    now = datetime.now(UTC)
+    _set_created_at(db, old["id"], now - timedelta(days=40))
+    _set_created_at(db, mid["id"], now - timedelta(days=3))
+
+    def ids(params: dict) -> set[str]:
+        resp = client.get(f"{API}/asks", params=params, headers=headers)
+        assert resp.status_code == 200, resp.text
+        return {i["id"] for i in resp.json()["items"]}
+
+    assert ids({"postedWithin": "24h"}) == {fresh["id"]}
+    assert ids({"postedWithin": "7d"}) == {fresh["id"], mid["id"]}
+    assert ids({"postedWithin": "30d"}) == {fresh["id"], mid["id"]}
+    # Without the window every non-deleted ASK is returned.
+    assert ids({}) == {fresh["id"], old["id"], mid["id"]}
+
+
+def test_filter_posted_within_invalid_rejected(client: TestClient):
+    headers, _ = _signup(client, ["seeker"])
+    resp = client.get(
+        f"{API}/asks", params={"postedWithin": "1y"}, headers=headers
+    )
+    assert resp.status_code == 422
+    assert _error_code(resp) == "VALIDATION_ERROR"

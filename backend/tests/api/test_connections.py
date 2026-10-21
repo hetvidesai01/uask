@@ -11,7 +11,16 @@ from app.models.connection import Connection
 
 API = "/api/v1"
 
-CONNECTION_KEYS = {"id", "connectedUserId", "connectedUser", "createdAt"}
+CONNECTION_KEYS = {
+    "id",
+    "connectedUserId",
+    "connectedUser",
+    "createdAt",
+    # Frontend-contract aliases (additive — never renamed away).
+    "connectionId",
+    "userId",
+    "since",
+}
 STATUS_KEYS = {"status", "connectionId"}
 COUNT_KEYS = {"count"}
 ENVELOPE_KEYS = {"items", "page", "pageSize", "total", "totalPages", "hasNext"}
@@ -162,6 +171,10 @@ def test_connect_creates_instant_connection(client: TestClient):
     assert body["connectedUser"]["id"] == user_b
     assert set(body["connectedUser"].keys()) == USER_PUBLIC_KEYS
     assert datetime.fromisoformat(body["createdAt"])
+    # Aliases the frontend service reads carry the same values.
+    assert body["connectionId"] == body["id"]
+    assert body["userId"] == body["connectedUserId"]
+    assert body["since"] == body["createdAt"]
 
     # There is no pending state — the link is live in both directions.
     assert _status(client, headers_a, user_b)["status"] == "connected"

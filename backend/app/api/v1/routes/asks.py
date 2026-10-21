@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
@@ -9,7 +9,13 @@ from app.core.deps import get_current_active_user, get_db, require_roles
 from app.core.enums import AskStatus
 from app.core.pagination import Page
 from app.models.user import User
-from app.schemas.ask import AskCreate, AskResponse, AskSort, AskUpdate
+from app.schemas.ask import (
+    AskCreate,
+    AskResponse,
+    AskSort,
+    AskStatusUpdate,
+    AskUpdate,
+)
 from app.services import ask_service
 
 router = APIRouter(prefix="/asks", tags=["asks"])
@@ -35,6 +41,9 @@ def list_asks(
     location: str | None = Query(default=None, max_length=120),
     is_remote: Annotated[bool | None, Query(alias="isRemote")] = None,
     requester_id: Annotated[UUID | None, Query(alias="requesterId")] = None,
+    posted_within: Annotated[
+        Literal["24h", "7d", "30d"] | None, Query(alias="postedWithin")
+    ] = None,
     sort: AskSort = "newest",
     page: int = Query(default=1, ge=1),
     page_size: Annotated[int, Query(alias="pageSize", ge=1, le=100)] = 20,
@@ -49,6 +58,7 @@ def list_asks(
         location=location,
         is_remote=is_remote,
         requester_id=requester_id,
+        posted_within=posted_within,
         sort=sort,
         page=page,
         page_size=page_size,
@@ -81,6 +91,16 @@ def update_ask(
     current_user: CurrentUser,
 ) -> AskResponse:
     return ask_service.update_ask(db, ask_id, payload, current_user)
+
+
+@router.patch("/{ask_id}/status", response_model=AskResponse)
+def update_ask_status(
+    ask_id: UUID,
+    payload: AskStatusUpdate,
+    db: DbDep,
+    current_user: CurrentUser,
+) -> AskResponse:
+    return ask_service.set_ask_status(db, ask_id, payload.status, current_user)
 
 
 @router.delete("/{ask_id}", status_code=status.HTTP_204_NO_CONTENT)

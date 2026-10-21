@@ -37,12 +37,15 @@ def list_asks(
     location: str | None = None,
     is_remote: bool | None = None,
     requester_id: UUID | None = None,
+    posted_within: str | None = None,
     sort: str = "newest",
     page: int = 1,
     page_size: int = 20,
 ) -> Page[AskResponse]:
     if min_budget is not None and max_budget is not None and max_budget < min_budget:
         raise ValidationError("maxBudget must be >= minBudget.")
+    if posted_within is not None and posted_within not in ("24h", "7d", "30d"):
+        raise ValidationError("postedWithin must be one of 24h, 7d or 30d.")
 
     pp = PageParams(page=page, page_size=page_size)
     rows, total = ask_repo.list_asks(
@@ -55,6 +58,7 @@ def list_asks(
         location=location,
         is_remote=is_remote,
         requester_id=requester_id,
+        posted_within=posted_within,
         sort=sort,
         offset=pp.offset,
         limit=pp.limit,
@@ -147,3 +151,49 @@ def delete_ask(db: Session, ask_id: UUID, current_user: User) -> None:
         )
     ask.deleted_at = datetime.now(UTC)
     db.commit()
+
+
+def set_ask_status(
+    db: Session, ask_id: UUID, new_status: AskStatus, current_user: User
+) -> AskResponse:
+    """Owner-driven terminal transition: → closed / → cancelled.
+
+    The owner may close or cancel an ASK that still lives (`open`,
+    `matched`, `in_review`, or `accepted` → `closed` only — an accepted ASK
+    has a live contract, so its cancellation goes through the contract
+    flow). Terminal states never move again; anything else (including a
+    manual move back to `open` or into `accepted`) is refused.
+    """
+    row = ask_repo.get_ask(db, ask_id)
+    if row is None:
+        raise NotFoundError("Ask not found.", code="ASK_NOT_FOUND")
+    ask, count = row
+    if ask.requester_id != current_user.id:
+        raise ForbiddenError(
+            "Only the ASK owner may change this ASK's status.",
+            code="NOT_ASK_OWNER",
+        )
+    if ask.status == new_status:
+        return _ask_response(ask, count)
+    if new_status not in (AskStatus.closed, AskStatus.cancelled):
+        raise ConflictError(
+            "ASK status can only be changed to closed or cancelled.",
+            code="ASK_NOT_EDITABLE",
+        )
+    if ask.status in (AskStatus.closed, AskStatus.cancelled):
+        raise ConflictError(
+            "Closed or cancelled ASKs cannot change status again.",
+            code="ASK_NOT_EDITABLE",
+        )
+    if ask.status == AskStatus.accepted and new_status == AskStatus.cancelled:
+        raise ConflictError(
+            "Accepted ASKs cannot be cancelled — cancel the contract instead.",
+            code="ASK_NOT_EDITABLE",
+        )
+
+    ask.status = new_status
+    ask.updated_at = datetime.now(UTC)
+    db.flush()
+    resp = _ask_response(ask, count)
+    db.commit()
+    return resp

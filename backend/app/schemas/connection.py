@@ -15,12 +15,19 @@ class ConnectionCreate(CamelModel):
 
 
 class ConnectionResponse(CamelModel):
-    """One side of a connection — always rendered from the viewer's side."""
+    """One side of a connection — always rendered from the viewer's side.
+
+    The frontend service reads `connectionId`/`userId`/`since`; those aliases
+    are additive alongside the original keys (renames are never allowed).
+    """
 
     id: uuid.UUID
     connected_user_id: uuid.UUID
     connected_user: UserPublic | None = None
     created_at: datetime
+    connection_id: uuid.UUID
+    user_id: uuid.UUID
+    since: datetime
 
 
 class ConnectionStatusResponse(CamelModel):

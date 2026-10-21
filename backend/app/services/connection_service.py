@@ -23,6 +23,9 @@ def _to_response(
         connected_user_id=other_id,
         connected_user=UserPublic.model_validate(other) if other else None,
         created_at=connection.created_at,
+        connection_id=connection.id,
+        user_id=other_id,
+        since=connection.created_at,
     )
 
 

@@ -1,5 +1,6 @@
 """ASK data access: filtered/sorted list queries and live-offer counts."""
 
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -9,6 +10,8 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.enums import AskStatus
 from app.models.ask import Ask
 from app.models.offer import Offer
+
+POSTED_WITHIN_HOURS: dict[str, int] = {"24h": 24, "7d": 7 * 24, "30d": 30 * 24}
 
 
 def _response_count_subq():
@@ -32,6 +35,7 @@ def _apply_filters(
     location: str | None,
     is_remote: bool | None,
     requester_id: UUID | None,
+    posted_within: str | None,
 ) -> Select:
     if q:
         pattern = f"%{q}%"
@@ -50,6 +54,11 @@ def _apply_filters(
         stmt = stmt.where(Ask.is_remote.is_(is_remote))
     if requester_id is not None:
         stmt = stmt.where(Ask.requester_id == requester_id)
+    if posted_within is not None:
+        cutoff = datetime.now(UTC) - timedelta(
+            hours=POSTED_WITHIN_HOURS[posted_within]
+        )
+        stmt = stmt.where(Ask.created_at >= cutoff)
     return stmt
 
 
@@ -73,6 +82,7 @@ def list_asks(
     location: str | None = None,
     is_remote: bool | None = None,
     requester_id: UUID | None = None,
+    posted_within: str | None = None,
     sort: str = "newest",
     offset: int = 0,
     limit: int = 20,
@@ -87,6 +97,7 @@ def list_asks(
         location=location,
         is_remote=is_remote,
         requester_id=requester_id,
+        posted_within=posted_within,
     )
 
     count_stmt = select(func.count()).select_from(Ask).where(Ask.deleted_at.is_(None))

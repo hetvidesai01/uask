@@ -31,6 +31,27 @@ def test_successful_signup(client: TestClient, signup_payload: dict):
     assert "SameSite=lax" in set_cookie or "SameSite=Lax" in set_cookie
 
 
+def test_refresh_cookie_samesite_none_when_secure():
+    """Cross-site frontends (Vercel app → Render API) only send cookies on
+    credentialed refresh when SameSite=None; browsers require it Secure."""
+    import os
+
+    from app.api.v1.routes import auth as auth_routes
+    from app.core.config import get_settings
+
+    os.environ["COOKIE_SECURE"] = "true"
+    get_settings.cache_clear()
+    try:
+        flags = auth_routes._cookie_flags()
+        assert flags["samesite"] == "none"
+        assert flags["secure"] is True
+        assert flags["httponly"] is True
+        assert flags["path"] == "/"
+    finally:
+        os.environ.pop("COOKIE_SECURE", None)
+        get_settings.cache_clear()
+
+
 def test_duplicate_email_signup(client: TestClient, signup_payload: dict):
     assert client.post(f"{API}/auth/signup", json=signup_payload).status_code == 201
     resp = client.post(f"{API}/auth/signup", json=signup_payload)

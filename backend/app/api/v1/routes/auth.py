@@ -27,7 +27,10 @@ def _cookie_flags() -> dict:
     return {
         "httponly": True,
         "secure": secure,
-        "samesite": "lax",
+        # Cross-site frontends (Vercel app → Render API) only send cookies on
+        # credentialed requests when SameSite=None, which browsers require to
+        # be Secure. Same-origin / local development keeps Lax.
+        "samesite": "none" if secure else "lax",
         "domain": settings.COOKIE_DOMAIN or None,
         "path": "/",
     }
