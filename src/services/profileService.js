@@ -6,8 +6,9 @@ import { getConnectionStatus } from './connectionService'
 
 const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
 
-// TEMPORARY (no backend endpoint) — portfolio is still the seeded mock; no
-// upload flow exists yet either, see mocks/portfolio.js.
+// TEMPORARY (no backend endpoint) — portfolio is still the seeded mock.
+// Backend uploads now exist (uploadService → POST /uploads), but this build
+// has no portfolio-item editor, so there is nothing to wire them to yet.
 export async function getPortfolioForUser(userId) {
   await delay()
   return portfolioItems.filter((item) => item.userId === userId)

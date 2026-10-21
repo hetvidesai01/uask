@@ -15,6 +15,7 @@ import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getAskById, incrementResponseCount } from '../../services/askService'
 import { getOffersForAsk, createOffer } from '../../services/offerService'
+import { uploadAttachments } from '../../services/uploadService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
 import { getPreferredCurrency } from '../../utils/formatCurrency'
 import styles from './RespondToAsk.module.css'
@@ -165,6 +166,13 @@ export default function RespondToAsk() {
 
     setSubmitting(true)
     try {
+      // Same upload flow as ASK creation: files are uploaded here (offer
+      // row doesn't exist yet) and the uploaded dicts travel inside the
+      // create payload; they're written back to the draft so a retry skips
+      // re-uploading.
+      const attachments = await uploadAttachments(values.attachments)
+      updateValues('attachments', attachments)
+
       await createOffer({
         askId,
         providerId: user.id,
@@ -173,7 +181,7 @@ export default function RespondToAsk() {
         deliveryDays: Number(values.deliveryDays),
         pitch: composedPitch,
         deliverables: values.deliverables,
-        attachments: values.attachments,
+        attachments,
       })
       await incrementResponseCount(askId)
 

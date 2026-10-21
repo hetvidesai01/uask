@@ -24,7 +24,9 @@ const SORT_NAMES = {
 // normalized to the datetime form every page already sorts/renders with.
 // Statuses are the same enum on both sides
 // (open|matched|in_review|accepted|closed|cancelled).
-function normalizeAsk(ask) {
+// Exported for searchService so /search/asks results normalize exactly
+// like /asks listings.
+export function normalizeAsk(ask) {
   if (!ask) return null
   return {
     ...ask,

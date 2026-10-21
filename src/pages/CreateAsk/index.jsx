@@ -14,6 +14,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { getCategories, createAsk } from '../../services/askService'
+import { uploadAttachments } from '../../services/uploadService'
 import { isRequired, minLength, isPositiveNumber } from '../../utils/validators'
 import { getPreferredCurrency } from '../../utils/formatCurrency'
 import styles from './CreateAsk.module.css'
@@ -155,6 +156,13 @@ export default function CreateAsk() {
 
     setPublishing(true)
     try {
+      // The attachment step collected { name, file }; upload now — the ASK
+      // row doesn't exist yet, so this is the contract's unbound upload →
+      // ask-payload flow — and write the uploaded dicts back into the draft
+      // so a retried publish doesn't upload the same file twice.
+      const attachments = await uploadAttachments(values.attachments)
+      updateValues('attachments', attachments)
+
       const created = await createAsk({
         title: values.title.trim(),
         category: values.category,
@@ -167,7 +175,7 @@ export default function CreateAsk() {
         deadline: new Date(values.deadline).toISOString(),
         location: values.location.trim(),
         isRemote: values.isRemote === 'true',
-        attachments: values.attachments,
+        attachments,
         requesterId: user.id,
       })
       setDraft(null)

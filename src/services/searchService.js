@@ -1,61 +1,70 @@
-// Frontend/mock global search — composes existing services rather than
-// touching mocks directly, so search results always reflect whatever
-// askService/authService already know (including runtime-created ASKs and
-// signed-up users). Swap the bodies below for real API calls later; the
-// (query, { limit }) -> results shape is what every caller (GlobalSearch,
-// SearchResults, Discover) already depends on.
+// Backend-backed global search — the three frozen endpoints:
 //
-// Explicitly not: Elasticsearch/Algolia/Meilisearch or any other external
-// search engine — plain substring matching over mock/service data only.
-import { getAsks } from './askService'
-import { getAllUsers } from './authService'
-import { getProfileHeadline } from '../utils/profileHeadline'
+//   GET /search/asks?q=&limit=   → bare Ask[]
+//   GET /search/people?q=&limit= → bare UserProfile[]
+//   GET /search?q=&limit=        → { asks, people }
+//
+// All matching is backend-owned: ASKs by title/description/category/budget,
+// people by name/bio/location/skills (categories) — which is where the
+// "skills/categories" side of search is served. The adapter only preserves
+// contract behavior the old local search had:
+// - empty/whitespace terms return [] without an API call (the API does the
+//   same for missing terms, and avoids sending a pointless request);
+// - terms are capped at the contract's 200-char max so typing a long string
+//   can't produce a 422;
+// - `limit` is clamped to the API's 1-50 range, defaulting to 50 — callers
+//   that previously saw every local match (SearchResults) now see the
+//   backend's full first page within its cap;
+// - callers may still pass `excludeUserId` for parity with the old local
+//   search: it is IGNORED, because the API already excludes the calling
+//   user (and inactive users) from people results.
+import { http } from './http'
+import { normalizeAsk } from './askService'
 
-const delay = (ms = 200) => new Promise((resolve) => setTimeout(resolve, ms))
+const MAX_LIMIT = 50 // backend limit range is 1-50
+const TERM_MAX = 200 // backend term max_length
 
-function normalizedTerm(query) {
-  return (query ?? '').trim().toLowerCase()
+function toQuery(query, limit) {
+  const term = String(query ?? '').trim().slice(0, TERM_MAX)
+  if (!term) return null
+  const requested = Number(limit)
+  const capped = Math.min(Math.max(Number.isFinite(requested) ? requested : MAX_LIMIT, 1), MAX_LIMIT)
+  return new URLSearchParams({ q: term, limit: String(capped) }).toString()
 }
 
-function matchesAny(fields, term) {
-  return fields.some((field) => typeof field === 'string' && field.toLowerCase().includes(term))
+// UserProfile → the frontend person model, with the same null → '' rule as
+// the other profile adapters (the UI renders empty strings for these).
+function normalizePerson(person) {
+  if (!person) return null
+  return {
+    ...person,
+    avatarUrl: person.avatarUrl ?? '',
+    bio: person.bio ?? '',
+    location: person.location ?? '',
+    categories: person.categories ?? [],
+  }
 }
 
 export async function searchAsks(query, { limit } = {}) {
-  await delay()
-
-  const term = normalizedTerm(query)
-  if (!term) return []
-
-  const allAsks = await getAsks({})
-  const matches = allAsks.filter((ask) => matchesAny([ask.title, ask.description, ask.category], term))
-
-  return typeof limit === 'number' ? matches.slice(0, limit) : matches
+  const qs = toQuery(query, limit)
+  if (!qs) return []
+  const asks = await http.get(`/search/asks?${qs}`)
+  return (asks ?? []).map(normalizeAsk)
 }
 
-export async function searchPeople(query, { limit, excludeUserId } = {}) {
-  await delay()
-
-  const term = normalizedTerm(query)
-  if (!term) return []
-
-  const allUsers = await getAllUsers()
-  const matches = allUsers.filter((user) => {
-    if (excludeUserId && user.id === excludeUserId) return false
-    return matchesAny(
-      [user.name, getProfileHeadline(user), user.bio, user.location, ...(user.categories ?? [])],
-      term
-    )
-  })
-
-  return typeof limit === 'number' ? matches.slice(0, limit) : matches
+export async function searchPeople(query, { limit } = {}) {
+  const qs = toQuery(query, limit)
+  if (!qs) return []
+  const people = await http.get(`/search/people?${qs}`)
+  return (people ?? []).map(normalizePerson)
 }
 
-// Combined lookup for the topbar dropdown and the /app/search "All" tab.
-export async function searchAll(query, { limit, excludeUserId } = {}) {
-  const [asks, people] = await Promise.all([
-    searchAsks(query, { limit }),
-    searchPeople(query, { limit, excludeUserId }),
-  ])
-  return { asks, people }
+export async function searchAll(query, { limit } = {}) {
+  const qs = toQuery(query, limit)
+  if (!qs) return { asks: [], people: [] }
+  const result = await http.get(`/search?${qs}`)
+  return {
+    asks: (result?.asks ?? []).map(normalizeAsk),
+    people: (result?.people ?? []).map(normalizePerson),
+  }
 }

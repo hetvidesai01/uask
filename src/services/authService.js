@@ -70,9 +70,9 @@ export async function restoreSession() {
 export { getUserById } from './userService'
 
 // TEMPORARY — the backend has no all-users listing endpoint (only
-// GET /users/{id} and /search/people). Backs the mock People directory and
-// mock search until those phases wire the real endpoints; seeded mock ids
-// only, never real accounts.
+// GET /users/{id} and /search/people; search itself has been backend-backed
+// since Phase 7). Backs the mock People directory (Discover → People) until
+// a real directory exists; seeded mock ids only, never real accounts.
 export async function getAllUsers() {
   await delay(150)
   return listMockUsers()

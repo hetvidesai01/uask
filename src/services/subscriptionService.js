@@ -5,8 +5,9 @@ const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms))
 // Upgrades made during a session are persisted here so they survive a
 // reload, without mutating the seeded mock array in place (mirrors the
 // read/write split every other service keeps between mocks/ and runtime
-// state). Swap this whole module for a real API call in Phase 10 — the
-// function signatures below are what callers already depend on.
+// state). Swap this whole module for a real API call when the backend ships
+// a payments/checkout endpoint — the function signatures below are what
+// callers already depend on.
 const STORAGE_KEY = 'uask.subscriptions'
 
 function readOverrides() {

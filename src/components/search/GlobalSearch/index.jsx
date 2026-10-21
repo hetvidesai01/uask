@@ -26,9 +26,10 @@ function rowIn(index) {
 }
 
 // Compact topbar search — ASKs, people and skills/categories in one field.
-// Frontend/mock only (see services/searchService.js); no external search
-// engine. Grouped dropdown result count is capped via RESULT_LIMIT per
-// group; "View all results" hands off to the full /app/search page.
+// Backend-backed via GET /search (see services/searchService.js); no
+// external search engine. Grouped dropdown result count is capped via
+// RESULT_LIMIT per group; "View all results" hands off to the full
+// /app/search page.
 export default function GlobalSearch() {
   const { user, activeRole } = useAuth()
   const navigate = useNavigate()
@@ -51,11 +52,19 @@ export default function GlobalSearch() {
 
     let cancelled = false
     setLoading(true)
-    searchAll(term, { limit: RESULT_LIMIT, excludeUserId: user.id }).then((result) => {
-      if (cancelled) return
-      setResults(result)
-      setLoading(false)
-    })
+    searchAll(term, { limit: RESULT_LIMIT, excludeUserId: user.id })
+      .then((result) => {
+        if (!cancelled) setResults(result)
+      })
+      .catch(() => {
+        // Backend search can fail where the old local search could not —
+        // degrade to the dropdown's existing empty state instead of a
+        // stuck spinner or an unhandled rejection (no UI/copy change).
+        if (!cancelled) setResults({ asks: [], people: [] })
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
     return () => {
       cancelled = true
     }

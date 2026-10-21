@@ -9,9 +9,11 @@ export default function AskFormStep3({ values, onChange }) {
     if (files.length === 0) return
 
     const existingNames = new Set(values.attachments.map((file) => file.name))
+    // The chip renders `name` only; the File rides along so the publish
+    // flow can upload it (uploadService) before the ASK row exists.
     const newAttachments = files
       .filter((file) => !existingNames.has(file.name))
-      .map((file) => ({ name: file.name }))
+      .map((file) => ({ name: file.name, file }))
 
     onChange('attachments', [...values.attachments, ...newAttachments])
     event.target.value = ''
